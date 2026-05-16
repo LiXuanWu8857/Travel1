@@ -2916,15 +2916,16 @@ injectEditButtons();
 const MAX_PHOTOS = 3;
 
 function initPhotoSections() {
-  document.querySelectorAll('.day-section .item-content .card:not(.card-drive)').forEach((card, idx) => {
-    if (card.querySelector('.photo-section')) return;
-    const daySection = card.closest('.day-section');
-    const dayId = daySection ? daySection.id : 'unknown';
-    const key = `photo_${dayId}_${idx}`;
+  document.querySelectorAll('.day-section').forEach(daySection => {
+    const dayId = daySection.id || 'unknown';
+    const cards = daySection.querySelectorAll('.item-content .card:not(.card-drive)');
+    cards.forEach((card, idx) => {
+      if (card.querySelector('.photo-section')) return;
+      const key = `photo_${dayId}_${idx}`;
 
-    const section = document.createElement('div');
-    section.className = 'photo-section';
-    section.dataset.key = key;
+      const section = document.createElement('div');
+      section.className = 'photo-section';
+      section.dataset.key = key;
 
     const slotsDiv = document.createElement('div');
     slotsDiv.className = 'photo-slots';
@@ -2984,7 +2985,8 @@ function initPhotoSections() {
     // Load saved data
     loadPhotos(key, slotsDiv, addBtn);
     loadGmailLinks(key, gmailDiv);
-  });
+    }); // end cards.forEach
+  }); // end daySection.forEach
 }
 
 // ── CLOUDINARY 上傳 ──
