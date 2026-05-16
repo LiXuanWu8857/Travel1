@@ -1,0 +1,3024 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>北海道行程 8/27–9/8</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F4F1EC;
+  --card: #FFFFFF;
+  --text: #1C1A17;
+  --muted: #7A7670;
+  --border: #E4DFD5;
+  --accent: #2D5A8E;
+  --onsen: #2196A8;
+  --onsen-light: #E0F4F6;
+  --food: #C87533;
+  --food-light: #FDF0E4;
+  --spot: #3A7D44;
+  --spot-light: #E8F5EA;
+  --drive: #8A8480;
+  --drive-light: #F2F0ED;
+  --hotel: #6B4FA0;
+  --hotel-light: #F0EBFA;
+  --ferry: #1565C0;
+  --ferry-light: #E3F2FD;
+  --warning: #B45309;
+  --warning-light: #FEF3C7;
+  --success: #166534;
+  --success-light: #DCFCE7;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── TOP NAV ── */
+.top-nav {
+  background: #1C1A17;
+  color: white;
+  padding: 14px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.tab-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 0;
+}
+.tab-scroll::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  padding: 8px 14px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  user-select: none;
+}
+.tab.active { color: white; border-bottom-color: #F59E0B; }
+.tab:hover:not(.active) { color: rgba(255,255,255,0.75); }
+
+/* ── BOOKING CHECKLIST PAGE ── */
+.booking-page { display: none; }
+.booking-page.active { display: block; }
+
+.booking-header {
+  background: #1C1A17;
+  color: white;
+  padding: 20px 16px;
+}
+.booking-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.booking-header p { font-size: 13px; opacity: 0.6; }
+
+.booking-section { margin: 12px 16px 0; }
+.booking-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+.booking-item {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.booking-item.done { background: var(--success-light); border-color: #86EFAC; }
+.booking-item.done .booking-name { text-decoration: line-through; color: var(--muted); }
+.booking-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.15s;
+  background: white;
+}
+.booking-item.done .booking-checkbox {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+.booking-info { flex: 1; }
+.booking-name { font-size: 14px; font-weight: 700; line-height: 1.3; margin-bottom: 2px; }
+.booking-date { font-size: 12px; color: var(--muted); }
+.booking-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.tag-hotel { background: var(--hotel-light); color: var(--hotel); }
+.tag-activity { background: var(--spot-light); color: var(--spot); }
+.tag-ferry { background: var(--ferry-light); color: var(--ferry); }
+.tag-car { background: var(--food-light); color: var(--food); }
+.tag-ticket { background: var(--warning-light); color: var(--warning); }
+
+.booking-progress {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 16px 0;
+  border: 1px solid var(--border);
+}
+.progress-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.progress-bar { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+.progress-fill { background: var(--success); height: 100%; border-radius: 99px; transition: width 0.4s; }
+
+/* ── DAY SECTIONS ── */
+.day-section { display: none; }
+.day-section.active { display: block; }
+
+.day-header {
+  padding: 18px 16px 16px;
+  color: white;
+}
+.day-date { font-size: 11px; letter-spacing: 2px; opacity: 0.7; margin-bottom: 3px; text-transform: uppercase; }
+.day-title { font-size: 19px; font-weight: 700; line-height: 1.25; }
+.day-sub { font-size: 12px; opacity: 0.65; margin-top: 4px; }
+
+/* ── NOTE & CHECKLIST ── */
+.note {
+  margin: 12px 16px 0;
+  background: var(--card);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--accent);
+  padding: 12px 14px;
+}
+.note-title { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 7px; }
+.note-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.note-list li { font-size: 13px; color: var(--muted); line-height: 1.5; padding-left: 14px; position: relative; }
+.note-list li::before { content: '·'; position: absolute; left: 0; font-size: 18px; line-height: 1.1; color: var(--accent); }
+
+.checklist {
+  margin: 10px 16px 0;
+  background: var(--warning-light);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--warning);
+  padding: 12px 14px;
+}
+.checklist-title { font-size: 12px; font-weight: 700; color: var(--warning); margin-bottom: 7px; }
+.checklist ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.checklist li { font-size: 13px; color: #78350F; padding-left: 18px; position: relative; line-height: 1.5; }
+.checklist li::before { content: '□'; position: absolute; left: 0; font-size: 13px; color: var(--warning); }
+
+/* ── TIMELINE ── */
+.timeline { padding: 12px 16px 0; }
+.item { display: flex; }
+.item-left { width: 54px; min-width: 54px; display: flex; flex-direction: column; align-items: center; padding-top: 14px; }
+.item-time { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; white-space: nowrap; line-height: 1; }
+.item-dot { width: 13px; height: 13px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; border: 2.5px solid var(--bg); }
+.item-line { flex: 1; width: 2px; background: var(--border); margin-top: 3px; }
+.item:last-child .item-line { display: none; }
+.item-content { flex: 1; padding: 6px 0 16px 12px; }
+
+.card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 12px 14px; }
+.card-drive { background: var(--drive-light); border-color: transparent; padding: 8px 12px; }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.card-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.card-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.card-drive .card-desc { font-size: 12px; }
+
+.tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+.tag-onsen { background: var(--onsen-light); color: var(--onsen); }
+.tag-food { background: var(--food-light); color: var(--food); }
+.tag-spot { background: var(--spot-light); color: var(--spot); }
+.tag-drive { background: var(--drive-light); color: var(--drive); border: 1px solid var(--border); }
+.tag-hotel { background: var(--hotel-light); color: var(--hotel); }
+.tag-ferry { background: var(--ferry-light); color: var(--ferry); }
+.tag-night { background: #FFF7ED; color: #9A3412; }
+.tag-taxi { background: #FEF3C7; color: #92400E; }
+.tag-firework { background: var(--hotel-light); color: var(--hotel); }
+.tag-park { background: #EBF0F3; color: #5A6E7A; }
+
+.dot-onsen { background: var(--onsen); box-shadow: 0 0 0 1.5px var(--onsen); }
+.dot-food { background: var(--food); box-shadow: 0 0 0 1.5px var(--food); }
+.dot-spot { background: var(--spot); box-shadow: 0 0 0 1.5px var(--spot); }
+.dot-drive { background: var(--border); box-shadow: 0 0 0 1.5px var(--drive); }
+.dot-hotel { background: var(--hotel); box-shadow: 0 0 0 1.5px var(--hotel); }
+.dot-ferry { background: var(--ferry); box-shadow: 0 0 0 1.5px var(--ferry); }
+.dot-night { background: #EA580C; box-shadow: 0 0 0 1.5px #EA580C; }
+.dot-firework { background: var(--hotel); box-shadow: 0 0 0 1.5px var(--hotel); }
+.dot-park { background: #5A6E7A; box-shadow: 0 0 0 1.5px #5A6E7A; }
+
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 9px; padding: 7px 13px;
+  background: var(--accent); color: white;
+  border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+  text-decoration: none; -webkit-tap-highlight-color: transparent;
+}
+.nav-icon { width: 14px; height: 14px; fill: white; flex-shrink: 0; }
+
+.footer { text-align: center; font-size: 11px; color: var(--muted); padding: 20px 16px 32px; letter-spacing: 0.5px; }
+
+/* ── BOOKING SYNC BADGE ── */
+.booking-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  margin-top: 7px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.booking-badge.unbooked {
+  background: #FEF3C7; color: #92400E;
+  border: 1px dashed #D97706;
+}
+.booking-badge.booked {
+  background: var(--success-light); color: var(--success);
+  border: 1px solid #86EFAC;
+}
+
+/* Day header colors */
+.dh-0827 { background: #1A3A5C; }
+.dh-0828 { background: #1A4A3A; }
+.dh-0829 { background: #3A2A1A; }
+.dh-0830 { background: #2A1A3A; }
+.dh-0831 { background: #1A2A4A; }
+.dh-0901 { background: #1A3A4A; }
+.dh-0902 { background: #2A3A1A; }
+.dh-0903 { background: #3A1A1A; }
+.dh-0904 { background: #1A3A2A; }
+.dh-0905 { background: #2D5A8E; }
+.dh-0906 { background: #7A4A2D; }
+.dh-0907 { background: #1A4A5A; }
+.dh-0908 { background: #2A1A4A; }
+
+/* ── EDIT MODAL ── */
+.edit-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; margin-top: 7px; margin-left: 6px;
+  background: #F1F5F9; color: #64748B;
+  border: 1px solid #E2E8F0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  vertical-align: middle;
+}
+.edit-btn:active { background: #E2E8F0; }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 999;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: white; border-radius: 20px 20px 0 0;
+  padding: 20px 16px 32px; width: 100%; max-width: 500px;
+  max-height: 80vh; overflow-y: auto;
+}
+.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.modal-label { font-size: 12px; color: #64748B; margin-bottom: 4px; display: block; }
+.modal-input, .modal-textarea {
+  width: 100%; border: 1px solid #E2E8F0; border-radius: 8px;
+  padding: 9px 12px; font-size: 14px; margin-bottom: 12px;
+  font-family: inherit; background: #F8FAFC;
+}
+.modal-textarea { min-height: 80px; resize: vertical; }
+.modal-row { display: flex; gap: 8px; }
+.modal-btn {
+  flex: 1; padding: 11px; border-radius: 10px; font-size: 14px;
+  font-weight: 700; cursor: pointer; border: none;
+}
+.modal-btn-save { background: #1C1A17; color: white; }
+.modal-btn-cancel { background: #F1F5F9; color: #64748B; }
+
+.user-note {
+  margin-top: 8px; padding: 8px 10px;
+  background: #F0FDF4; border-radius: 8px; border-left: 3px solid #16A34A;
+  font-size: 12px; color: #166534; line-height: 1.6;
+}
+.user-time {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  background: #DBEAFE; color: #1E40AF;
+  padding: 2px 7px; border-radius: 4px; margin-right: 5px;
+}
+
+
+/* ── PHOTO SLOTS ── */
+.photo-section {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+}
+.photo-label {
+  font-size: 11px; color: var(--muted); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 4px;
+}
+.photo-slots { display: flex; flex-direction: column; gap: 6px; }
+.photo-slot {
+  position: relative; width: 100%;
+  background: var(--bg); border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.photo-slot:hover { border-color: var(--accent); }
+.photo-slot.has-photo { border-style: solid; border-color: var(--border); }
+.photo-slot img {
+  width: 100%; display: block;
+  max-height: 200px; object-fit: cover; border-radius: var(--radius-sm);
+}
+.photo-slot-placeholder {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 12px;
+  font-size: 12px; color: var(--muted); gap: 4px;
+  min-height: 60px;
+}
+.photo-slot-placeholder .photo-icon { font-size: 20px; }
+.photo-add-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 4px; padding: 5px 10px;
+  background: var(--bg); border: 1px dashed var(--border);
+  border-radius: 20px; font-size: 11px; color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.photo-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+.photo-delete {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.5); color: white;
+  border: none; border-radius: 50%; width: 22px; height: 22px;
+  font-size: 12px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+}
+.photo-caption-input {
+  width: 100%; border: none; border-top: 1px solid var(--border);
+  padding: 5px 8px; font-size: 11px; color: var(--muted);
+  background: var(--card); font-family: inherit;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.photo-caption-input:focus { outline: none; color: var(--text); }
+.photo-caption-input::placeholder { color: var(--border); }
+/* ── PHOTO SLOTS ── */
+.photo-section { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.photo-label { display: none; }
+.photo-slots { display: flex; flex-direction: column; gap: 6px; }
+.photo-actions-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.photo-slot { position: relative; width: 100%; background: var(--bg); border: 1.5px dashed var(--border); border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+.photo-slot:hover { border-color: var(--accent); }
+.photo-slot.has-photo { border-style: solid; cursor: default; }
+.photo-slot img { width: 100%; display: block; max-height: 200px; object-fit: cover; }
+.photo-slot-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; font-size: 12px; color: var(--muted); gap: 4px; min-height: 60px; }
+.photo-slot-placeholder .photo-icon { font-size: 22px; }
+.photo-add-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; padding: 5px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: 20px; font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: inherit; position: relative; }
+.photo-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Dropdown menu */
+.photo-add-menu {
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 0;
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 160px; overflow: hidden;
+}
+.photo-add-menu.open { display: block; }
+.photo-add-menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; font-size: 12px; color: var(--text);
+  cursor: pointer; transition: background 0.1s; border: none;
+  background: none; width: 100%; text-align: left; font-family: inherit;
+}
+.photo-add-menu-item:hover { background: var(--bg); }
+.photo-add-menu-item + .photo-add-menu-item { border-top: 1px solid var(--border); }
+
+/* Gmail link input */
+.gmail-input-row {
+  display: flex; gap: 6px; margin-top: 6px; align-items: center;
+}
+.gmail-link-input {
+  flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 6px 10px; font-size: 11px; font-family: inherit; background: var(--bg);
+}
+.gmail-link-input:focus { outline: none; border-color: var(--accent); }
+.gmail-open-btn {
+  padding: 6px 12px; background: var(--accent); color: white;
+  border: none; border-radius: var(--radius-sm); font-size: 11px;
+  cursor: pointer; white-space: nowrap; font-family: inherit;
+}
+.gmail-saved {
+  margin-top: 6px; padding: 8px 10px; background: #EFF6FF;
+  border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+  font-size: 11px; display: flex; align-items: center; gap: 8px;
+}
+.gmail-saved a { color: var(--accent); text-decoration: none; flex: 1; word-break: break-all; }
+.gmail-saved-del { cursor: pointer; color: var(--muted); font-size: 13px; flex-shrink: 0; }
+.photo-delete { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.photo-caption-input { width: 100%; border: none; border-top: 1px solid var(--border); padding: 5px 8px; font-size: 11px; color: var(--muted); background: var(--card); font-family: inherit; box-sizing: border-box; }
+.photo-caption-input:focus { outline: none; color: var(--text); }
+.photo-caption-input::placeholder { color: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="nav-title">🗾 北海道 2026</div>
+  <div class="tab-scroll">
+    <div class="tab active" onclick="switchDay('booking')">📋 預訂清單</div>
+    <div class="tab" onclick="switchDay('d0827')">8/27</div>
+    <div class="tab" onclick="switchDay('d0828')">8/28</div>
+    <div class="tab" onclick="switchDay('d0829')">8/29</div>
+    <div class="tab" onclick="switchDay('d0830')">8/30</div>
+    <div class="tab" onclick="switchDay('d0831')">8/31</div>
+    <div class="tab" onclick="switchDay('d0901')">9/1</div>
+    <div class="tab" onclick="switchDay('d0902')">9/2</div>
+    <div class="tab" onclick="switchDay('d0903')">9/3</div>
+    <div class="tab" onclick="switchDay('d0904')">9/4</div>
+    <div class="tab" onclick="switchDay('d0905')">9/5</div>
+    <div class="tab" onclick="switchDay('d0906')">9/6</div>
+    <div class="tab" onclick="switchDay('d0907')">9/7</div>
+    <div class="tab" onclick="switchDay('d0908')">9/8</div>
+  </div>
+</div>
+
+<!-- ══════════════════ BOOKING CHECKLIST ══════════════════ -->
+<div id="booking" class="booking-page active">
+  <div class="booking-header">
+    <h2>📋 預訂確認清單</h2>
+    <p>點擊項目打勾確認已完成預訂</p>
+  </div>
+
+  <div class="booking-progress">
+    <div class="progress-label">
+      <span>預訂進度</span>
+      <span id="progress-text">0 / 20</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="booking-section">
+    <div class="booking-section-title">🚗 租車</div>
+    <div class="booking-item" data-bid="car" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">Clover Car Rental</div>
+        <div class="booking-date">8/27 18:30 CTS 取車 · 訂單 1616330128601394 · PIN 7434</div>
+      </div>
+      <span class="booking-tag tag-car">租車</span>
+    </div>
+
+    <div class="booking-section-title">🏨 住宿</div>
+    <div class="booking-item" data-bid="stay_otaru" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">STAY's OTARU</div>
+        <div class="booking-date">8/27～8/29（2晚）· Booking.com · 有廚房</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_asahikawa" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">JR Inn Asahikawa</div>
+        <div class="booking-date">8/29 · IKYU.com 訂房</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_toji" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">TojiStay 東椎名</div>
+        <div class="booking-date">8/30 · 預訂編號 R278266790 · 自助 C/I</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_tabibanya" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">旅番屋 Tabi Banya</div>
+        <div class="booking-date">8/31（利尻島）· 官網訂 · 可煮飯</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_abashiri" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">ドーミーイン網走</div>
+        <div class="booking-date">9/1 · 21:00 C/I</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_shiretoko" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">知床第一ホテル</div>
+        <div class="booking-date">9/2 · Agoda</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_shibetsu" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">Mother River Stays — Stream Inn Shibetsu</div>
+        <div class="booking-date">9/3 · 20:00 C/I</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_nakamuraya" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">糠平溫泉 中村屋</div>
+        <div class="booking-date">9/4 · 22:00 前 C/I · 詢問中</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_holidayinn" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">Holiday Inn &amp; Suites 大通公園</div>
+        <div class="booking-date">9/5、9/6（2晚）· IHG</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+    <div class="booking-item" data-bid="stay_ic" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">InterContinental 札幌</div>
+        <div class="booking-date">9/7（1晚）· IHG · 15:00 C/I</div>
+      </div>
+      <span class="booking-tag tag-hotel">住宿</span>
+    </div>
+
+    <div class="booking-section-title">⛴️ 渡輪</div>
+    <div class="booking-item" data-bid="ferry_to_rishiri" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">稚內 → 利尻島 渡輪</div>
+        <div class="booking-date">8/31 11:15 → 12:55 · 7/1 購票（提前2個月）</div>
+      </div>
+      <span class="booking-tag tag-ferry">渡輪</span>
+    </div>
+    <div class="booking-item" data-bid="ferry_from_rishiri" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">利尻島 → 稚內 渡輪</div>
+        <div class="booking-date">9/1 08:25 → 10:05 · 7/2 購票（提前2個月）</div>
+      </div>
+      <span class="booking-tag tag-ferry">渡輪</span>
+    </div>
+
+    <div class="booking-section-title">🎯 活動 / 門票</div>
+    <div class="booking-item" data-bid="act_otaru_cave" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">小樽 青之洞窟 玻璃船</div>
+        <div class="booking-date">8/28 08:45 · 購票</div>
+      </div>
+      <span class="booking-tag tag-activity">活動</span>
+    </div>
+    <div class="booking-item" data-bid="act_kamuikotan" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">利尻島 神居海岸パーク 採海膽體驗</div>
+        <div class="booking-date">8/31 14:00</div>
+      </div>
+      <span class="booking-tag tag-activity">活動</span>
+    </div>
+    <div class="booking-item" data-bid="act_shiretoko_boat" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">知床觀光船 ゴジラ岩観光</div>
+        <div class="booking-date">9/3 10:15 · 知床岬路線</div>
+      </div>
+      <span class="booking-tag tag-activity">活動</span>
+    </div>
+    <div class="booking-item" data-bid="act_canoe" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">Friluftsliv 定山溪獨木舟</div>
+        <div class="booking-date">9/6 09:30 · ¥5,500 × 2人 · 官網預約</div>
+      </div>
+      <span class="booking-tag tag-activity">活動</span>
+    </div>
+
+    <div class="booking-section-title">🎆 票券</div>
+    <div class="booking-item" data-bid="ticket_hanabi" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">北海道藝術煙火 觀覧券</div>
+        <div class="booking-date">9/5 19:30 · KKday 已購</div>
+      </div>
+      <span class="booking-tag tag-ticket">票券</span>
+    </div>
+    <div class="booking-item" data-bid="ticket_parking" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">北海道藝術煙火 さとらんど第4 停車券</div>
+        <div class="booking-date">9/5 · ¥4,000 · 楽天チケット購買</div>
+      </div>
+      <span class="booking-tag tag-ticket">票券</span>
+    </div>
+  </div>
+  <div class="footer">點擊項目即可打勾確認 · 北海道 2026</div>
+</div>
+
+<!-- ══════════════════ 8/27 ══════════════════ -->
+<div id="d0827" class="day-section">
+  <div class="day-header dh-0827">
+    <div class="day-date">2026 · August 27 · Thursday · Day 1</div>
+    <div class="day-title">抵達北海道 · 小樽</div>
+    <div class="day-sub">桃園出發 → 新千歲 → 小樽</div>
+  </div>
+  <div class="note" id="note-d0827" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>班機 17:55 落地，通關約45分，預計 18:40 抵達租車櫃台</li><li>國際線租車櫃台 17:30 關閉，請直接前往國內線 1F 租車案內所</li><li>Clover Car Rental 最晚取車 21:00，有充裕時間</li><li>天狗山纜車最終搭乘時間請確認，夜間可能人少</li><li>串鳥小樽本店建議 21:00 後前往，避免尖峰排隊</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">✈️ 出發 — 桃園國際機場 T1</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">TR892 · 13:00 TPE → 17:55 CTS</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:55</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="car">
+        <div class="card-header"><div class="card-title">✈️ 抵達 — 新千歲國際機場</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">TR892 落地 · 入境後前往 Clover Car Rental 取車</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:35</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚗 取車 — Clover Car Rental</div><span class="tag tag-food">租車</span></div>
+        <div class="card-desc">訂單 1616330128601394 · PIN 7434（勿外洩）· 最晚 21:00 取車</div>
+        <div style="margin-top:8px;padding:10px 12px;background:#FEF3C7;border-radius:8px;font-size:12px;color:#78350F;line-height:1.8;">
+          <strong>📍 Clover Car Rental 取車步驟</strong><br>
+          ① 🧳 <strong>拿到行李後，先用 WeChat 聯繫店家</strong>告知已抵達，確認接車安排<br>
+          ② 國際線到著大廳在 2F，走向出口方向<br>
+          ③ 看到【<strong>許可車専用 / Permitted Vehicle Only</strong>】標誌牌，<strong>左轉離開航廈</strong>（往 95–98 號方向）<br>
+          ④ 走到室外，找到 <strong>98 號巴士候車區</strong>（標示「許可車専用」的柱子）<br>
+          ⑤ 在此等候，Clover 的 <strong>接駁巴士</strong>會來接你，工作人員會帶你取車<br>
+          <br>
+          ⚠️ <strong>你的班機 17:55 落地</strong>，通關＋行李約 45 分，預估 <strong>18:40 前後</strong>抵達 98 號候車區<br>
+          ⚠️ 最晚取車 21:00，時間充裕，不必擔心
+        </div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 小樽 · 道央自動車道＋札樽自動車道 · 87km · 車程1小時20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:45</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏨 Check-in STAY's OTARU · 放下行李</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">行李安置，馬上出發天狗山</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=STAY+OTARU+小樽市色内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>STAY's OTARU 導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 天狗山展望台 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:10</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🔭 天狗山展望台夜景</div><span class="tag tag-spot">夜景</span></div>
+        <div class="card-desc">開車上山 · 車程20分· 停留30分 · 俯瞰小樽港夜景</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=天狗山展望台+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>天狗山展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 天狗山展望台 → 串鳥 小樽本店 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">22:00</div><div class="item-dot dot-night"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍢 宵夜 — 串鳥 小樽本店</div><span class="tag tag-night">宵夜</span></div>
+        <div class="card-desc">下山車程20分· 串燒居酒屋 · 約1.5小時</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=串鳥+小樽本店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>串鳥 小樽本店</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">23:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 串鳥 → 小樽温泉 オスパ · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">23:40</div><div class="item-dot dot-onsen"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 小樽温泉 オスパ</div><span class="tag tag-onsen">泡湯</span></div>
+        <div class="card-desc">車程5分· 深夜溫泉放鬆</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽温泉オスパ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽温泉 オスパ</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 小樽温泉 オスパ → STAY's OTARU · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_otaru" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 回 STAY's OTARU</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">車程5分 · Booking.com · 有廚房 · 8/27～8/29（2晚）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=STAY+OTARU+小樽市色内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>STAY's OTARU 導航</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">8/27 · Day 1</div>
+</div>
+
+<!-- ══════════════════ 8/28 ══════════════════ -->
+<div id="d0828" class="day-section">
+  <div class="day-header dh-0828">
+    <div class="day-date">2026 · August 28 · Friday · Day 2</div>
+    <div class="day-title">小樽深度探索</div>
+    <div class="day-sub">朝市 → 青之洞窟 → 水族館 → 運河</div>
+  </div>
+  <div class="note" id="note-d0828" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>青之洞窟玻璃船請提早 15 分鐘抵達，天氣不好可能取消</li><li>LeTao、北菓楼、六花亭週末人潮多，建議平日下午前往</li><li>小樽運河夜間燈光約 19:00 點亮，是最佳拍照時機</li><li>オスパ溫泉深夜營業（到凌晨），不用急</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">6:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 鱗友朝市 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐟 鱗友朝市</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">Rin'yū Morning Market · 在地早市</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=鱗友朝市+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>鱗友朝市</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 祝津マリーナ · 車程15分 · 停車場免費（マリーナ食堂斜め向かい）</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:15</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="act_otaru_cave" style="border-color:var(--spot);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🪸 小樽 青之洞窟 玻璃船</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">集合 8:15 · 出船 30分前集合必須 · 航程約60分 · ¥5,500/人<br><br>📍 <strong>北海道小樽市祝津3-197（祝津碼頭集合）</strong>請尋找標示「藍洞接待處入口」的黃色指示牌<br>🅿️ 碼頭餐廳斜對面設有<strong>免費停車場</strong>，請使用碼頭餐廳的專用停車場<br><br>⚠️ 2025/7 起洞窟內禁止進入（落石），出發前務必確認官網最新狀況</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=祝津マリーナ+小樽市祝津3丁目197" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>祝津マリーナ</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 祝津マリーナ → 小樽水族館 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐬 小樽水族館</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">預計2小時</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽水族館" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽水族館</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:40</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 小樽水族館 → 小樽三角市場 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍱 午餐 — 小樽三角市場</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">市場食堂 / 渡海家（拉麵）/ 若鶏時代なると（北海道炸雞）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽三角市場" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>三角市場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 三角市場 → 色内1丁目パーキング · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚶 船見坂 → 舊手宮線 → 小樽運河</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">船見坂15度斜坡 · 舊手宮線散步 · 運河閒晃 · 停車：色内1丁目パーキング ¥300/3hr</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=色内1丁目パーキング+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>停車場導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">途中</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍮 甜品 &amp; 小吃</div><span class="tag tag-food">甜品</span></div>
+        <div class="card-desc">LeTao Canal Plaza（甜點）· ポプラファーム（哈密瓜冰淇淋）· 大八栗原蒲鉾店（黑輪）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=LeTao+Canal+Plaza+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>LeTao Canal Plaza</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=ポプラファーム小樽店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ポプラファーム</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=大八栗原蒲鉾店+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>大八栗原蒲鉾店</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 回 STAY's OTARU 停車 · 車程5分 · 步行逛附近商圈</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=STAY+OTARU+小樽市色内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>STAY's OTARU 導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">下午</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛍️ 購物商圈</div><span class="tag tag-spot">購物</span></div>
+        <div class="card-desc">SNOOPY Village · 六花亭（葡萄奶油夾心）· 北菓楼（十勝冰淇淋/泡芙）· LeTAO 總店 · 小樽蒸汽鐘（音樂盒）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=SNOOPY+Village+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>SNOOPY Village</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=六花亭小樽運河店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>六花亭 小樽運河店</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=北菓楼小樽本館" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>北菓楼 小樽本館</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=ルタオ本店+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>LeTAO 本店</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽オルゴール堂" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽蒸汽鐘</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">晚餐</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍜 晚餐</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">小樽拉麵 雅樂UTA（拉麵/炒飯）或 小樽蕎麦屋 籔半（蕎麥麵/炸物）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽らーめん雅楽UTA" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽拉麵 雅樂UTA</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽蕎麦屋籔半" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽蕎麦屋 籔半</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">夜間</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌙 小樽運河夜巡 · 音樂盒堂周邊</div><span class="tag tag-spot">夜間</span></div>
+        <div class="card-desc">點燈後的運河最美 · 步行範圍內</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽運河" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽運河</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽オルゴール堂" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽オルゴール堂</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 開車回停車場取車 → 小樽温泉 オスパ · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-onsen"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 小樽温泉 オスパ</div><span class="tag tag-onsen">泡湯</span></div>
+        <div class="card-desc">連續兩天泡湯</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽温泉オスパ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽温泉 オスパ</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 オスパ → STAY's OTARU · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">深夜</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_otaru" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 回 STAY's OTARU</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">8/27～8/29（2晚）· 有廚房</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=STAY's+OTARU+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>STAY's OTARU</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">8/28 · Day 2</div>
+</div>
+
+<!-- ══════════════════ 8/29 ══════════════════ -->
+<div id="d0829" class="day-section">
+  <div class="day-header dh-0829">
+    <div class="day-date">2026 · August 29 · Saturday · Day 3</div>
+    <div class="day-title">美瑛 → 旭川</div>
+    <div class="day-sub">嵐山 → 拼布之路 → 四季彩丘 → 青池</div>
+  </div>
+  <div class="note" id="note-d0829" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>龜十パン 04:00 開店，熱門商品早賣完，建議盡早買</li><li>四季彩之丘建議開車進場，範圍大，步行太累</li><li>白金青池下午光線較柔和，拍照效果最好</li><li>旭川晚餐熱門店人多，建議 18:00 前抵達</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍞 早餐 — 龜十麵包店</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">亀十パン · 04:00開 · 買來路上吃 · 另買：雷除志ん古</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=亀十パン+小樽" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>亀十パン</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 嵐山展望台 · 小樽 → 美瑛 · 車程1小時30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌄 嵐山展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">11:00 パッチワークの路 · ケンとメリーの木 · マイルドセブンの丘 · クリスマスツリーの木</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=嵐山展望台+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>嵐山展望台</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=ケンとメリーの木+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ケンとメリーの木</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=マイルドセブンの丘+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>マイルドセブンの丘</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=クリスマスツリーの木+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>クリスマスツリーの木</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 パッチワーク路巡迴結束 → Cafe Junpei · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍤 午餐 — Cafe Junpei じゅんぺい</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">最強炸蝦飯 · 11點開 · 美瑛</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Cafe+Junpei+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Cafe Junpei</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 四季彩之丘 · 車程25分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌸 四季彩之丘</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">14:00～15:30 · 彩色花田</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=四季彩の丘+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>四季彩之丘</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:40</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 白金青池 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🔵 白金青池 · 白ひげの滝</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">16:00～17:00</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=白金青池+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>白金青池</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=白ひげの滝+美瑛" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>白ひげの滝</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 旭川市區 · 車程1小時</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:10</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍛 晚餐 — 旭川</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">King bear湯咖哩 / 旭川成吉思汗 大黒屋 / 旭川らぅめん青葉 / 梅光軒 / 蜂屋 五条創業店</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Kingbear+旭川+スープカレー" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>King bear 湯咖哩</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=旭川成吉思汗大黒屋+旭川五丁目店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>成吉思汗 大黒屋</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=旭川らうめん青葉+本店+旭川" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>旭川らぅめん青葉</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=蜂屋五条創業店+旭川" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>蜂屋 五条創業店</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">C/I</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_asahikawa" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 旭川住宿 — JR Inn Asahikawa</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">IKYU.com 訂房</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=JR+Inn+Asahikawa+旭川" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>JR Inn Asahikawa 導航</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">8/29 · Day 3</div>
+</div>
+
+<!-- ══════════════════ 8/30 ══════════════════ -->
+<div id="d0830" class="day-section">
+  <div class="day-header dh-0830">
+    <div class="day-date">2026 · August 30 · Sunday · Day 4</div>
+    <div class="day-title">旭川動物園 → 羊之丘</div>
+    <div class="day-sub">動物園 → 成吉思汗羊肉 → 夕陽</div>
+  </div>
+  <div class="note" id="note-d0830" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>旭山動物園建議 10:00 開門即入，下午人潮較多</li><li>羊と雲の丘烤羊肉午餐建議預約，旺季滿座</li><li>TojiStay 自助 C/I：下載 OneStay App 並完成設定</li><li>油泉溫泉在食堂內，晚餐後可泡湯</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍳 早餐 — JR Inn Asahikawa</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">飯店內早餐</div>
+        
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 旭川動物園 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🦁 旭川動物園</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">10:00～12:00 · 路過：かぼちゃの王国（南瓜冰淇淋）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=旭川市旭山動物園" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>旭川動物園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 羊と雲の丘 · 車程1小時30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐑 羊與雲の丘 · 成吉思汗午餐</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">羊と雲の丘観光 · 13:30～15:30 · 食べ小屋はやと</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=羊と雲の丘+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>羊と雲の丘</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 豊岬金比羅神社 · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌅 夕陽 — 豊岬金比羅神社</div><span class="tag tag-spot">夕陽</span></div>
+        <div class="card-desc">Toyosaki Kompira Shrine · 🌅 <a href="https://www.timeanddate.com/sun/japan/wakkanai" target="_blank" style="color:var(--accent)">查詢當日夕陽時間</a></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=豊岬金比羅神社+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>豊岬金比羅神社</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → ふれあいセンター食堂 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:40</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍖 ふれあいセンター食堂 味彩</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">羊肉料理</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ふれあいセンター食堂+味彩+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ふれあいセンター食堂</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">C/I</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_toji" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 TojiStay 東椎名 · 預訂編號 R278266790</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">官網預定 · 自助 C/I</div>
+        <a class="nav-btn" href="https://www.onestayapp.com/s/PV4qiCn" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>自助C/I 連結</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">夜間</div><div class="item-dot dot-onsen"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 油泉温泉</div><span class="tag tag-onsen">泡湯</span></div>
+        <div class="card-desc">食堂內附設免費溫泉 · 晚餐後泡湯放鬆</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">8/30 · Day 4</div>
+</div>
+
+<!-- ══════════════════ 8/31 ══════════════════ -->
+<div id="d0831" class="day-section">
+  <div class="day-header dh-0831">
+    <div class="day-date">2026 · August 31 · Monday · Day 5</div>
+    <div class="day-title">稚內 → 利尻島</div>
+    <div class="day-sub">搭船渡海 → 採海膽體驗 → 夕陽</div>
+  </div>
+  <div class="note">
+    <div class="note-title">注意事項</div>
+    <ul class="note-list">
+      <li>找：利尻昆布醬油、利尻昆布</li>
+      <li>渡輪 40分鐘前開票，前往櫃檯 · 開車上船</li>
+      <li>Seicomart 利尻店 22:00 關，記得採買</li>
+    </ul>
+  </div>
+  <div class="note" id="note-d0831" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>⚠️ 渡輪 11:15 開船，40 分鐘前（10:35）需完成開票登船手續</li><li>利尻島 Seicomart 22:00 關門，晚上採買食材記得在關門前</li><li>利尻昆布是島上限定，在當地商店購買最便宜</li><li>旅番屋可煮飯，可在 Seicomart 買食材自炊</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌿 大規模草地 メイン広場</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">稚內副港市場早餐 09:00</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">📍 稚内市観光案内所</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">拿最北車站證明 · 站內鹽冰淇淋</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:35</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="ferry_to_rishiri" style="border-color:var(--ferry);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">⛴️ 稚內 → 利尻島</div><span class="tag tag-ferry">渡輪</span></div>
+        <div class="card-desc">11:15 → 12:55 · 40分前開票 · 開車上船 · 7/1 購票</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:15</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">☕ PORTO COFFEE · グランスポット</div><span class="tag tag-spot">休憩</span></div>
+        <div class="card-desc">聽說咖啡很好喝 · 13:15 Grandspot</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=PORTO+COFFEE+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>PORTO COFFEE</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=グランスポット+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>グランスポット</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="act_kamuikotan" style="border-color:var(--spot);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🦔 神居海岸パーク — 採海膽體驗</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">14:00～15:30 · 採海膽、開海膽 · 昆布飾品體驗</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=神居海岸パーク+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>神居海岸パーク</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌊 沼浦展望台 · ペシ岬展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">オタトマリ沼展望公園 16:00 · ペシ岬 16:45（約15~20分）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=オタトマリ沼展望公園+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>沼浦展望台</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=ペシ岬展望台+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ペシ岬展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌅 夕日ヶ丘展望台</div><span class="tag tag-spot">夕陽</span></div>
+        <div class="card-desc">日落約 18:00～18:05 · <a href="https://www.timeanddate.com/sun/japan/rishiri" target="_blank" style="color:var(--accent)">查詢當日夕陽時間</a></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=夕日ヶ丘展望台+利尻島" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>夕日ヶ丘展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">C/I</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_tabibanya" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 旅番屋 Tabi Banya</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">官網訂 · 可煮飯 · Room 302 · Code 0570 E · Seicomart 利尻店採買（22:00關）</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">8/31 · Day 5</div>
+</div>
+
+<!-- ══════════════════ 9/1 ══════════════════ -->
+<div id="d0901" class="day-section">
+  <div class="day-header dh-0901">
+    <div class="day-date">2026 · September 1 · Tuesday · Day 6</div>
+    <div class="day-title">利尻島 → 稚內 → 宗谷岬</div>
+    <div class="day-sub">搭船回 → 最北端 → 網走</div>
+  </div>
+  <div class="note">
+    <div class="note-title">注意事項</div>
+    <ul class="note-list">
+      <li>渡輪 40分前開票前往櫃檯 · 7/2 購票</li>
+      <li>宗谷岬郵局可寄信（日本最北郵局）</li>
+      <li>猿払村道エサヌカ線、ウスタイベ千畳岩可路過</li>
+      <li>フードマスターベーシック橋北店 開到 21:00</li>
+    </ul>
+  </div>
+  <div class="note" id="note-d0901" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>⚠️ 回程渡輪 08:25 開船，40 分鐘前（07:45）需完成開票登船手續</li><li>宗谷岬郵局：最北端寄信紀念，建議準備好地址</li><li>柏屋商店可蓋最北商店章，免費</li><li>加油站可拿最北加油證明（pollostation）</li><li>ドーミーイン網走 21:00 C/I，宵夜 ふか井 建議先查營業時間</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:25</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="ferry_from_rishiri" style="border-color:var(--ferry);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">⛴️ 利尻島 → 稚內</div><span class="tag tag-ferry">渡輪</span></div>
+        <div class="card-desc">08:25 → 10:05 · 40分前開票</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 稚內港 → ノシャップ水族館 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐟 稚内市立ノシャップ寒流水族館</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">10:30～12:00 · 沿岸地形動物園 · あきかわ屋（鹽味牛奶冰淇淋）· 路過稚內港北防波堤穹頂</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=稚内市立ノシャップ寒流水族館" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ノシャップ水族館</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=稚内港北防波堤ドーム" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>北防波堤穹頂</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 水族館 → 稚內市區 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍽️ 午餐 — 稚內</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">樺太食堂 / 漁師の店 · 路過最北麥當勞（マクドナルド40号稚内店）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=樺太食堂+稚内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>樺太食堂</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=漁師の店+稚内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>漁師の店</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=マクドナルド40号稚内店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>最北麥當勞</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 稚內市區 → 白い道 · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌾 風車の道 · 白い道</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">繞一圈兜風</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=白い道+稚内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>白い道</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=風車の道+稚内" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>風車の道</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 白い道 → 宗谷岬 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">📍 宗谷岬 — 日本最北端</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">宗谷岬展望台（拿證書）· 日本最北端商店 柏屋（蓋章）· pollostation宗谷岬SS（拿最北加油證明）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=宗谷岬+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>宗谷岬展望台</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=日本最北端の店柏屋+宗谷岬" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>柏屋（最北商店）</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=pollostation宗谷岬SS" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>pollostation（最北加油站）</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 宗谷岬周邊 → ホタ亭 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐄 ホタ亭 — 宗谷黑牛</div><span class="tag tag-food">晚餐/下午茶</span></div>
+        <div class="card-desc">只有這裡有的宗谷黑牛 · 定食、拉麵</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ホタ亭+宗谷岬" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ホタ亭</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 宗谷岬 → エサヌカ線入口 · 車程1小時</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛣️ 猿払村道エサヌカ線</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">全長約16km直線道路 · 地平線まで一直線 · 停留20分 · ライダーの聖地</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=猿払村道エサヌカ線+北海道猿払村" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>エサヌカ線</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 エサヌカ線 → ウスタイベ千畳岩 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:05</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🪨 ウスタイベ千畳岩</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">オホーツク海に広がる千畳岩 · 停留10分 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ウスタイベ千畳岩+浜頓別" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ウスタイベ千畳岩</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 ウスタイベ千畳岩 → ドーミーイン網走 · 車程1小時30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_abashiri" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 ドーミーイン網走</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">Booking.com · ⭐ 提供「夜鳴きそば」免費蕎麥麵 21:30～23:00</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">宵夜</div><div class="item-dot dot-night"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍜 宵夜 — Kita no ryouriya ふか井</div><span class="tag tag-night">宵夜</span></div>
+        <div class="card-desc">網走在地料理</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Kita+no+ryouriya+ふか井+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ふか井</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/1 · Day 6</div>
+</div>
+
+<!-- ══════════════════ 9/2 ══════════════════ -->
+<div id="d0902" class="day-section">
+  <div class="day-header dh-0902">
+    <div class="day-date">2026 · September 2 · Wednesday · Day 7</div>
+    <div class="day-title">網走 → 知床</div>
+    <div class="day-sub">監獄博物館 → 珊瑚草 → 知床</div>
+  </div>
+  <div class="note" id="note-d0902" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>博物館網走監獄入場費約 ¥1,500，行程安排至少 2 小時</li>
+      <li>天に続く道最佳拍攝時間：清晨或傍晚逆光效果最佳</li>
+      <li>知床第一ホテル晚餐：ラム&amp;エゾ鹿ジンギスカンBAR FOX 需預約</li>
+      <li>⚠️ 波飛沫拉麵 20:30 關，知床かに乃家 20:00 關，注意時間</li>
+      <li>Seicomart 宇登呂店記得買9/3午餐便當</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">6:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍳 早餐 — ドーミーイン網走</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">6:30開始 · 停1小時 · 和洋バイキング · 網走カニ飯・海鮮丼・約60種類</div>
+        
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:30</div><div class="item-dot dot-onsen"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 天都の湯 大浴場</div><span class="tag tag-onsen">泡湯</span></div>
+        <div class="card-desc">朝風呂 · 停30分 · 最上階9F · オホーツク海一望 · 10:00まで ✅</div>
+        
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 ドーミーイン → 博物館網走監獄 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">⛓️ 博物館網走監獄</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">09:30～10:30 · 停留1小時</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=博物館網走監獄" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>博物館網走監獄</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">途中</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🧊 鄂霍次克流冰館</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">10:40～11:40 · 停留1小時</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=オホーツク流氷館+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>鄂霍次克流冰館</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:50</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌸 フラワーガーデン はな·てんと</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">11:50～12:50 · 停留1小時</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=フラワーガーデンはなてんと+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>フラワーガーデン</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 フラワーガーデン → 網走市區 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍜 午餐 — 網走</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">そば切り温（蕎麥麵）/ らー麺こーるまん（拉麵）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=そば切り温+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>そば切り温</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=らーめんこーるまん+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>らー麺こーるまん</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">途中</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍰 甜點 — Cafe&cake FUKA · Rimo</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">Cafe&amp;cake FUKA（麵包甜點）· Rimo HOKKAIDO（冠軍義式冰淇淋）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Cafe+cake+FUKA+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Cafe&cake FUKA</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=Rimo+HOKKAIDO+網走店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Rimo HOKKAIDO</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 網走市區 → 卯原内 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌿 卯原内サンゴ草 · 能取岬 · 北浜駅</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">珊瑚草群落 · 能取岬 · 北浜駅拍照</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=卯原内サンゴ草群落地+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>卯原内サンゴ草</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=能取岬+網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>能取岬</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=北浜駅+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>北浜駅</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">途中</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍦 道の駅 流氷街道網走</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">路過吃冰 · 網走名物流冰ソフト</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=道の駅流氷街道網走" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>道の駅 流氷街道網走</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 北浜駅 → 天に続く道 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛣️ 天に続く道</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">通往天空的道路 · 停留15分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=天に続く道+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>天に続く道</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 天に続く道 → オシンコシンの滝 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:05</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">💦 オシンコシンの滝</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留15分 · 知床の名瀑 · 展望台から全景</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=オシンコシンの滝+斜里町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>オシンコシンの滝</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 オシンコシンの滝 → Yūhidai Observatory · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌅 Yūhidai Observatory（夕陽台展望台）</div><span class="tag tag-spot">夕陽</span></div>
+        <div class="card-desc">看夕陽 · 停留30分 · 9月日落約 17:40～17:50 · <a href="https://www.timeanddate.com/sun/japan/shari" target="_blank" style="color:var(--accent)">查詢當日夕陽時間</a></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=夕陽台展望台+斜里町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Yūhidai Observatory</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 天に続く道 → 知床第一ホテル · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_shiretoko" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 知床第一ホテル</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">Agoda</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床第一ホテル+斜里町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床第一ホテル</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">夜間</div><div class="item-dot dot-food"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍖 晚餐 — 知床</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">⚠️ 波飛沫拉麵 20:30關 · 知床かに乃家 20:00關</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ラムエゾ鹿ジンギスカンBAR+FOX+ウトロ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ラム&エゾ鹿 BAR FOX</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=波飛沫+ウトロ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>波飛沫</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床かに乃家+ウトロ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床かに乃家</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/2 · Day 7</div>
+</div>
+
+<!-- ══════════════════ 9/3 ══════════════════ -->
+<div id="d0903" class="day-section">
+  <div class="day-header dh-0903">
+    <div class="day-date">2026 · September 3 · Thursday · Day 8</div>
+    <div class="day-title">知床觀光船 → 知床五湖 → 知床峠</div>
+    <div class="day-sub">知床岬路線 → 五湖散步 → 峠夕陽</div>
+  </div>
+  <div class="note" id="note-d0903" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>⚠️ ゴジラ岩観光船需提前訂票，知床岬路線超人氣</li>
+      <li>知床五湖有收費步道，建議查詢當日開放狀況</li>
+      <li>知床峠展望台天氣變化快，備好外套</li>
+      <li>知床かに乃家午餐 15:00 關，觀光船結束後需快速移動</li>
+      <li>20:00 前抵達 Mother River Stays 辦理 C/I</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍳 早餐 — 知床第一ホテル</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">07:00～09:00</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:15</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" style="border-color:var(--ferry);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🚢 知床觀光船 ゴジラ岩観光</div><span class="tag tag-ferry">體驗</span></div>
+        <div class="card-desc">09:50抵達 · 出船10:15 · 知床岬路線 · 預約編號 260903204318 · <a href="https://www.ms-aurora.com/shiretoko/m/" target="_blank" style="color:var(--accent)">查詢營運狀況</a></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ゴジラ岩観光+知床" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ゴジラ岩観光</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 觀光船碼頭 → 市區 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🦀 午餐</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">知床かに乃家（開到15:00）/ Cowberry道の駅漢堡 / お食事処えぞがしま（開到16:00）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床かに乃家+斜里町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床かに乃家</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=道の駅うとろシリエトク" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Cowberry 道の駅</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">途中</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">☕ 甜點 — カフェ知床焙煎所</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">知床咖啡焙煎甜點</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=カフェ知床焙煎所" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>カフェ知床焙煎所</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 市區 → 知床五湖 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌊 知床五湖</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">步道散步，留意高架木道開放時間</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床五湖" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床五湖</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 知床五湖 → 知床峠 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏔️ 知床峠展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">17:30 · 停留20分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床峠展望台" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床峠展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 知床峠 → 知床望郷展望台 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌄 知床望郷展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留20分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=知床望郷展望台" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>知床望郷展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 望郷展望台 → ウトロ市區 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:40</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐟 晚餐 — 在地海鮮</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">ひろ瀬（在地海鮮）/ いさみ寿し（海鮮丼）/ 四季の味・いわみ（海鮮丼）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ひろ瀬+知床+斜里町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ひろ瀬</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=いさみ寿し+ウトロ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>いさみ寿し</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=四季の味いわみ+ウトロ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>四季の味・いわみ</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 ウトロ → 標津 Mother River Stays · 車程1小時30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_shibetsu" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Mother River Stays — Stream Inn Shibetsu</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">C/I</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Mother+River+Stays+Stream+Inn+Shibetsu+標津町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Mother River Stays</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">宵夜</div><div class="item-dot dot-night"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍜 宵夜</div><span class="tag tag-night">宵夜</span></div>
+        <div class="card-desc">そば処福住（蕎麥麵）/ 郷土料理武田（海鮮）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=そば処福住+標津町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>そば処福住</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=郷土料理武田+標津町" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>郷土料理武田</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/3 · Day 8</div>
+</div>
+
+<!-- ══════════════════ 9/4 ══════════════════ -->
+<div id="d0904" class="day-section">
+  <div class="day-header dh-0904">
+    <div class="day-date">2026 · September 4 · Friday · Day 9</div>
+    <div class="day-title">標津 → 野付半島 → 弟子屈 → 糠平</div>
+    <div class="day-sub">早餐 → 鮭魚館 → 拖拉機巴士 → 山本牧場 → 摩周湖 → 池の湯 → 晚餐</div>
+  </div>
+  <div class="note" id="note-d0904" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>山本牧場ミルクレーム 定休日：水曜 · 9/4 週五 ✅ · 午休 11:30～13:30，13:30才開</li>
+      <li>池の湯 混浴，建議帶水着或大毛巾</li>
+      <li>摩周湖天氣多變，帶外套備用</li>
+      <li>糠平中村屋 20:30 抵達，仍需提前電話告知（+81-1564-4-2311）</li>
+      <li>弟子屈出發前記得到全家便利店取 9/5 花火停車票</li>
+      <li>CAFE de TORY 定休日：水・木 · 9/4 週五 ✅</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:50</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🥪 早餐 — CAFE de TORY</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">車程5分· 停40分 · 7:00開 · 三明治＋烘焙點心＋咖啡</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=CAFE+de+TORY+Shibetsu+Hokkaido" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>CAFE de TORY</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 標津サーモン科学館 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🐟 標津サーモン科学館</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停1小時 · 鮭魚生態展示 · チョウザメ指パク体験</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=標津サーモン科学館" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>標津サーモン科学館</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 野付半島ネイチャーセンター · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚜 野付半島 — 拖拉機巴士</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">¥500/人 · 巴士7分抵達トドワラ · 步行回ネイチャーセンター30分 · 合計約40分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=野付半島ネイチャーセンター+別海町+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>野付半島ネイチャーセンター</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 山本牧場ミルクレーム · 車程1小時10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:20</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">⏳ 山本牧場 待機</div><span class="tag tag-spot">甜點</span></div>
+        <div class="card-desc">13:30開門 · 等10分 · 附近散步看牛</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=山本牧場ミルクレーム+中標津町+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>山本牧場ミルクレーム</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍦 山本牧場ミルクレーム</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">有機グラスフェドミルクソフトクリーム · 手焼ワッフルコーン · 停20分 · 營業至16:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=山本牧場ミルクレーム+中標津町+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>山本牧場ミルクレーム</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 摩周湖第一展望台 · 車程50分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:40</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌊 摩周湖第一展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留15分 · 世界有數の透明度を誇るカルデラ湖 · 天氣不好可略過</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=摩周湖第一展望台+弟子屈町+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>摩周湖第一展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 池の湯露天風呂 · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:20</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍑 砂湯レストハウス レタラチップ</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">吃水蜜桃冰淇淋 · 停10分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=砂湯レストハウス+弟子屈" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>砂湯レストハウス</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 砂湯 → 池の湯 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:40</div><div class="item-dot dot-onsen"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 池の湯 露天溫泉</div><span class="tag tag-onsen">免費溫泉</span></div>
+        <div class="card-desc">停40分 · 24小時 · 免費 · 直徑15m超大野湯 · 混浴可著水着 · 屈斜路湖畔森中</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=池の湯露天風呂+弟子屈町+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>池の湯露天溫泉</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 弟子屈市區 · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:50</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍜 晚餐 — 弟子屈</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">弟子屈ラーメン総本店 / くまうし弟子屈本店（肉丼飯）· 停1小時10分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=弟子屈ラーメン+弟子屈総本店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>弟子屈ラーメン</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 糠平溫泉 中村屋 · 車程2小時30分· 國道241号</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:30</div><div class="item-dot dot-onsen"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_nakamuraya" style="border-color:var(--onsen);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨♨️ 糠平溫泉 中村屋</div><span class="tag tag-onsen">住宿</span></div>
+        <div class="card-desc">C/I 9點前 ✅ · 20:30抵達 · 已去信詢問大浴場和溫泉使用時間，等待回覆 · 電話：+81-1564-4-2311</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=糠平温泉+中村屋" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>糠平温泉 中村屋</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/4 · Day 9</div>
+</div>
+
+<!-- ══════════════════ 9/5 ══════════════════ -->
+<div id="d0905" class="day-section">
+  <div class="day-header dh-0905">
+    <div class="day-date">2026 · September 5 · Saturday · Day 10</div>
+    <div class="day-title">三國峠 → 富良野 → 藝術花火</div>
+    <div class="day-sub">三國峠 → 果醬園 → 富田農場 → 晚餐 → 煙火</div>
+  </div>
+  <div class="note">
+    <div class="note-title">注意事項</div>
+    <ul class="note-list">
+      <li>進場後無法再出場，請在唯我独尊吃飽再入場</li>
+      <li>下雨時禁止撐傘，請準備雨衣（カッパ）</li>
+      <li>9/4 弟子屈出發前於全家便利店取停車票</li>
+      <li>18:00後入庫可能趕不上花火，務必提早抵達</li>
+      <li>惡劣天氣取消，請當日 12:00 前確認官方 SNS</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">早餐 — 糠平温泉 中村屋</div><span class="tag tag-onsen">溫泉旅館</span></div>
+        <div class="card-desc">在地有機食材自助早餐</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:30</div><div class="item-dot dot-onsen"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">♨️ 泡溫泉後退房</div><span class="tag tag-onsen">源泉掛流</span></div>
+        <div class="card-desc">大浴場＋露天風呂約45分 · Check-out 10:30前</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 三國峠觀景台 · 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:40</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏔️ 三國峠觀景台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">北海道最高國道展望台 · 停留30分 · 車程20分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=43.5787894,143.1289033" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>三國峠觀景台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive"><div class="card-desc">🚗 出發 → 富良野果醬園 · 車程2小時</div></div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:05</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🫙 富良野果醬園（共濟農場）</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留30分 · 營業 10:00〜16:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=43.3053273,142.5640713" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>富良野果醬園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:35</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive"><div class="card-desc">🚗 出發 → 富田農場 · 車程35分</div></div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:10</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌸 富田農場</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留1小時，逛花田＋買伴手禮</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=43.4182493,142.4280407" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>富田農場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive"><div class="card-desc">🚗 出發 → 唯我独尊 · 車程20分</div></div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍛 晚餐 — 唯我独尊</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">富良野咖哩名店 · 約1小時 · 營業至21:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=43.344792,142.3894602" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>唯我独尊</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive"><div class="card-desc">🚗 出發 → さとらんど第4停車場 · 車程2小時</div></div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-park"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="ticket_parking">
+        <div class="card-header"><div class="card-title">🅿️ 停車入庫 — さとらんど第4</div><span class="tag tag-park">停車</span></div>
+        <div class="card-desc">¥4,000 · 17:00入庫開始 · 18:00後可能趕不上花火！</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=さとらんど第4駐車場+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>さとらんど第4 停車場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:50</div><div class="item-dot dot-park"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">步行進場（南ゲート）</div><span class="tag tag-park">步行</span></div>
+        <div class="card-desc">步行約20分 · 進場後不可再出場</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=モエレ沼公園+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>モエレ沼公園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:30</div><div class="item-dot dot-firework"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="ticket_hanabi" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🎆 北海道藝術煙火 開演！</div><span class="tag tag-firework">花火</span></div>
+        <div class="card-desc">開演 19:30 · 結束約 20:30 · 惡劣天氣取消</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🎆 煙火散場 → 返回停車場</div><span class="tag tag-drive">結束</span></div>
+        <div class="card-desc">依指示段階性退場 · 步行約20分回さとらんど第4取車 · 車程20分回 Holiday Inn</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">22:00</div><div class="item-dot dot-onsen"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_holidayinn" style="border-color:var(--onsen);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Holiday Inn &amp; Suites 大通公園</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">車程20分· 停車¥2,000/晚 · 頂樓大浴場＋桑拿 · Check-out 11:00</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Holiday+Inn+Suites+Sapporo+Odori+Park" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Holiday Inn & Suites</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/5 · Day 10</div>
+</div>
+
+<!-- ══════════════════ 9/6 ══════════════════ -->
+<div id="d0906" class="day-section">
+  <div class="day-header dh-0906">
+    <div class="day-date">2026 · September 6 · Sunday · Day 11</div>
+    <div class="day-title">定山溪獨木舟 → 真狩 → 洞爺湖 → 有珠山</div>
+    <div class="day-sub">獨木舟 → 午餐 → 羊蹄山 → 豆腐工房 → サイロ → 浮見堂 → 有珠山 → アルコ → Sato</div>
+  </div>
+  <div class="note" style="border-left-color:#2D5A8E;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>Friluftsliv 獨木舟需提前網路預約，9月紅葉期間非常搶手</li>
+      <li>有珠山ロープウェイ最終下行 17:45 ⚠️ 16:25下山充分緩衝</li>
+      <li>真狩豆腐工房 9:00～18:00 ✅</li>
+      <li>サイロ展望台 8:30～18:00 ✅</li>
+      <li>アルコ座位極少（約6席）週日開 ✅ · 務必提前電話預約：+81 11-221-7923</li>
+      <li>食堂 いち 營業到15:00，11:30結束獨木舟後直接上樓 ✅</li>
+    </ul>
+  </div>
+  <div class="checklist">
+    <div class="checklist-title">🎒 出門前請確認攜帶</div>
+    <ul>
+      <li>換洗衣物（獨木舟結束後更換）</li>
+      <li>毛巾（獨木舟用，Friluftsliv 更衣室使用）</li>
+      <li>可弄濕的鞋子或有鞋跟的涼鞋（禁止穿 Crocs 洞洞鞋）</li>
+      <li>防水袋（手機用）</li>
+      <li>雨衣或速乾外套</li>
+      <li>💴 現金 ¥11,000（獨木舟費用 ¥5,500 × 2人）</li>
+      <li>💴 有珠山ロープウェイ往復 ¥1,800 × 2人 = ¥3,600</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍳 早餐 — Holiday Inn &amp; Suites</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">飯店內早餐 · 約35分，7:40前離開房間</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 從 Holiday Inn 停車場取車出發 → 定山溪 · 車程50分 · 行李留飯店</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:40</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">集合 — Friluftsliv（フリルフスリフ）</div><span class="tag tag-spot">集合</span></div>
+        <div class="card-desc">埜のてらす 定山渓温泉西4丁目371 · 8:40抵達 · 9:15集合，9:30開始</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=42.965711,141.159299" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Friluftsliv 集合地</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="act_canoe" style="border-color:var(--spot);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🛶 定山溪秋季獨木舟</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">所要時間約120分 · ¥5,500/人 · 秋楓紅葉渓谷景色 · 雨天決行</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍽️ 午餐 — 食堂 いち（埜のてらす 2F）</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">獨木舟結束直接上樓 · 炭火和食×法式融合 · 北海道食材 · 停1小時 · 11:00～15:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=食堂いち+定山渓+埜のてらす" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>食堂 いち</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 真狩川河川公園 · 車程30分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏔️ 真狩川河川公園駐車場</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留20分 · 拍羊蹄山「蝦夷富士」全景 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=真狩川河川公園+真狩村" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>真狩川河川公園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 喜茂別直線道路 · 車程25分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:15</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛣️ 喜茂別直線道路</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留10分 · 道路正對羊蹄山「蝦夷富士」震撼構圖 · 路邊停車拍照即可 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=42.8110,140.9690" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>喜茂別直線道路</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:25</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 湧水の里 真狩豆腐工房 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:40</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍮 湧水の里 真狩豆腐工房</div><span class="tag tag-food">下午茶</span></div>
+        <div class="card-desc">停留15分 · 豆腐プリン・豆乳ドーナツ · ⭐4.2 · 9:00～18:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=湧水の里+真狩豆腐工房" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>真狩豆腐工房</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:55</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 真狩神社 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">⛩️ 真狩神社</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留10分 · 羊蹄山を御神体とする神社 · 境内から羊蹄山の絶景 · 縁結びの神様 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=真狩神社+真狩村+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>真狩神社</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → サイロ展望台 · 車程25分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:35</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌅 サイロ展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留15分 · 洞爺湖＋羊蹄山全景 · ⭐4.2 · 8:30～18:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=サイロ展望台+洞爺湖" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>サイロ展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 浮見堂 · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🪵 浮見堂</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留30分 · 洞爺湖畔木頭椅子拍照 · ⭐4.4 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=浮見堂+洞爺湖" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>浮見堂</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 昭和新山駅（有珠山ロープウェイ）· 車程20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:50</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚡 有珠山ロープウェイ 搭乘</div><span class="tag tag-ferry">纜車</span></div>
+        <div class="card-desc">往復 ¥1,800/人 · 片道6分 · 每15分一班 · ⚠️ 最終下行 17:45</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=昭和新山ロープウェイ駅" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>昭和新山駅導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏔️ 有珠山洞爺湖展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留10分 · 洞爺湖火山全景 · 免費入場</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=有珠山洞爺湖展望台" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>有珠山洞爺湖展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:10</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌋 有珠山火口原展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">步行 · 停留10分 · 火山口近距離觀察</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=有珠山火口原展望台" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>有珠山火口原展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:25</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚡 有珠山ロープウェイ 下山</div><span class="tag tag-ferry">纜車</span></div>
+        <div class="card-desc">最終下行17:45 · 16:25搭乘，充裕緩衝 ✅</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:35</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 札幌 Holiday Inn · 車程1小時30分 · 国道230号中山峠経由</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:10</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🅿️ Holiday Inn 停車</div><span class="tag tag-park">停車</span></div>
+        <div class="card-desc">停妥後步行出發 → アルコ · 步行約20分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍖 晚餐 — ジンギスカン アルコ</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">步行20分 · 狸小路7丁目隱藏名店 · 開至21:00 ✅ · ⚠️ 座位6席，務必提前預約 +81 11-221-7923</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ジンギスカンアルコ+南3条西7丁目+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ジンギスカン アルコ</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" style="border-color:var(--food);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🍨 パフェ、珈琲、酒、佐藤</div><span class="tag tag-food">締めパフェ</span></div>
+        <div class="card-desc">步行5分 · 南1西2 · 週日到凌晨00:00 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=パフェ珈琲酒佐藤+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>パフェ、珈琲、酒、佐藤</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:30</div><div class="item-dot dot-onsen"></div></div>
+      <div class="item-content"><div class="card" style="border-color:var(--onsen);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 步行回 Holiday Inn &amp; Suites 大通公園</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">步行約10分 · 頂樓大浴場＋桑拿 · Check-out 11:00</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Holiday+Inn+Suites+Sapporo+Odori+Park" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Holiday Inn & Suites</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/6 · Day 11 · 北海道 2026</div>
+</div>
+
+
+<script>
+function switchDay(id) {
+  document.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  const ids = ['booking','d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
+  const idx = ids.indexOf(id);
+  const tabs = document.querySelectorAll('.tab');
+  if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Toggle from booking checklist
+function toggleBooking(el) {
+  el.classList.toggle('done');
+  const bid = el.dataset.bid;
+  if (bid) syncBadges(bid, el.classList.contains('done'));
+  updateProgress();
+  saveProgress();
+}
+
+// Toggle from day card badge
+function toggleFromBadge(bid) {
+  const bookingItem = document.querySelector(`.booking-item[data-bid="${bid}"]`);
+  if (bookingItem) {
+    bookingItem.classList.toggle('done');
+    syncBadges(bid, bookingItem.classList.contains('done'));
+    updateProgress();
+    saveProgress();
+  }
+}
+
+// Sync all badges with given bid
+function syncBadges(bid, isDone) {
+  document.querySelectorAll(`.booking-badge[data-bid="${bid}"]`).forEach(badge => {
+    if (isDone) {
+      badge.className = 'booking-badge booked';
+      badge.innerHTML = '✅ 已預訂';
+    } else {
+      badge.className = 'booking-badge unbooked';
+      badge.innerHTML = '⬜ 未預訂';
+    }
+  });
+}
+
+function updateProgress() {
+  const items = document.querySelectorAll('.booking-item');
+  const done = document.querySelectorAll('.booking-item.done').length;
+  const total = items.length;
+  document.getElementById('progress-text').textContent = done + ' / ' + total;
+  document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
+}
+
+function saveProgress() {
+  const items = document.querySelectorAll('.booking-item');
+  const state = {};
+  items.forEach(i => { if (i.dataset.bid) state[i.dataset.bid] = i.classList.contains('done'); });
+  try { localStorage.setItem('booking_v2', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const state = JSON.parse(localStorage.getItem('booking_v2') || '{}');
+    Object.entries(state).forEach(([bid, done]) => {
+      if (done) {
+        const item = document.querySelector(`.booking-item[data-bid="${bid}"]`);
+        if (item) {
+          item.classList.add('done');
+          syncBadges(bid, true);
+        }
+      }
+    });
+  } catch(e) {}
+  updateProgress();
+}
+
+// Inject booking badges into day cards
+function injectBadges() {
+  document.querySelectorAll('[data-sync]').forEach(card => {
+    const bid = card.dataset.sync;
+    // Check if badge already exists
+    if (card.querySelector('.booking-badge')) return;
+    const bookingItem = document.querySelector(`.booking-item[data-bid="${bid}"]`);
+    if (!bookingItem) return;
+    const isDone = bookingItem.classList.contains('done');
+    const badge = document.createElement('div');
+    badge.className = `booking-badge ${isDone ? 'booked' : 'unbooked'}`;
+    badge.dataset.bid = bid;
+    badge.innerHTML = isDone ? '✅ 已預訂' : '⬜ 未預訂';
+    badge.onclick = () => toggleFromBadge(bid);
+    card.appendChild(badge);
+  });
+}
+
+loadProgress();
+injectBadges();
+</script>
+
+<!-- ══════════════════ 9/7 ══════════════════ -->
+<div id="d0907" class="day-section">
+  <div class="day-header dh-0907">
+    <div class="day-date">2026 · September 7 · Monday · Day 12</div>
+    <div class="day-title">AOAO水族館 → 札幌市區 → 洲際 C/I</div>
+    <div class="day-sub">早餐 → AOAO → 退房 → 大通 → 時計台 → 大丸 → 六花亭 → C/I 洲際</div>
+  </div>
+  <div class="note" style="border-left-color:#1A4A5A;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>SNOW CHEESE 10:00開店，中午前就可能全部售完 · 沒有排隊 = 已售完</li>
+      <li>六花亭札幌本店 2F咖啡廳 10:00～17:30 ✅ · 週一開 ✅</li>
+      <li>時計台 9:00～17:10 · 週一開 ✅ · ¥350</li>
+      <li>JRタワー展望室T38 受付在6F，搭專用電梯上38F · ¥1,000</li>
+      <li>Holiday Inn 延退（Late Check-out）請提前向前台申請</li>
+      <li>InterContinental 15:00 C/I · 行李可提前寄存</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">7:45</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 從 Holiday Inn 出發 → ROJIURA Café · 步行15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">8:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🥞 早餐 — ROJIURA Café</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">步行15分從 Holiday Inn · 8:00開 ✅ · 週日到凌晨 · 法式吐司・焦糖鬆餅・咖啡 · ⭐4.2</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ROJIURA+Cafe+札幌+南6西3" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ROJIURA Café</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 步行 → AOAO SAPPORO · 步行5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" style="border-color:var(--spot);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🐟 AOAO SAPPORO</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">moyuk SAPPORO 4～6F · ¥2,200/人 · 停1.5小時 · 北岩跳企鵝・數位藝術・水循環實驗室 · 10:00開 ✅</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=AOAO+SAPPORO+moyuk+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>AOAO SAPPORO</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍽️ 午餐</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">AOAO 步行5分圈內 · 待確認</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:40</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 步行 → Holiday Inn · 步行10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:50</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏨 延退退房 · 取車</div><span class="tag tag-hotel">退房</span></div>
+        <div class="card-desc">Late Check-out（需提前申請）· 收拾行李 · 停車場取車</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Holiday+Inn+Suites+Sapporo+Odori+Park" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Holiday Inn & Suites</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 開車 → InterContinental 札幌 · 車程15分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:30</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏨 行李寄存 — InterContinental 札幌</div><span class="tag tag-hotel">寄存</span></div>
+        <div class="card-desc">15:00 正式 C/I · 先寄存行李輕裝出發 · 搭地鐵至大通</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=InterContinental+Sapporo+南10西1" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>InterContinental 札幌</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:40</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚇 中島公園駅 → 大通駅 · 2站 · ¥210 · 5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:50</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌸 大通公園散步</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留20分 · 大通公園 1〜12丁目 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=大通公園+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>大通公園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 步行 → 時計台 · 步行10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:20</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🕰️ 札幌市時計台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留20分 · ¥350 · 9:00～17:10 ✅ · 週一開 ✅ · 明治11年建造，國家重要文化財</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=札幌市時計台" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>札幌市時計台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:40</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 步行 → 大丸札幌 · 步行10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:50</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🎮 Pokémon Center Sapporo · 🗼 JRタワー展望室 T38</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">
+          🎮 <strong>Pokémon Center</strong>：大丸 8F レストラン街奥 · 週一開 ✅<br>
+          🗼 <strong>JRタワー T38</strong>：受付 6F → 専用電梯上 38F · ¥1,000 · 高160m 360° 全景<br>
+          🧀 <strong>SNOW CHEESE</strong>：大丸 B1F「ほっぺタウン」· 人少才進去 · ⚠️ 10:00開，中午前易售完
+        </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=大丸札幌店" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>大丸札幌 / Pokémon Center</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=JRタワー展望室T38+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>JRタワー展望室 T38</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:50</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚶 步行 → 六花亭札幌本店 · 步行5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍰 六花亭 札幌本店</div><span class="tag tag-food">甜點</span></div>
+        <div class="card-desc">2F 咖啡廳 · 北4西6 · 10:00～17:30 ✅ · 週一開 ✅ · マルセイバターサンド・チーズケーキ</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=六花亭+札幌本店+北4西6" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>六花亭 札幌本店</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚕 計程車 → InterContinental 札幌 · 車程15分 · 約¥800～</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:50</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-sync="stay_ic" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — InterContinental 札幌</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">15:00 C/I ✅ · 室內泳池・Club Lounge（14F）· 42㎡以上</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=InterContinental+Sapporo+南10西1" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>InterContinental 札幌</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">晚餐</div><div class="item-dot dot-food"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍖 晚餐</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">成吉思汗だるま 本店（南5西4 · 17:00開）/ 旭川成吉思汗 大黒屋（南5西5 · 17:00開）/ 麺屋雪風 薄野本店（18:00開）/ 飯店 SAWAKA 懷石</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=成吉思汗だるま+本店+南5西4+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>だるま 本店</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=旭川成吉思汗大黒屋+札幌薄野" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>大黒屋 薄野店</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=麺屋雪風+すすきの本店+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>麺屋雪風 薄野本店</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/7 · Day 12</div>
+</div>
+
+
+
+<!-- ══════════════════ 9/8 ══════════════════ -->
+<div id="d0908" class="day-section">
+  <div class="day-header dh-0908">
+    <div class="day-date">2026 · September 8 · Tuesday · Day 13</div>
+    <div class="day-title">中島公園 → 支笏湖 → 新千歲 ✈️</div>
+    <div class="day-sub">早餐 → 中島公園 → 支笏湖 → 還車 → 飛台灣</div>
+  </div>
+  <div class="note" style="border-left-color:#2A1A4A;margin-top:12px;">
+    <div class="note-title">⚠️ 當天注意事項</div>
+    <ul class="note-list">
+      <li>19:15 國際線起飛 · 建議 16:45 前抵達機場</li>
+      <li>還車時間 16:00 前 · 15:10 從支笏湖出發</li>
+      <li>Smooch Cafe 週六日 8:00開，週一～五 10:00開 · 9/8 週二 ⚠️ 10:00才開</li>
+      <li>中島公園步道一圈約30分，適合飯後散步</li>
+      <li>支笏湖 9月水溫約15°C，湖邊散步涼爽</li>
+    </ul>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">早餐</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍳 早餐（二選一）</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">
+          <strong>① 洲際 AuBlanc 早餐</strong>：館內全日餐廳 · 現烤麵包＋北海道食材 · 慢慢享用到9點<br><br>
+          <strong>② Smooch Cafe</strong>：步行5分 · 週二 10:00開 ⚠️（稍晚）· 中島公園窗景 · 手沖咖啡＋三明治
+        </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Smooch+Coffee+Stand+南11条西1+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Smooch Cafe</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">9:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🌳 中島公園 晨走</div><span class="tag tag-spot">散步</span></div>
+        <div class="card-desc">步行5分 · 停留30分 · 豊平館（明治時代迎賓館）· 菖蒲池 · 幌平橋展望 · 幾乎沒有觀光客</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=中島公園+札幌市" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>中島公園</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 InterContinental 取車 → 出發 → 支笏湖 · 国道453号 · 車程1小時</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:10</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🗻 支笏湖展望台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留10分 · 支笏湖＋周邊山景全覧 · 免費停車場あり · フォトスポット</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=支笏湖展望台+千歳市" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>支笏湖展望台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:25</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 展望台 → 支笏湖温泉街 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🏞️ 支笏湖温泉街 · 山線鉄橋</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">停留20分 · 支笏湖ブルー透明度日本2位 · 湖畔散步 · 山線鉄橋（明治32年古橋，土木遺産）· 9月紅葉開始 · 免費</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=支笏湖+千歳市+北海道" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>支笏湖温泉街</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=山線鉄橋+千歳市" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>山線鉄橋</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:55</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 温泉街 → モーラップ · 車程10分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:05</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">📸 水中廢線鐵軌 拍照點（モーラップ）</div><span class="tag tag-spot">拍照點</span></div>
+        <div class="card-desc">停留15分 · 圖中拍照點 · 舊米軍水上訓練所遺跡 · モーラップ第一駐車場停車後沿湖岸步行 · 鐵軌延伸入透明湖面 · ⚠️ 無標示，需沿湖岸仔細尋找</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=42.7425,141.4058" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>モーラップ第一駐車場（免費）</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=42.7425,141.4082" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>モーラップ 廢線鐵軌</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:20</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 モーラップ → ポロピナイ食堂 · 車程5分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:10</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍽️ 午餐 — 支笏湖畔</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">ポロピナイ食堂（湖畔・チップ鱒フライ定食）/ 支笏湖温泉街の食堂 · 最後の北海道グルメ</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ポロピナイ食堂+支笏湖" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ポロピナイ食堂</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:10</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 出發 → 新千歲空港（還車）· 道道16号 · 車程50分</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚗 還車 — 新千歲空港</div><span class="tag tag-park">還車</span></div>
+        <div class="card-desc">16:00前還車 ✅ · 辦理還車手續後搭接駁巴士至航廈</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛍️ 新千歲空港 最後購物</div><span class="tag tag-spot">購物</span></div>
+        <div class="card-desc">北海道限定伴手禮 · 空港ラーメン道場 · ロイズチョコレート · 白い恋人 · 花畑牧場</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=新千歳空港+千歳市" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>新千歲空港</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:45</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">✈️ 辦理登機 / 國際線安檢</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">建議提早到 · 國際線出發大廳 · 起飛前至少2.5小時抵達</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:15</div><div class="item-dot dot-ferry"></div></div>
+      <div class="item-content"><div class="card" style="border-color:var(--ferry);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">✈️ 起飛 — CTS → TPE</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">新千歲 → 桃園 · 北海道旅行圓滿結束！お疲れ様でした 🎉</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">9/8 · Day 13 · 北海道 2026</div>
+</div>
+
+
+<!-- ── EDIT MODAL ── -->
+<div class="modal-overlay" id="edit-modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">✏️ 編輯行程備註</div>
+    <input type="hidden" id="edit-key">
+    <label class="modal-label">修改時間（選填）</label>
+    <input class="modal-input" id="edit-time" type="text" placeholder="例：09:30">
+    <label class="modal-label">備註內容</label>
+    <textarea class="modal-textarea" id="edit-note" placeholder="輸入備註，例：需要預約、注意事項..."></textarea>
+    <div class="modal-row">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+      <button class="modal-btn modal-btn-save" onclick="saveEdit()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script id="edit-script">
+// Inject edit buttons into all cards in day sections
+function injectEditButtons() {
+  document.querySelectorAll('.day-section .item-content .card:not(.card-drive)').forEach((card, idx) => {
+    if (card.querySelector('.edit-btn')) return;
+    const daySection = card.closest('.day-section');
+    const dayId = daySection ? daySection.id : 'unknown';
+    const key = dayId + '_card_' + idx;
+    card.dataset.editKey = key;
+
+    const btn = document.createElement('button');
+    btn.className = 'edit-btn';
+    btn.dataset.key = key;
+    btn.innerHTML = '✏️ 編輯';
+    btn.onclick = (e) => { e.stopPropagation(); openModal(key, card); };
+    card.appendChild(btn);
+
+    // Show saved note if exists
+    renderNote(card, key);
+  });
+}
+
+function openModal(key, card) {
+  const saved = getUserData(key) || {};
+  document.getElementById('edit-key').value = key;
+  document.getElementById('edit-time').value = saved.time || '';
+  document.getElementById('edit-note').value = saved.note || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('edit-modal')) {
+    document.getElementById('edit-modal').classList.remove('open');
+  }
+}
+
+function saveEdit() {
+  const key = document.getElementById('edit-key').value;
+  const time = document.getElementById('edit-time').value.trim();
+  const note = document.getElementById('edit-note').value.trim();
+  
+  const allData = getUserAllData();
+  if (time || note) {
+    allData[key] = { time, note };
+  } else {
+    delete allData[key];
+  }
+  saveUserAllData(allData);
+  
+  // Re-render note on card
+  const card = document.querySelector(`[data-edit-key="${key}"]`);
+  if (card) renderNote(card, key);
+  
+  closeModal();
+}
+
+function renderNote(card, key) {
+  const existing = card.querySelector('.user-note');
+  if (existing) existing.remove();
+  const saved = getUserData(key);
+  if (saved && (saved.time || saved.note)) {
+    const div = document.createElement('div');
+    div.className = 'user-note';
+    div.innerHTML = (saved.time ? `<span class="user-time">${saved.time}</span>` : '') + 
+                    (saved.note ? saved.note.replace(/\n/g, '<br>') : '');
+    const editBtn = card.querySelector('.edit-btn');
+    if (editBtn) card.insertBefore(div, editBtn);
+    else card.appendChild(div);
+  }
+}
+
+function getUserData(key) {
+  try { return (JSON.parse(localStorage.getItem('user_edits') || '{}'))[key]; } catch(e) { return null; }
+}
+function getUserAllData() {
+  try { return JSON.parse(localStorage.getItem('user_edits') || '{}'); } catch(e) { return {}; }
+}
+function saveUserAllData(data) {
+  try { localStorage.setItem('user_edits', JSON.stringify(data)); } catch(e) {}
+}
+
+// Init
+injectEditButtons();
+
+
+// ── PHOTO SYSTEM ──
+const MAX_PHOTOS = 3;
+
+function initPhotoSections() {
+  document.querySelectorAll('.day-section .item-content .card:not(.card-drive)').forEach((card, idx) => {
+    if (card.querySelector('.photo-section')) return;
+    const daySection = card.closest('.day-section');
+    const dayId = daySection ? daySection.id : 'unknown';
+    const key = `photo_${dayId}_${idx}`;
+
+    const section = document.createElement('div');
+    section.className = 'photo-section';
+    section.dataset.key = key;
+
+    const slotsDiv = document.createElement('div');
+    slotsDiv.className = 'photo-slots';
+    section.appendChild(slotsDiv);
+
+    // Gmail saved links container
+    const gmailDiv = document.createElement('div');
+    gmailDiv.className = 'gmail-slots';
+    gmailDiv.dataset.key = key;
+    section.appendChild(gmailDiv);
+
+    // Actions row
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'photo-actions-row';
+
+    // Add button with dropdown
+    const addBtn = document.createElement('button');
+    addBtn.className = 'photo-add-btn';
+    addBtn.textContent = '＋ 新增';
+
+    const menu = document.createElement('div');
+    menu.className = 'photo-add-menu';
+    menu.innerHTML = `
+      <button class="photo-add-menu-item" data-type="photo">📷 照片</button>
+      <button class="photo-add-menu-item" data-type="pdf">📄 PDF / 文件</button>
+      <button class="photo-add-menu-item" data-type="gmail">📧 Gmail 連結</button>`;
+    addBtn.appendChild(menu);
+
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menu.classList.remove('open'));
+
+    menu.querySelectorAll('.photo-add-menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('open');
+        const type = item.dataset.type;
+        if (type === 'photo' || type === 'pdf') {
+          addFileSlot(section, type === 'pdf' ? 'application/pdf,*' : 'image/*', type);
+        } else if (type === 'gmail') {
+          addGmailSlot(section);
+        }
+      });
+    });
+
+    actionsRow.appendChild(addBtn);
+
+    // Move edit-btn into actions row
+    const editBtn = card.querySelector('.edit-btn');
+    if (editBtn) actionsRow.appendChild(editBtn);
+
+    section.appendChild(actionsRow);
+    card.appendChild(section);
+
+    // Load saved data
+    loadPhotos(key, slotsDiv, addBtn);
+    loadGmailLinks(key, gmailDiv);
+  });
+}
+
+function addFileSlot(section, accept, type) {
+  const slots = section.querySelector('.photo-slots');
+  const count = slots.querySelectorAll('.photo-slot').length;
+  if (count >= MAX_PHOTOS) return;
+  const key = section.dataset.key;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = accept;
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot has-photo';
+      if (type === 'pdf') {
+        slot.innerHTML = `
+          <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;background:#FEF3C7;border-radius:var(--radius-sm);">
+            <span style="font-size:20px;">📄</span>
+            <span style="font-size:12px;flex:1;word-break:break-all;">${file.name}</span>
+          </div>
+          <input class="photo-caption-input" placeholder="備註說明（選填）">
+          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+        // Store as data URL for PDF
+        slot.dataset.src = ev.target.result;
+        slot.dataset.filename = file.name;
+      } else {
+        slot.innerHTML = `
+          <img src="${ev.target.result}" alt="照片">
+          <input class="photo-caption-input" placeholder="備註說明（選填）">
+          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+        slot.dataset.src = ev.target.result;
+      }
+      slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
+      slots.appendChild(slot);
+      updateAddBtn(section);
+      savePhotos(key, section);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function addGmailSlot(section) {
+  const key = section.dataset.key;
+  const gmailDiv = section.querySelector('.gmail-slots');
+
+  // Show input row
+  const row = document.createElement('div');
+  row.className = 'gmail-input-row';
+  row.innerHTML = `
+    <input class="gmail-link-input" placeholder="貼上 Gmail 郵件連結...">
+    <button class="gmail-open-btn">儲存</button>`;
+  gmailDiv.appendChild(row);
+
+  const input = row.querySelector('.gmail-link-input');
+  const saveBtn = row.querySelector('.gmail-open-btn');
+  input.focus();
+
+  saveBtn.onclick = () => {
+    const url = input.value.trim();
+    if (!url) return;
+    row.remove();
+    renderGmailLink(gmailDiv, url, key);
+    saveGmailLinks(key, gmailDiv);
+  };
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') saveBtn.click(); });
+}
+
+function renderGmailLink(container, url, key) {
+  const div = document.createElement('div');
+  div.className = 'gmail-saved';
+  div.innerHTML = `<span>📧</span><a href="${url}" target="_blank">開啟 Gmail 郵件</a><span class="gmail-saved-del" onclick="this.parentElement.remove();saveGmailLinks('${key}',this.closest('.gmail-slots'))">✕</span>`;
+  container.appendChild(div);
+}
+
+function saveGmailLinks(key, container) {
+  const links = Array.from(container.querySelectorAll('.gmail-saved a')).map(a => a.href);
+  try { localStorage.setItem('gmail_' + key, JSON.stringify(links)); } catch(e) {}
+}
+
+function loadGmailLinks(key, container) {
+  try {
+    const links = JSON.parse(localStorage.getItem('gmail_' + key) || '[]');
+    links.forEach(url => renderGmailLink(container, url, key));
+  } catch(e) {}
+}
+
+function addPhotoSlot(section, savedData) {
+  if (typeof section === 'object' && section.classList && section.classList.contains('photo-add-btn')) {
+    section = section.closest('.photo-section');
+  }
+  const slots = section.querySelector('.photo-slots');
+  const btn = section.querySelector('.photo-add-btn');
+  const key = section.dataset.key;
+  const count = slots.querySelectorAll('.photo-slot').length;
+  if (count >= MAX_PHOTOS) { btn.style.display = 'none'; return; }
+
+  const slot = document.createElement('div');
+  slot.className = 'photo-slot';
+  const slotIdx = count;
+
+  if (savedData) {
+    slot.classList.add('has-photo');
+    slot.innerHTML = `
+      <img src="${savedData.src}" alt="機位${slotIdx+1}">
+      <input class="photo-caption-input" placeholder="備註機位（選填）" value="${savedData.caption||''}">
+      <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
+    slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
+  } else {
+    slot.innerHTML = `
+      <div class="photo-slot-placeholder">
+        <span class="photo-icon">📷</span>
+        <span>點擊新增照片 ${slotIdx+1}</span>
+      </div>`;
+    slot.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          slot.classList.add('has-photo');
+          slot.innerHTML = `
+            <img src="${ev.target.result}" alt="機位${slotIdx+1}">
+            <input class="photo-caption-input" placeholder="備註機位（選填）">
+            <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
+          slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
+          slot.removeEventListener('click', arguments.callee);
+          savePhotos(key, section);
+          // Show add button for next slot if under max
+          const newCount = section.querySelector('.photo-slots').querySelectorAll('.photo-slot').length;
+          if (newCount < MAX_PHOTOS) btn.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+  }
+
+  slots.appendChild(slot);
+  const newCount = slots.querySelectorAll('.photo-slot').length;
+  if (newCount >= MAX_PHOTOS) btn.style.display = 'none';
+  else btn.style.display = '';
+}
+
+function removePhotoSlot(btn) {
+  const slot = btn.closest('.photo-slot');
+  const section = slot.closest('.photo-section');
+  const key = section.dataset.key;
+  slot.remove();
+  savePhotos(key, section);
+  const slots = section.querySelector('.photo-slots');
+  const count = slots.querySelectorAll('.photo-slot').length;
+  if (count < MAX_PHOTOS) section.querySelector('.photo-add-btn').style.display = '';
+}
+
+function updateAddBtn(section) {
+  const count = section.querySelector('.photo-slots').querySelectorAll('.photo-slot').length;
+  const btn = section.querySelector('.photo-add-btn');
+  if (btn) btn.style.opacity = count >= MAX_PHOTOS ? '0.4' : '1';
+}
+
+function savePhotos(key, section) {
+  const slots = section.querySelectorAll ? section.querySelectorAll('.photo-slot.has-photo') : [];
+  const data = Array.from(slots).map(s => ({
+    src: s.dataset.src || s.querySelector('img')?.src || '',
+    filename: s.dataset.filename || '',
+    caption: s.querySelector('.photo-caption-input')?.value || '',
+    type: s.dataset.filename ? 'pdf' : 'photo'
+  }));
+  try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadPhotos(key, slotsEl, btn) {
+  try {
+    const saved = JSON.parse(localStorage.getItem('photos_' + key) || '[]');
+    saved.forEach(d => {
+      if (!d.src) return;
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot has-photo';
+      slot.dataset.src = d.src;
+      if (d.type === 'pdf' || d.filename) {
+        slot.dataset.filename = d.filename || 'document.pdf';
+        slot.innerHTML = `
+          <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;background:#FEF3C7;border-radius:var(--radius-sm);">
+            <span style="font-size:20px;">📄</span>
+            <span style="font-size:12px;flex:1;word-break:break-all;">${d.filename||'文件'}</span>
+          </div>
+          <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
+          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      } else {
+        slot.innerHTML = `
+          <img src="${d.src}" alt="照片">
+          <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
+          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      }
+      slot.querySelector('.photo-caption-input').addEventListener('input', () => {
+        const sec = slot.closest('.photo-section');
+        if (sec) savePhotos(sec.dataset.key, sec);
+      });
+      slotsEl.appendChild(slot);
+    });
+  } catch(e) {}
+}
+
+// Init
+initPhotoSections();
+</script>
+
+
+
+</body>
+</html>
