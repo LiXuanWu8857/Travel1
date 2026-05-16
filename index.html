@@ -12,7 +12,7 @@
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const ctx = c.getContext('2d');
-  // Background gradient
+  // 深藍漸層背景
   const g = ctx.createLinearGradient(0,0,512,512);
   g.addColorStop(0,'#1a3a5c');
   g.addColorStop(1,'#2d5a8e');
@@ -20,11 +20,46 @@
   ctx.beginPath();
   ctx.roundRect(0,0,512,512,80);
   ctx.fill();
-  // Emoji
-  ctx.font = '300px serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('✈️', 256, 270);
+  // 白色飛機（SVG path 轉 canvas，旋轉45度朝右上）
+  ctx.save();
+  ctx.translate(256, 256);
+  ctx.rotate(-Math.PI / 4);
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  // 機身
+  ctx.ellipse(0, 0, 30, 130, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 主翼
+  ctx.beginPath();
+  ctx.moveTo(-15, 20);
+  ctx.lineTo(-110, 90);
+  ctx.lineTo(-90, 110);
+  ctx.lineTo(15, 55);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(15, 20);
+  ctx.lineTo(110, 90);
+  ctx.lineTo(90, 110);
+  ctx.lineTo(-15, 55);
+  ctx.closePath();
+  ctx.fill();
+  // 尾翼
+  ctx.beginPath();
+  ctx.moveTo(-10, -80);
+  ctx.lineTo(-60, -130);
+  ctx.lineTo(-45, -145);
+  ctx.lineTo(10, -100);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(10, -80);
+  ctx.lineTo(50, -120);
+  ctx.lineTo(38, -133);
+  ctx.lineTo(-5, -100);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
   const link = document.getElementById('apple-touch-icon');
   link.href = c.toDataURL('image/png');
 })();
