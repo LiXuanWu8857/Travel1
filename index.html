@@ -12,56 +12,82 @@
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const ctx = c.getContext('2d');
-  // 深藍漸層背景
-  const g = ctx.createLinearGradient(0,0,512,512);
-  g.addColorStop(0,'#1a3a5c');
-  g.addColorStop(1,'#2d5a8e');
-  ctx.fillStyle = g;
+  const S = 512 / 260; // SVG viewBox 260 → 512px
+
+  // 深藍背景
+  ctx.fillStyle = '#1a3a5c';
   ctx.beginPath();
-  ctx.roundRect(0,0,512,512,80);
+  ctx.roundRect(0, 0, 512, 512, 80);
   ctx.fill();
-  // 白色飛機（SVG path 轉 canvas，旋轉45度朝右上）
+
+  // 座標轉換：SVG原點(190,10)對應canvas(0,0)
+  function tx(x) { return (x - 190) * S; }
+  function ty(y) { return (y - 10) * S; }
+
+  // S形虛線路徑
   ctx.save();
-  ctx.translate(256, 256);
-  ctx.rotate(-Math.PI / 4);
-  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 2.5 * S;
+  ctx.lineCap = 'round';
+  ctx.setLineDash([10 * S, 7 * S]);
   ctx.beginPath();
-  // 機身
-  ctx.ellipse(0, 0, 30, 130, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // 主翼
-  ctx.beginPath();
-  ctx.moveTo(-15, 20);
-  ctx.lineTo(-110, 90);
-  ctx.lineTo(-90, 110);
-  ctx.lineTo(15, 55);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(15, 20);
-  ctx.lineTo(110, 90);
-  ctx.lineTo(90, 110);
-  ctx.lineTo(-15, 55);
-  ctx.closePath();
-  ctx.fill();
-  // 尾翼
-  ctx.beginPath();
-  ctx.moveTo(-10, -80);
-  ctx.lineTo(-60, -130);
-  ctx.lineTo(-45, -145);
-  ctx.lineTo(10, -100);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(10, -80);
-  ctx.lineTo(50, -120);
-  ctx.lineTo(38, -133);
-  ctx.lineTo(-5, -100);
-  ctx.closePath();
-  ctx.fill();
+  ctx.moveTo(tx(215), ty(245));
+  ctx.bezierCurveTo(tx(200), ty(170), tx(400), ty(190), tx(320), ty(145));
+  ctx.bezierCurveTo(tx(240), ty(100), tx(420), ty(80), tx(425), ty(35));
+  ctx.stroke();
   ctx.restore();
-  const link = document.getElementById('apple-touch-icon');
-  link.href = c.toDataURL('image/png');
+
+  // 飛機：中心(322,143)，rotate(-55deg)，scale(0.6)
+  ctx.save();
+  ctx.translate(tx(322), ty(143));
+  ctx.rotate(-55 * Math.PI / 180);
+  ctx.scale(0.6 * S, 0.6 * S);
+  ctx.fillStyle = 'white';
+
+  // 機身
+  ctx.beginPath();
+  ctx.moveTo(0, -36);
+  ctx.bezierCurveTo(5, -30, 7, -16, 7, 0);
+  ctx.bezierCurveTo(7, 16, 4, 28, 0, 34);
+  ctx.bezierCurveTo(-4, 28, -7, 16, -7, 0);
+  ctx.bezierCurveTo(-7, -16, -5, -30, 0, -36);
+  ctx.fill();
+
+  // 左主翼
+  ctx.beginPath();
+  ctx.moveTo(-5, -4); ctx.lineTo(-44, 18); ctx.lineTo(-40, 26); ctx.lineTo(-3, 7);
+  ctx.closePath(); ctx.fill();
+
+  // 右主翼
+  ctx.beginPath();
+  ctx.moveTo(5, -4); ctx.lineTo(44, 18); ctx.lineTo(40, 26); ctx.lineTo(3, 7);
+  ctx.closePath(); ctx.fill();
+
+  // 左引擎
+  ctx.globalAlpha = 0.9;
+  ctx.beginPath();
+  ctx.ellipse(-24, 12, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 右引擎
+  ctx.beginPath();
+  ctx.ellipse(24, 12, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // 左尾翼
+  ctx.beginPath();
+  ctx.moveTo(-2, 22); ctx.lineTo(-15, 30); ctx.lineTo(-13, 34); ctx.lineTo(-1, 27);
+  ctx.closePath(); ctx.fill();
+
+  // 右尾翼
+  ctx.beginPath();
+  ctx.moveTo(2, 22); ctx.lineTo(15, 30); ctx.lineTo(13, 34); ctx.lineTo(1, 27);
+  ctx.closePath(); ctx.fill();
+
+  ctx.restore();
+
+  document.getElementById('apple-touch-icon').href = c.toDataURL('image/png');
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
