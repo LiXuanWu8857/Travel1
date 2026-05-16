@@ -482,7 +482,7 @@ body {
   <div class="booking-progress">
     <div class="progress-label">
       <span>預訂進度</span>
-      <span id="progress-text">0 / 20</span>
+      <span id="progress-text">0 / 22</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
@@ -632,6 +632,24 @@ body {
       <span class="booking-tag tag-activity">活動</span>
     </div>
 
+    <div class="booking-section-title">🚕 交通接送</div>
+    <div class="booking-item" data-bid="taxi_to_airport" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">預約送機 — 八里龍形三街5號 → 桃園 T1</div>
+        <div class="booking-date">8/27 10:00 出發 · 走台61 · 預估 $900–1,300元</div>
+      </div>
+      <span class="booking-tag tag-car">接送</span>
+    </div>
+    <div class="booking-item" data-bid="taxi_from_airport" onclick="toggleBooking(this)">
+      <div class="booking-checkbox">✓</div>
+      <div class="booking-info">
+        <div class="booking-name">預約接機 — 新千歲 → 小樽 / 回程安排</div>
+        <div class="booking-date">9/8 回程 · 依實際班機時間安排</div>
+      </div>
+      <span class="booking-tag tag-car">接送</span>
+    </div>
+
     <div class="booking-section-title">🎆 票券</div>
     <div class="booking-item" data-bid="ticket_hanabi" onclick="toggleBooking(this)">
       <div class="booking-checkbox">✓</div>
@@ -663,10 +681,23 @@ body {
   <div class="note" id="note-d0827" style="border-left-color:#2D5A8E;margin-top:12px;">
     <div class="note-title">⚠️ 當天注意事項</div>
     <ul class="note-list">
-      <li>班機 17:55 落地，通關約45分，預計 18:40 抵達租車櫃台</li><li>國際線租車櫃台 17:30 關閉，請直接前往國內線 1F 租車案內所</li><li>Clover Car Rental 最晚取車 21:00，有充裕時間</li><li>天狗山纜車最終搭乘時間請確認，夜間可能人少</li><li>串鳥小樽本店建議 21:00 後前往，避免尖峰排隊</li>
+      <li>🚕 <strong>10:00 從八里龍形三街出發</strong>，走台61西濱，車程約40–50分，預計 10:50 抵達 T1</li><li>班機 13:00 起飛，建議 11:00 前抵達機場辦理登機（提前2小時）</li><li>班機 17:55 落地，通關約45分，預計 18:40 抵達租車櫃台</li><li>國際線租車櫃台 17:30 關閉，請直接前往國內線 1F 租車案內所</li><li>Clover Car Rental 最晚取車 21:00，有充裕時間</li><li>天狗山纜車最終搭乘時間請確認，夜間可能人少</li><li>串鳥小樽本店建議 21:00 後前往，避免尖峰排隊</li>
     </ul>
   </div>
   <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">09:55</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚕 叫車 — 八里龍形三街5號出發 · 走台61西濱快速道路 · 約40–50分 · 預估車資 $900–1,300元</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:50</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🛫 抵達 — 桃園國際機場 T1</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">辦理登機 · 行李託運 · 出境 · 預留充裕時間</div>
+      </div></div>
+    </div>
     <div class="item">
       <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
       <div class="item-content"><div class="card">
