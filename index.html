@@ -2487,6 +2487,7 @@ window.saveGmailLinks = saveGmailLinks;
 window.addFileSlot = addFileSlot;
 window.addGmailSlot = addGmailSlot;
 window.addPhotoSlot = addPhotoSlot;
+window.uploadToCloudinary = uploadToCloudinary;
 </script>
 
 <!-- ══════════════════ 9/7 ══════════════════ -->
@@ -2986,6 +2987,46 @@ function initPhotoSections() {
   });
 }
 
+// ── CLOUDINARY 上傳 ──
+const CLOUDINARY_CLOUD = 'dvoknfsin';
+const CLOUDINARY_PRESET = 'wandr_upload'; // unsigned preset（下方說明）
+
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'wandr');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    method: 'POST', body: fd
+  });
+  const data = await res.json();
+  if (data.secure_url) return data.secure_url;
+  throw new Error(data.error?.message || 'Upload failed');
+}
+
+function renderFileSlot(slot, url, filename, key, section) {
+  const isPdf = filename.toLowerCase().endsWith('.pdf');
+  slot.className = 'photo-slot has-photo';
+  slot.dataset.src = url;
+  slot.dataset.filename = filename;
+  if (isPdf) {
+    slot.innerHTML = `
+      <a href="${url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FEF3C7;border-radius:var(--radius-sm);text-decoration:none;">
+        <span style="font-size:20px;">📄</span>
+        <span style="font-size:12px;flex:1;word-break:break-all;color:#78350F;">${filename}</span>
+        <span style="font-size:11px;color:#92400E;white-space:nowrap;">點擊開啟 ↗</span>
+      </a>
+      <input class="photo-caption-input" placeholder="備註說明（選填）">
+      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+  } else {
+    slot.innerHTML = `
+      <img src="${url}" alt="照片">
+      <input class="photo-caption-input" placeholder="備註說明（選填）">
+      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+  }
+  slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
+}
+
 function addFileSlot(section, accept, type) {
   const slots = section.querySelector('.photo-slots');
   const count = slots.querySelectorAll('.photo-slot').length;
@@ -2995,37 +3036,24 @@ function addFileSlot(section, accept, type) {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = accept;
-  input.onchange = e => {
+  input.onchange = async e => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const slot = document.createElement('div');
-      slot.className = 'photo-slot has-photo';
-      if (type === 'pdf') {
-        slot.innerHTML = `
-          <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;background:#FEF3C7;border-radius:var(--radius-sm);">
-            <span style="font-size:20px;">📄</span>
-            <span style="font-size:12px;flex:1;word-break:break-all;">${file.name}</span>
-          </div>
-          <input class="photo-caption-input" placeholder="備註說明（選填）">
-          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
-        // Store as data URL for PDF
-        slot.dataset.src = ev.target.result;
-        slot.dataset.filename = file.name;
-      } else {
-        slot.innerHTML = `
-          <img src="${ev.target.result}" alt="照片">
-          <input class="photo-caption-input" placeholder="備註說明（選填）">
-          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
-        slot.dataset.src = ev.target.result;
-      }
-      slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
-      slots.appendChild(slot);
-      updateAddBtn(section);
+
+    // 顯示上傳中狀態
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot has-photo';
+    slot.innerHTML = `<div style="padding:14px;text-align:center;font-size:12px;color:var(--muted);">⏳ 上傳中...</div>`;
+    slots.appendChild(slot);
+    updateAddBtn(section);
+
+    try {
+      const url = await uploadToCloudinary(file);
+      renderFileSlot(slot, url, file.name, key, section);
       savePhotos(key, section);
-    };
-    reader.readAsDataURL(file);
+    } catch(err) {
+      slot.innerHTML = `<div style="padding:10px;font-size:12px;color:red;">❌ 上傳失敗：${err.message}</div>`;
+    }
   };
   input.click();
 }
@@ -3156,42 +3184,60 @@ function savePhotos(key, section) {
   const data = Array.from(slots).map(s => ({
     src: s.dataset.src || s.querySelector('img')?.src || '',
     filename: s.dataset.filename || '',
-    caption: s.querySelector('.photo-caption-input')?.value || '',
-    type: s.dataset.filename ? 'pdf' : 'photo'
-  }));
+    caption: s.querySelector('.photo-caption-input')?.value || ''
+  })).filter(d => d.src);
+  // 存 Firebase
+  const photosRef = ref(db, 'hokkaido2026/photos/' + key);
+  set(photosRef, data).catch(e => console.warn('Photo save error:', e));
+  // 同時存 localStorage 備份
   try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
 }
 
 function loadPhotos(key, slotsEl, btn) {
+  // 先從 localStorage 快速顯示
   try {
-    const saved = JSON.parse(localStorage.getItem('photos_' + key) || '[]');
-    saved.forEach(d => {
-      if (!d.src) return;
-      const slot = document.createElement('div');
-      slot.className = 'photo-slot has-photo';
-      slot.dataset.src = d.src;
-      if (d.type === 'pdf' || d.filename) {
-        slot.dataset.filename = d.filename || 'document.pdf';
-        slot.innerHTML = `
-          <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;background:#FEF3C7;border-radius:var(--radius-sm);">
-            <span style="font-size:20px;">📄</span>
-            <span style="font-size:12px;flex:1;word-break:break-all;">${d.filename||'文件'}</span>
-          </div>
-          <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
-          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
-      } else {
-        slot.innerHTML = `
-          <img src="${d.src}" alt="照片">
-          <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
-          <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
-      }
-      slot.querySelector('.photo-caption-input').addEventListener('input', () => {
-        const sec = slot.closest('.photo-section');
-        if (sec) savePhotos(sec.dataset.key, sec);
-      });
-      slotsEl.appendChild(slot);
-    });
+    const local = JSON.parse(localStorage.getItem('photos_' + key) || '[]');
+    local.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
   } catch(e) {}
+
+  // 再從 Firebase 同步（手機會拿到電腦上傳的）
+  const photosRef = ref(db, 'hokkaido2026/photos/' + key);
+  onValue(photosRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data || !Array.isArray(data)) return;
+    // 清空後重繪（避免重複）
+    slotsEl.innerHTML = '';
+    data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
+    try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+  }, { onlyOnce: false });
+}
+
+function _renderSavedPhoto(d, key, slotsEl) {
+  const section = slotsEl.closest('.photo-section');
+  const slot = document.createElement('div');
+  slot.className = 'photo-slot has-photo';
+  slot.dataset.src = d.src;
+  slot.dataset.filename = d.filename || '';
+  const isPdf = (d.filename || '').toLowerCase().endsWith('.pdf');
+  if (isPdf) {
+    slot.innerHTML = `
+      <a href="${d.src}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FEF3C7;border-radius:var(--radius-sm);text-decoration:none;">
+        <span style="font-size:20px;">📄</span>
+        <span style="font-size:12px;flex:1;word-break:break-all;color:#78350F;">${d.filename||'文件'}</span>
+        <span style="font-size:11px;color:#92400E;white-space:nowrap;">點擊開啟 ↗</span>
+      </a>
+      <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
+      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+  } else {
+    slot.innerHTML = `
+      <img src="${d.src}" alt="照片">
+      <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
+      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+  }
+  slot.querySelector('.photo-caption-input').addEventListener('input', () => {
+    if (section) savePhotos(key, section);
+  });
+  slotsEl.appendChild(slot);
 }
 
 // Init
