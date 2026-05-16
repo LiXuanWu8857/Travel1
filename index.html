@@ -2910,17 +2910,21 @@ function saveUserAllData(data) {
 
 // Init
 injectEditButtons();
+console.log('[debug] injectEditButtons done');
 
 
 // ── PHOTO SYSTEM ──
 const MAX_PHOTOS = 3;
 
 function initPhotoSections() {
+  let total = 0;
   document.querySelectorAll('.day-section').forEach(daySection => {
     const dayId = daySection.id || 'unknown';
     const cards = daySection.querySelectorAll('.item-content .card:not(.card-drive)');
+    console.log(`[debug] ${dayId}: ${cards.length} cards`);
     cards.forEach((card, idx) => {
-      if (card.querySelector('.photo-section')) return;
+      if (card.querySelector('.photo-section')) { console.log(`[debug] ${dayId}_${idx} skipped`); return; }
+      total++;
       const key = `photo_${dayId}_${idx}`;
 
       const section = document.createElement('div');
@@ -2987,6 +2991,7 @@ function initPhotoSections() {
     loadGmailLinks(key, gmailDiv);
     }); // end cards.forEach
   }); // end daySection.forEach
+  console.log(`[debug] initPhotoSections total cards processed: ${total}`);
 }
 
 // ── CLOUDINARY 上傳 ──
