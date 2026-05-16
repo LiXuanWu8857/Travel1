@@ -2279,7 +2279,11 @@ body {
 </div>
 
 
-<script>
+<script type="module">
+// ── FIREBASE SYNC ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 function switchDay(id) {
   document.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2333,34 +2337,67 @@ function updateProgress() {
   document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
 }
 
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAnJ66TMk48YXC6d7ygp6w8lzvjc6gTl5w",
+  authDomain: "travel-60a88.firebaseapp.com",
+  databaseURL: "https://travel-60a88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "travel-60a88",
+  storageBucket: "travel-60a88.firebasestorage.app",
+  messagingSenderId: "879512284305",
+  appId: "1:879512284305:web:b5611780e8f37fa1096330"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+const bookingRef = ref(db, 'hokkaido2026/booking');
+
+let isSyncing = false; // 防止遠端更新觸發再次寫入
+
 function saveProgress() {
   const items = document.querySelectorAll('.booking-item');
   const state = {};
   items.forEach(i => { if (i.dataset.bid) state[i.dataset.bid] = i.classList.contains('done'); });
+  // 同時存 localStorage 作為離線備份
   try { localStorage.setItem('booking_v2', JSON.stringify(state)); } catch(e) {}
+  // 寫入 Firebase
+  set(bookingRef, state).catch(e => console.warn('Firebase save error:', e));
+}
+
+function applyState(state) {
+  isSyncing = true;
+  document.querySelectorAll('.booking-item').forEach(item => {
+    if (!item.dataset.bid) return;
+    const done = state[item.dataset.bid] === true;
+    item.classList.toggle('done', done);
+    syncBadges(item.dataset.bid, done);
+  });
+  updateProgress();
+  isSyncing = false;
 }
 
 function loadProgress() {
+  // 先用 localStorage 快速顯示，避免白屏
   try {
-    const state = JSON.parse(localStorage.getItem('booking_v2') || '{}');
-    Object.entries(state).forEach(([bid, done]) => {
-      if (done) {
-        const item = document.querySelector(`.booking-item[data-bid="${bid}"]`);
-        if (item) {
-          item.classList.add('done');
-          syncBadges(bid, true);
-        }
-      }
-    });
+    const local = JSON.parse(localStorage.getItem('booking_v2') || '{}');
+    applyState(local);
   } catch(e) {}
-  updateProgress();
+
+  // 再監聽 Firebase 即時同步（任何裝置打勾都會同步）
+  onValue(bookingRef, (snapshot) => {
+    const state = snapshot.val() || {};
+    applyState(state);
+    // 更新 localStorage 備份
+    try { localStorage.setItem('booking_v2', JSON.stringify(state)); } catch(e) {}
+  }, (error) => {
+    console.warn('Firebase load error:', error);
+  });
 }
 
 // Inject booking badges into day cards
 function injectBadges() {
   document.querySelectorAll('[data-sync]').forEach(card => {
     const bid = card.dataset.sync;
-    // Check if badge already exists
     if (card.querySelector('.booking-badge')) return;
     const bookingItem = document.querySelector(`.booking-item[data-bid="${bid}"]`);
     if (!bookingItem) return;
@@ -2376,6 +2413,19 @@ function injectBadges() {
 
 loadProgress();
 injectBadges();
+
+// 讓 HTML onclick 能呼叫到這些函式（module scope 需要掛到 window）
+window.switchDay = switchDay;
+window.toggleBooking = toggleBooking;
+window.toggleFromBadge = toggleFromBadge;
+window.closeModal = closeModal;
+window.saveEdit = saveEdit;
+window.removePhotoSlot = removePhotoSlot;
+window.savePhotos = savePhotos;
+window.saveGmailLinks = saveGmailLinks;
+window.addFileSlot = addFileSlot;
+window.addGmailSlot = addGmailSlot;
+window.addPhotoSlot = addPhotoSlot;
 </script>
 
 <!-- ══════════════════ 9/7 ══════════════════ -->
