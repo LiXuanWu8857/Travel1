@@ -3205,8 +3205,8 @@ function loadPhotos(key, slotsEl, btn) {
   onValue(photosRef, (snapshot) => {
     const data = snapshot.val();
     if (!data || !Array.isArray(data)) return;
-    // 清空後重繪（避免重複）
-    slotsEl.innerHTML = '';
+    // 只清 photo-slot，不動 actionsRow（新增按鈕）
+    slotsEl.querySelectorAll('.photo-slot').forEach(s => s.remove());
     data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
     try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
   }, { onlyOnce: false });
