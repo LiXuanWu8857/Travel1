@@ -4,6 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>北海道行程 8/27–9/8</title>
+<link id="apple-touch-icon" rel="apple-touch-icon">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="北海道✈️">
+<script>
+(function(){
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const ctx = c.getContext('2d');
+  // Background gradient
+  const g = ctx.createLinearGradient(0,0,512,512);
+  g.addColorStop(0,'#1a3a5c');
+  g.addColorStop(1,'#2d5a8e');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(0,0,512,512,80);
+  ctx.fill();
+  // Emoji
+  ctx.font = '300px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✈️', 256, 270);
+  const link = document.getElementById('apple-touch-icon');
+  link.href = c.toDataURL('image/png');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
