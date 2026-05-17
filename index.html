@@ -2507,13 +2507,25 @@ async function uploadToCloudinary(file) {
   fd.append('api_key', CLOUDINARY_API_KEY);
   fd.append('signature', signature);
   fd.append('folder', 'wandr');
-  console.log('[cloudinary] paramStr:', paramStr, 'sig:', signature);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+
+  // 圖片用 image，PDF/其他用 auto 讓 Cloudinary 判斷正確類型
+  const isImage = file.type.startsWith('image/');
+  const endpoint = isImage ? 'image' : 'auto';
+
+  console.log('[cloudinary] paramStr:', paramStr, 'sig:', signature, 'endpoint:', endpoint);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${endpoint}/upload`, {
     method: 'POST', body: fd
   });
   const data = await res.json();
   console.log('[cloudinary] response:', JSON.stringify(data));
-  if (data.secure_url) return data.secure_url;
+  if (data.secure_url) {
+    // 如果是 PDF 被歸類成 image，改寫 URL 為 raw 才能正確下載
+    let url = data.secure_url;
+    if (file.name.toLowerCase().endsWith('.pdf') && url.includes('/image/upload/')) {
+      url = url.replace('/image/upload/', '/raw/upload/');
+    }
+    return url;
+  }
   throw new Error(data.error?.message || JSON.stringify(data));
 }
 
