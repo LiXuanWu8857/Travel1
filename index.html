@@ -3072,12 +3072,12 @@ function renderFileSlot(slot, url, filename, key, section) {
         <span style="font-size:11px;color:#92400E;white-space:nowrap;">點擊開啟 ↗</span>
       </a>
       <input class="photo-caption-input" placeholder="備註說明（選填）">
-      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
   } else {
     slot.innerHTML = `
       <img src="${url}" alt="照片">
       <input class="photo-caption-input" placeholder="備註說明（選填）">
-      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
   }
   slot.querySelector('.photo-caption-input').addEventListener('input', () => savePhotos(key, section));
 }
@@ -3220,12 +3220,15 @@ function addPhotoSlot(section, savedData) {
 function removePhotoSlot(btn) {
   const slot = btn.closest('.photo-slot');
   const section = slot.closest('.photo-section');
+  if (!section) { slot.remove(); return; }
   const key = section.dataset.key;
+  // 先移除 DOM，再呼叫 savePhotos（section 還在）
   slot.remove();
   savePhotos(key, section);
   const slots = section.querySelector('.photo-slots');
-  const count = slots.querySelectorAll('.photo-slot').length;
-  if (count < MAX_PHOTOS) section.querySelector('.photo-add-btn').style.display = '';
+  const count = slots ? slots.querySelectorAll('.photo-slot').length : 0;
+  const addBtn = section.querySelector('.photo-add-btn');
+  if (addBtn && count < MAX_PHOTOS) addBtn.style.display = '';
 }
 
 function updateAddBtn(section) {
@@ -3264,10 +3267,14 @@ function loadPhotos(key, slotsEl, btn) {
     window._fbOnValue(photosRef, (snapshot) => {
       const data = snapshot.val();
       console.log('[loadPhotos] key:', key, 'from Firebase:', data);
-      if (!data || !Array.isArray(data)) return;
+      // 同步 Firebase 狀態到 DOM（null 或 [] 也要清空 DOM）
       slotsEl.querySelectorAll('.photo-slot').forEach(s => s.remove());
-      data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
-      try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+      if (Array.isArray(data)) {
+        data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
+        try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+      } else {
+        try { localStorage.removeItem('photos_' + key); } catch(e) {}
+      }
     }, { onlyOnce: false });
   } else {
     console.warn('[loadPhotos] Firebase not ready for key:', key);
@@ -3293,12 +3300,12 @@ function _renderSavedPhoto(d, key, slotsEl) {
         <span style="font-size:11px;color:#92400E;white-space:nowrap;">點擊開啟 ↗</span>
       </a>
       <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
-      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
   } else {
     slot.innerHTML = `
       <img src="${d.src}" alt="照片">
       <input class="photo-caption-input" placeholder="備註說明（選填）" value="${d.caption||''}">
-      <button class="photo-delete" onclick="this.closest('.photo-slot').remove();savePhotos('${key}',this.closest('.photo-section'))">✕</button>`;
+      <button class="photo-delete" onclick="removePhotoSlot(this)">✕</button>`;
   }
   slot.querySelector('.photo-caption-input').addEventListener('input', () => {
     if (section) savePhotos(key, section);
