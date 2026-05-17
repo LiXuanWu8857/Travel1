@@ -3267,6 +3267,10 @@ function loadPhotos(key, slotsEl, btn) {
 
 function _renderSavedPhoto(d, key, slotsEl) {
   const section = slotsEl.closest('.photo-section');
+  // 自動修正舊資料：image/upload 的 PDF 改寫為 raw/upload
+  if (d.filename && d.filename.toLowerCase().endsWith('.pdf') && d.src.includes('/image/upload/')) {
+    d.src = d.src.replace('/image/upload/', '/raw/upload/');
+  }
   const slot = document.createElement('div');
   slot.className = 'photo-slot has-photo';
   slot.dataset.src = d.src;
