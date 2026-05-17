@@ -3220,10 +3220,15 @@ function savePhotos(key, section) {
     filename: s.dataset.filename || '',
     caption: s.querySelector('.photo-caption-input')?.value || ''
   })).filter(d => d.src);
+  console.log('[savePhotos] key:', key, 'data:', data, 'fb ready:', !!window._fbDb);
   try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
   if (window._fbDb && window._fbRef && window._fbSet) {
     const photosRef = window._fbRef(window._fbDb, 'hokkaido2026/photos/' + key);
-    window._fbSet(photosRef, data).catch(e => console.warn('Photo save error:', e));
+    window._fbSet(photosRef, data)
+      .then(() => console.log('[savePhotos] ✅ Firebase saved:', key))
+      .catch(e => console.error('[savePhotos] ❌ Firebase error:', e));
+  } else {
+    console.warn('[savePhotos] Firebase not ready');
   }
 }
 
@@ -3237,11 +3242,14 @@ function loadPhotos(key, slotsEl, btn) {
     const photosRef = window._fbRef(window._fbDb, 'hokkaido2026/photos/' + key);
     window._fbOnValue(photosRef, (snapshot) => {
       const data = snapshot.val();
+      console.log('[loadPhotos] key:', key, 'from Firebase:', data);
       if (!data || !Array.isArray(data)) return;
       slotsEl.querySelectorAll('.photo-slot').forEach(s => s.remove());
       data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
       try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
     }, { onlyOnce: false });
+  } else {
+    console.warn('[loadPhotos] Firebase not ready for key:', key);
   }
 }
 
