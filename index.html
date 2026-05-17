@@ -3008,15 +3008,29 @@ function initPhotoSections() {
   console.log(`[debug] initPhotoSections total cards processed: ${total}`);
 }
 
-// ── CLOUDINARY 上傳 ──
+// ── CLOUDINARY 上傳（Signed）──
 const CLOUDINARY_CLOUD = 'dvoknfsin';
-const CLOUDINARY_PRESET = 'wandr_upload';
+const CLOUDINARY_API_KEY = '683768468616895';
+const CLOUDINARY_SECRET = 'soBJinVt8J5zp9RLwfQcxNJ0HfA';
+
+async function sha1(str) {
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
 async function uploadToCloudinary(file) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = 'wandr';
+  const toSign = `folder=${folder}&timestamp=${timestamp}${CLOUDINARY_SECRET}`;
+  const signature = await sha1(toSign);
+
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
-  fd.append('folder', 'wandr');
+  fd.append('timestamp', timestamp);
+  fd.append('api_key', CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+  fd.append('folder', folder);
+
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
     method: 'POST', body: fd
   });
