@@ -2487,6 +2487,36 @@ window.saveGmailLinks = saveGmailLinks;
 window.addFileSlot = addFileSlot;
 window.addGmailSlot = addGmailSlot;
 window.addPhotoSlot = addPhotoSlot;
+// ── CLOUDINARY 上傳 ──
+const CLOUDINARY_CLOUD = 'dvoknfsin';
+const CLOUDINARY_API_KEY = '683768468616895';
+const CLOUDINARY_SECRET = 'soBJinVt8J5zp9RLwfQcxNJ0HfA';
+
+async function sha1mod(str) {
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function uploadToCloudinary(file) {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const paramStr = `folder=wandr&timestamp=${timestamp}`;
+  const signature = await sha1mod(paramStr + CLOUDINARY_SECRET);
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('timestamp', timestamp);
+  fd.append('api_key', CLOUDINARY_API_KEY);
+  fd.append('signature', signature);
+  fd.append('folder', 'wandr');
+  console.log('[cloudinary] paramStr:', paramStr, 'sig:', signature);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    method: 'POST', body: fd
+  });
+  const data = await res.json();
+  console.log('[cloudinary] response:', JSON.stringify(data));
+  if (data.secure_url) return data.secure_url;
+  throw new Error(data.error?.message || JSON.stringify(data));
+}
+
 window.uploadToCloudinary = uploadToCloudinary;
 
 // 讓普通 script 也能用 Firebase
@@ -3006,40 +3036,6 @@ function initPhotoSections() {
     }); // end cards.forEach
   }); // end daySection.forEach
   console.log(`[debug] initPhotoSections total cards processed: ${total}`);
-}
-
-// ── CLOUDINARY 上傳（Basic Auth）──
-const CLOUDINARY_CLOUD = 'dvoknfsin';
-const CLOUDINARY_API_KEY = '683768468616895';
-const CLOUDINARY_SECRET = 'soBJinVt8J5zp9RLwfQcxNJ0HfA';
-
-async function sha1(str) {
-  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-async function uploadToCloudinary(file) {
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  // 參數按字母排序：folder, timestamp
-  const paramStr = `folder=wandr&timestamp=${timestamp}`;
-  const signature = await sha1(paramStr + CLOUDINARY_SECRET);
-
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('timestamp', timestamp);
-  fd.append('api_key', CLOUDINARY_API_KEY);
-  fd.append('signature', signature);
-  fd.append('folder', 'wandr');
-
-  console.log('[cloudinary] uploading, paramStr:', paramStr, 'sig:', signature);
-
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
-    method: 'POST', body: fd
-  });
-  const data = await res.json();
-  console.log('[cloudinary] response:', JSON.stringify(data));
-  if (data.secure_url) return data.secure_url;
-  throw new Error(data.error?.message || JSON.stringify(data));
 }
 
 function renderFileSlot(slot, url, filename, key, section) {
