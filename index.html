@@ -2918,6 +2918,14 @@ function saveUserAllData(data) {
 injectEditButtons();
 console.log('[debug] injectEditButtons done');
 
+// 等 Firebase module 載入後再跑 initPhotoSections
+function waitForFirebase(cb, tries = 0) {
+  if (window._fbDb && window._fbRef) { cb(); }
+  else if (tries < 30) { setTimeout(() => waitForFirebase(cb, tries + 1), 100); }
+  else { console.warn('Firebase timeout, running without sync'); cb(); }
+}
+waitForFirebase(() => initPhotoSections());
+
 
 // ── PHOTO SYSTEM ──
 const MAX_PHOTOS = 3;
@@ -3252,8 +3260,7 @@ function _renderSavedPhoto(d, key, slotsEl) {
   slotsEl.appendChild(slot);
 }
 
-// Init
-initPhotoSections();
+// Init done
 </script>
 
 
