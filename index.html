@@ -2488,6 +2488,12 @@ window.addFileSlot = addFileSlot;
 window.addGmailSlot = addGmailSlot;
 window.addPhotoSlot = addPhotoSlot;
 window.uploadToCloudinary = uploadToCloudinary;
+
+// 讓普通 script 也能用 Firebase
+window._fbRef = ref;
+window._fbSet = set;
+window._fbOnValue = onValue;
+window._fbDb = db;
 </script>
 
 <!-- ══════════════════ 9/7 ══════════════════ -->
@@ -3193,30 +3199,29 @@ function savePhotos(key, section) {
     filename: s.dataset.filename || '',
     caption: s.querySelector('.photo-caption-input')?.value || ''
   })).filter(d => d.src);
-  // 存 Firebase
-  const photosRef = ref(db, 'hokkaido2026/photos/' + key);
-  set(photosRef, data).catch(e => console.warn('Photo save error:', e));
-  // 同時存 localStorage 備份
   try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    const photosRef = window._fbRef(window._fbDb, 'hokkaido2026/photos/' + key);
+    window._fbSet(photosRef, data).catch(e => console.warn('Photo save error:', e));
+  }
 }
 
 function loadPhotos(key, slotsEl, btn) {
-  // 先從 localStorage 快速顯示
   try {
     const local = JSON.parse(localStorage.getItem('photos_' + key) || '[]');
     local.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
   } catch(e) {}
 
-  // 再從 Firebase 同步（手機會拿到電腦上傳的）
-  const photosRef = ref(db, 'hokkaido2026/photos/' + key);
-  onValue(photosRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data || !Array.isArray(data)) return;
-    // 只清 photo-slot，不動 actionsRow（新增按鈕）
-    slotsEl.querySelectorAll('.photo-slot').forEach(s => s.remove());
-    data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
-    try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
-  }, { onlyOnce: false });
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    const photosRef = window._fbRef(window._fbDb, 'hokkaido2026/photos/' + key);
+    window._fbOnValue(photosRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data || !Array.isArray(data)) return;
+      slotsEl.querySelectorAll('.photo-slot').forEach(s => s.remove());
+      data.forEach(d => { if (d.src) _renderSavedPhoto(d, key, slotsEl); });
+      try { localStorage.setItem('photos_' + key, JSON.stringify(data)); } catch(e) {}
+    }, { onlyOnce: false });
+  }
 }
 
 function _renderSavedPhoto(d, key, slotsEl) {
