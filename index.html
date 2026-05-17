@@ -2487,49 +2487,47 @@ window.saveGmailLinks = saveGmailLinks;
 window.addFileSlot = addFileSlot;
 window.addGmailSlot = addGmailSlot;
 window.addPhotoSlot = addPhotoSlot;
-// ── CLOUDINARY 上傳 ──
-const CLOUDINARY_CLOUD = 'dvoknfsln';
-const CLOUDINARY_API_KEY = '683768468616895';
-const CLOUDINARY_SECRET = 'soBJinVt8J5zp9RLwfQcxNJ0HfA';
-
-async function sha1mod(str) {
-  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
+// ── IMAGEKIT 上傳（PDF 友善，免費 20GB）──
+const IMAGEKIT_ENDPOINT = 'https://ik.imagekit.io/efxevairr';
+const IMAGEKIT_PUBLIC_KEY = 'public_zloJYgTazXW3dHVM51C6xyT5Zfw=';
+const IMAGEKIT_PRIVATE_KEY = 'private_k+Hatdblv7TT+SsdeFXPctW6tpQ=';
 
 async function uploadToCloudinary(file) {
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  const isImage = file.type.startsWith('image/');
-  const resourceType = isImage ? 'image' : 'raw';
+  // 1. 取得 auth token（用 private key 簽署）
+  const token = Math.random().toString(36).substring(2) + Date.now();
+  const expire = Math.floor(Date.now() / 1000) + 600; // 10分鐘
+  const signature = await hmacSha1(IMAGEKIT_PRIVATE_KEY, token + expire);
 
-  // raw 上傳需要保留原檔名（含副檔名），用 public_id 指定
+  // 2. 上傳
   const safeName = file.name.replace(/[^\w.\-]/g, '_');
-  const publicId = `${Date.now()}_${safeName}`;
-
-  let paramStr;
-  if (isImage) {
-    paramStr = `folder=wandr&timestamp=${timestamp}`;
-  } else {
-    paramStr = `folder=wandr&public_id=${publicId}&timestamp=${timestamp}`;
-  }
-  const signature = await sha1mod(paramStr + CLOUDINARY_SECRET);
-
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('timestamp', timestamp);
-  fd.append('api_key', CLOUDINARY_API_KEY);
+  fd.append('fileName', safeName);
+  fd.append('publicKey', IMAGEKIT_PUBLIC_KEY);
   fd.append('signature', signature);
-  fd.append('folder', 'wandr');
-  if (!isImage) fd.append('public_id', publicId);
+  fd.append('expire', expire.toString());
+  fd.append('token', token);
+  fd.append('folder', '/wandr');
+  fd.append('useUniqueFileName', 'true');
 
-  console.log('[cloudinary] paramStr:', paramStr, 'type:', resourceType);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`, {
+  console.log('[imagekit] uploading', safeName);
+  const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
     method: 'POST', body: fd
   });
   const data = await res.json();
-  console.log('[cloudinary] response:', JSON.stringify(data));
-  if (data.secure_url) return data.secure_url;
-  throw new Error(data.error?.message || JSON.stringify(data));
+  console.log('[imagekit] response:', JSON.stringify(data));
+  if (data.url) return data.url;
+  throw new Error(data.message || JSON.stringify(data));
+}
+
+async function hmacSha1(key, msg) {
+  const enc = new TextEncoder();
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', enc.encode(key),
+    { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(msg));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 window.uploadToCloudinary = uploadToCloudinary;
