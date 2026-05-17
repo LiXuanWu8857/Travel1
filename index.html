@@ -2534,6 +2534,14 @@ async function uploadToCloudinary(file) {
 
 window.uploadToCloudinary = uploadToCloudinary;
 
+// 提供 console 工具：手動清除某 key 的照片
+window.clearPhoto = async function(key) {
+  const r = ref(db, 'hokkaido2026/photos/' + key);
+  await set(r, null);
+  try { localStorage.removeItem('photos_' + key); } catch(e) {}
+  console.log('✅ Cleared:', key, '— 請重新整理頁面');
+};
+
 // 讓普通 script 也能用 Firebase
 window._fbRef = ref;
 window._fbSet = set;
