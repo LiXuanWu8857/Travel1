@@ -2499,33 +2499,36 @@ async function sha1mod(str) {
 
 async function uploadToCloudinary(file) {
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const paramStr = `folder=wandr&timestamp=${timestamp}`;
+  const isImage = file.type.startsWith('image/');
+  const resourceType = isImage ? 'image' : 'raw';
+
+  // raw 上傳需要保留原檔名（含副檔名），用 public_id 指定
+  const safeName = file.name.replace(/[^\w.\-]/g, '_');
+  const publicId = `${Date.now()}_${safeName}`;
+
+  let paramStr;
+  if (isImage) {
+    paramStr = `folder=wandr&timestamp=${timestamp}`;
+  } else {
+    paramStr = `folder=wandr&public_id=${publicId}&timestamp=${timestamp}`;
+  }
   const signature = await sha1mod(paramStr + CLOUDINARY_SECRET);
+
   const fd = new FormData();
   fd.append('file', file);
   fd.append('timestamp', timestamp);
   fd.append('api_key', CLOUDINARY_API_KEY);
   fd.append('signature', signature);
   fd.append('folder', 'wandr');
+  if (!isImage) fd.append('public_id', publicId);
 
-  // 圖片用 image，PDF/其他用 auto 讓 Cloudinary 判斷正確類型
-  const isImage = file.type.startsWith('image/');
-  const endpoint = isImage ? 'image' : 'auto';
-
-  console.log('[cloudinary] paramStr:', paramStr, 'sig:', signature, 'endpoint:', endpoint);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${endpoint}/upload`, {
+  console.log('[cloudinary] paramStr:', paramStr, 'type:', resourceType);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`, {
     method: 'POST', body: fd
   });
   const data = await res.json();
   console.log('[cloudinary] response:', JSON.stringify(data));
-  if (data.secure_url) {
-    // 如果是 PDF 被歸類成 image，改寫 URL 為 raw 才能正確下載
-    let url = data.secure_url;
-    if (file.name.toLowerCase().endsWith('.pdf') && url.includes('/image/upload/')) {
-      url = url.replace('/image/upload/', '/raw/upload/');
-    }
-    return url;
-  }
+  if (data.secure_url) return data.secure_url;
   throw new Error(data.error?.message || JSON.stringify(data));
 }
 
