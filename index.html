@@ -3173,6 +3173,10 @@ function saveEdit() {
   const time = document.getElementById('edit-time').value.trim();
   const note = document.getElementById('edit-note').value.trim();
 
+  console.log('[saveEdit] key:', key, 'time:', time, 'note:', note);
+
+  if (!key) { console.warn('[saveEdit] no key!'); return; }
+
   const allData = getUserAllData();
   if (time || note) {
     allData[key] = { time, note };
@@ -3180,14 +3184,20 @@ function saveEdit() {
     delete allData[key];
   }
   saveUserAllData(allData);
+  console.log('[saveEdit] localStorage saved, keys:', Object.keys(allData));
 
   // 同步到 Firebase
   if (window._fbDb && window._fbRef && window._fbSet) {
     const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
-    window._fbSet(editsRef, allData).catch(e => console.warn('Edit save error:', e));
+    window._fbSet(editsRef, allData)
+      .then(() => console.log('[saveEdit] ✅ Firebase saved'))
+      .catch(e => console.error('[saveEdit] ❌ Firebase error:', e.message));
+  } else {
+    console.warn('[saveEdit] Firebase not ready, localStorage only');
   }
 
   const card = document.querySelector(`[data-edit-key="${key}"]`);
+  console.log('[saveEdit] card found:', !!card);
   if (card) renderNote(card, key);
   closeModal();
 }
