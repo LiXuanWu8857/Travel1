@@ -510,52 +510,115 @@ body {
 .photo-add-menu-item + .photo-add-menu-item { border-top: 1px solid var(--border); }
 
 /* ── HOME PAGE ── */
-.home-page { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 40px; }
+.home-page { display: none; min-height: 100vh; background: #f5f2ed; padding-bottom: 48px; }
 .home-page.active { display: block; }
+
+/* Hero */
 .home-hero {
-  background: linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 60%, #1a6b5a 100%);
-  padding: 48px 20px 32px; text-align: center; position: relative; overflow: hidden;
+  position: relative; height: 260px; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: linear-gradient(170deg, #0a1628 0%, #12243d 45%, #0d1f1a 100%);
 }
-.home-hero::before {
-  content: ''; position: absolute; inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+.home-hero-stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.home-hero-star {
+  position: absolute; background: white; border-radius: 50%;
+  animation: star-twinkle 3s ease-in-out infinite;
 }
-.home-logo { font-size: 36px; font-weight: 800; color: white; letter-spacing: -1px; position: relative; }
-.home-logo span { opacity: 0.7; font-weight: 400; font-size: 14px; display: block; margin-top: 4px; letter-spacing: 2px; }
-.home-subtitle { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 8px; position: relative; }
-.trips-section { padding: 24px 16px 0; }
-.trips-section-title { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+@keyframes star-twinkle { 0%,100%{opacity:0.15} 50%{opacity:0.8} }
+.home-hero-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 120%, rgba(45,90,142,0.85) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 10%, rgba(26,106,90,0.4) 0%, transparent 55%);
+}
+.home-hero::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 36px;
+  background: #f5f2ed; clip-path: ellipse(55% 100% at 50% 100%);
+}
+.home-hero-content { position: relative; z-index: 1; text-align: center; }
+.home-logo-text {
+  font-size: 60px; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, #f0ede8 0%, #c8b88a 50%, #f0ede8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -2px;
+}
+.home-logo-sub {
+  font-size: 10px; letter-spacing: 5px; font-weight: 300;
+  color: rgba(255,255,255,0.35); margin-top: 10px; text-transform: uppercase;
+}
+
+/* Trips section */
+.trips-section { padding: 20px 16px 0; }
+.trips-section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: 2.5px;
+  text-transform: uppercase; color: #aaa8a3; margin-bottom: 14px;
+}
+
+/* Trip card */
 .trip-card {
-  background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
-  margin-bottom: 14px; overflow: hidden; cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  background: white; border-radius: 20px; overflow: hidden;
+  margin-bottom: 16px; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+  transition: transform 0.18s, box-shadow 0.18s;
 }
-.trip-card:active { transform: scale(0.98); }
+.trip-card:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 .trip-card-cover {
-  height: 120px; background: linear-gradient(135deg, #1a3a5c, #2d5a8e);
+  height: 160px; position: relative; overflow: hidden;
+  background: linear-gradient(150deg, #152742 0%, #1e3d6b 50%, #153328 100%);
   display: flex; align-items: center; justify-content: center;
-  font-size: 48px; position: relative; overflow: hidden;
 }
-.trip-card-cover-label {
-  position: absolute; top: 10px; right: 10px;
-  background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
-  border-radius: 20px; padding: 3px 10px; font-size: 11px; color: white;
+.trip-card-cover-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0.7;
 }
-.trip-card-body { padding: 14px 16px; }
-.trip-card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-.trip-card-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
-.trip-card-meta span { display: flex; align-items: center; gap: 4px; }
-.trip-card-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.trip-card-status { font-size: 11px; color: var(--accent); font-weight: 600; }
-.trip-card-arrow { color: var(--muted); font-size: 16px; }
+.trip-card-cover-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+}
+.trip-card-cover-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.trip-card-cover-badge {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(255,255,255,0.15); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 20px;
+  padding: 4px 12px; font-size: 11px; color: white; font-weight: 500; z-index: 2;
+}
+.trip-card-cover-edit {
+  position: absolute; top: 12px; left: 12px; z-index: 3;
+  background: rgba(0,0,0,0.35); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;
+  padding: 4px 10px; font-size: 10px; color: rgba(255,255,255,0.7);
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+.trip-card-cover-info {
+  position: absolute; bottom: 14px; left: 16px; right: 16px; z-index: 2;
+}
+.trip-card-cover-name {
+  font-size: 22px; font-weight: 800; color: white;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5); line-height: 1.2;
+}
+.trip-card-cover-dates { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 3px; letter-spacing: 0.5px; }
+.trip-card-info {
+  padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+}
+.trip-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.trip-card-tag { background: #f0ede8; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #888; }
+.trip-card-status { font-size: 11px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 5px; }
+.trip-status-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; animation: status-pulse 2s infinite; }
+@keyframes status-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.6)} }
+
+/* Add card */
 .trip-add-card {
-  border: 2px dashed var(--border); border-radius: var(--radius);
-  padding: 24px; text-align: center; cursor: pointer;
-  color: var(--muted); font-size: 13px; transition: all 0.15s;
-  margin-bottom: 14px;
+  border: 1.5px dashed #ccc9c2; border-radius: 20px;
+  padding: 28px; text-align: center; cursor: pointer;
+  color: #bbb; font-size: 13px; transition: all 0.2s; margin-bottom: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
-.trip-add-card:hover { border-color: var(--accent); color: var(--accent); }
+.trip-add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(45,90,142,0.03); }
+.trip-add-icon { font-size: 26px; opacity: 0.35; }
 
 /* ── TRIP WRAPPER ── */
 .trip-wrapper { display: none; }
@@ -599,35 +662,47 @@ body {
 <!-- ══════════════════ HOME PAGE ══════════════════ -->
 <div id="home" class="home-page active">
   <div class="home-hero">
-    <div class="home-logo">旅圖 <span>WANDR · MY TRIPS</span></div>
-    <div class="home-subtitle">點選行程開始規劃</div>
+    <div class="home-hero-glow"></div>
+    <div class="home-hero-stars" id="homeStars"></div>
+    <div class="home-hero-content">
+      <div class="home-logo-text">旅圖</div>
+      <div class="home-logo-sub">Wandr · My Trips</div>
+    </div>
   </div>
+
   <div class="trips-section">
     <div class="trips-section-title">我的行程</div>
 
     <!-- 北海道 2026 -->
-    <div class="trip-card" onclick="openTrip('hokkaido')">
-      <div class="trip-card-cover" style="background: linear-gradient(135deg,#1a3a5c,#2d5a8e);">
-        🗾
-        <div class="trip-card-cover-label">13 天</div>
-      </div>
-      <div class="trip-card-body">
-        <div class="trip-card-title">北海道 2026</div>
-        <div class="trip-card-meta">
-          <span>📅 8/27 – 9/8</span>
-          <span>✈️ TR892</span>
-          <span>🚗 自駕</span>
+    <div class="trip-card" id="card-hokkaido">
+      <div class="trip-card-cover" id="cover-hokkaido" onclick="openTrip('hokkaido')">
+        <img class="trip-card-cover-img" id="cover-img-hokkaido" src="" style="display:none;">
+        <div class="trip-card-cover-dots"></div>
+        <div class="trip-card-cover-overlay"></div>
+        <div class="trip-card-cover-badge">13 天</div>
+        <label class="trip-card-cover-edit" onclick="event.stopPropagation()">
+          📷 封面
+          <input type="file" accept="image/*" style="display:none" onchange="setCoverImage('hokkaido', this)">
+        </label>
+        <div class="trip-card-cover-info">
+          <div class="trip-card-cover-name">北海道 2026</div>
+          <div class="trip-card-cover-dates">8 / 27 – 9 / 8</div>
         </div>
       </div>
-      <div class="trip-card-footer">
-        <span class="trip-card-status">進行中規劃</span>
-        <span class="trip-card-arrow">›</span>
+      <div class="trip-card-info">
+        <div class="trip-card-tags">
+          <span class="trip-card-tag">✈️ TR892</span>
+          <span class="trip-card-tag">🚗 自駕</span>
+          <span class="trip-card-tag">🇯🇵 日本</span>
+        </div>
+        <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
       </div>
     </div>
 
     <!-- 新增行程 -->
     <div class="trip-add-card" onclick="alert('新行程功能即將開放！')">
-      ＋ 新增行程
+      <div class="trip-add-icon">＋</div>
+      新增下一段旅程
     </div>
   </div>
 </div>
@@ -3499,8 +3574,6 @@ function openTrip(id) {
   document.getElementById('home').classList.remove('active');
   document.getElementById('trip-' + id).classList.add('active');
   window.scrollTo(0, 0);
-  // 更新 body padding
-  document.body.style.paddingTop = '0';
 }
 
 function closeTrip() {
@@ -3509,9 +3582,48 @@ function closeTrip() {
   window.scrollTo(0, 0);
 }
 
-// 掛到 window
+// 封面圖片：存 localStorage，跨裝置用 Firebase
+function setCoverImage(tripId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    const img = document.getElementById('cover-img-' + tripId);
+    if (img) { img.src = dataUrl; img.style.display = 'block'; }
+    try { localStorage.setItem('cover_' + tripId, dataUrl); } catch(e) {}
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadCoverImages() {
+  ['hokkaido'].forEach(id => {
+    const saved = localStorage.getItem('cover_' + id);
+    if (saved) {
+      const img = document.getElementById('cover-img-' + id);
+      if (img) { img.src = saved; img.style.display = 'block'; }
+    }
+  });
+}
+
+loadCoverImages();
+
+// 星點生成
+(function() {
+  const container = document.getElementById('homeStars');
+  if (!container) return;
+  for (let i = 0; i < 70; i++) {
+    const s = document.createElement('div');
+    s.className = 'home-hero-star';
+    const size = Math.random() * 2 + 0.4;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*5}s;animation-duration:${2+Math.random()*3}s;`;
+    container.appendChild(s);
+  }
+})();
+
 window.openTrip = openTrip;
 window.closeTrip = closeTrip;
+window.setCoverImage = setCoverImage;
 </script>
 
 </div><!-- end trip-hokkaido wrapper -->
