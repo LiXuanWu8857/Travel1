@@ -594,6 +594,7 @@ body {
 .trip-card-status { font-size: 11px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 5px; }
 .trip-status-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; animation: status-pulse 2s infinite; }
 @keyframes status-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.6)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
 /* Add card */
 .trip-add-card {
@@ -683,10 +684,60 @@ body {
       </div>
     </div>
 
-    <!-- 新增行程 -->
-    <div class="trip-add-card" onclick="alert('新行程功能即將開放！')">
+    <!-- 新增行程 / AI 推薦 -->
+    <div class="trip-add-card" onclick="openPlannerPanel()" id="add-trip-btn">
       <div class="trip-add-icon">＋</div>
       新增下一段旅程
+    </div>
+
+    <!-- AI 規劃面板 -->
+    <div id="planner-panel" style="display:none; background:white; border-radius:20px; overflow:hidden; margin-bottom:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+      <div style="background:linear-gradient(135deg,#1a3a5c,#2d5a8e); padding:18px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="color:white;">
+          <div style="font-size:15px; font-weight:700;">✨ AI 行程探索</div>
+          <div style="font-size:11px; opacity:0.7; margin-top:2px;">輸入目的地與時間，AI 幫你找靈感</div>
+        </div>
+        <div onclick="closePlannerPanel()" style="color:rgba(255,255,255,0.7); font-size:22px; cursor:pointer; line-height:1;">×</div>
+      </div>
+
+      <div style="padding:20px;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:11px; color:#888; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:6px;">目的地</label>
+            <input id="planner-dest" type="text" placeholder="例：京都、首爾、義大利托斯卡尼..."
+              style="width:100%; padding:10px 14px; border:1.5px solid #e4dfd5; border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:#faf9f6; box-sizing:border-box;"
+              onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e4dfd5'">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:11px; color:#888; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:6px;">出發日期</label>
+              <input id="planner-from" type="date"
+                style="width:100%; padding:10px 12px; border:1.5px solid #e4dfd5; border-radius:10px; font-size:13px; font-family:inherit; outline:none; background:#faf9f6; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e4dfd5'">
+            </div>
+            <div>
+              <label style="font-size:11px; color:#888; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:6px;">結束日期</label>
+              <input id="planner-to" type="date"
+                style="width:100%; padding:10px 12px; border:1.5px solid #e4dfd5; border-radius:10px; font-size:13px; font-family:inherit; outline:none; background:#faf9f6; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e4dfd5'">
+            </div>
+          </div>
+          <button onclick="runPlannerAI()"
+            style="width:100%; padding:13px; background:#2d5a8e; color:white; border:none; border-radius:10px; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; transition:background 0.15s;"
+            onmouseover="this.style.background='#1a3a5c'" onmouseout="this.style.background='#2d5a8e'">
+            ✨ 探索這趟旅程
+          </button>
+        </div>
+
+        <!-- 結果區 -->
+        <div id="planner-result" style="display:none; margin-top:20px; border-top:1px solid #f0ede8; padding-top:18px;">
+          <div id="planner-loading" style="text-align:center; padding:24px; color:#888; font-size:13px; display:none;">
+            <div style="font-size:24px; margin-bottom:8px; animation:spin 1.5s linear infinite; display:inline-block;">✈️</div>
+            <div>AI 正在探索中...</div>
+          </div>
+          <div id="planner-content" style="font-size:13px; line-height:1.8; color:#2c2a27;"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -3594,8 +3645,111 @@ loadCoverImages();
 
 // 星點生成已移除（淺色 Hero 不需要）
 
-window.openTrip = openTrip;
-window.closeTrip = closeTrip;
+// ── AI 行程規劃器 ──
+function openPlannerPanel() {
+  document.getElementById('add-trip-btn').style.display = 'none';
+  document.getElementById('planner-panel').style.display = 'block';
+}
+
+function closePlannerPanel() {
+  document.getElementById('planner-panel').style.display = 'none';
+  document.getElementById('add-trip-btn').style.display = 'flex';
+  document.getElementById('planner-result').style.display = 'none';
+  document.getElementById('planner-content').innerHTML = '';
+}
+
+async function runPlannerAI() {
+  const dest = document.getElementById('planner-dest').value.trim();
+  const from = document.getElementById('planner-from').value;
+  const to = document.getElementById('planner-to').value;
+
+  if (!dest) {
+    document.getElementById('planner-dest').focus();
+    document.getElementById('planner-dest').style.borderColor = '#e05';
+    return;
+  }
+
+  const resultEl = document.getElementById('planner-result');
+  const loadingEl = document.getElementById('planner-loading');
+  const contentEl = document.getElementById('planner-content');
+
+  resultEl.style.display = 'block';
+  loadingEl.style.display = 'block';
+  contentEl.innerHTML = '';
+
+  // 計算天數和月份
+  let dateInfo = '';
+  if (from && to) {
+    const d1 = new Date(from), d2 = new Date(to);
+    const days = Math.round((d2 - d1) / 86400000) + 1;
+    const month = d1.toLocaleDateString('zh-TW', { month: 'long' });
+    dateInfo = `出發日期：${from} 至 ${to}（共 ${days} 天），${month}`;
+  } else if (from) {
+    const d1 = new Date(from);
+    const month = d1.toLocaleDateString('zh-TW', { month: 'long' });
+    dateInfo = `出發時間：${from}，${month}`;
+  }
+
+  const prompt = `你是一位專業的旅遊規劃師，請為以下旅行提供詳細的探索推薦：
+
+目的地：${dest}
+${dateInfo ? dateInfo : '時間：待定'}
+
+請用繁體中文，以以下格式回覆（使用 emoji 讓內容生動）：
+
+## 🌍 ${dest} 旅遊概覽
+（2-3句話介紹這個時間去的特色和氛圍）
+
+## 🏆 必去景點（5個）
+逐一列出，每個包含：景點名稱、簡短特色說明（1句話）
+
+## 🍜 必吃美食（5個）
+逐一列出，每個包含：食物名稱、在哪吃最道地（1句話）
+
+## 🎯 必玩體驗（4個）
+逐一列出，每個包含：體驗名稱、為什麼這個季節特別適合（1句話）
+
+## 🌤️ ${dateInfo ? '該時段' : ''}旅遊小提醒
+（天氣、穿著、注意事項，3-4條）
+
+請直接開始回覆，不要有任何前言。`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '無法取得推薦，請稍後再試。';
+
+    loadingEl.style.display = 'none';
+
+    // 將 markdown 轉成簡單 HTML
+    const html = text
+      .replace(/## (.+)/g, '<div style="font-size:14px;font-weight:700;color:#1a3a5c;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #f0ede8;">$1</div>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^[-•] (.+)/gm, '<div style="padding:4px 0 4px 8px;border-left:2px solid #e4dfd5;margin:4px 0;">$1</div>')
+      .replace(/^\d+\. (.+)/gm, '<div style="padding:5px 0 5px 8px;border-left:2px solid #2d5a8e20;margin:4px 0;">$1</div>')
+      .replace(/\n\n/g, '<br>')
+      .replace(/\n/g, '<br>');
+
+    contentEl.innerHTML = html;
+
+  } catch (e) {
+    loadingEl.style.display = 'none';
+    contentEl.innerHTML = '<div style="color:#888;text-align:center;padding:16px;">⚠️ 暫時無法連線，請稍後再試</div>';
+  }
+}
+
+window.openPlannerPanel = openPlannerPanel;
+window.closePlannerPanel = closePlannerPanel;
+window.runPlannerAI = runPlannerAI;
 window.setCoverImage = setCoverImage;
 </script>
 
