@@ -2583,7 +2583,7 @@ function switchDay(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-  const ids = ['booking','d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
+  const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
   const idx = ids.indexOf(id);
   const tabs = document.querySelectorAll('.tab');
   if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
