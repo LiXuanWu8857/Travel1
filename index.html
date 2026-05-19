@@ -509,7 +509,65 @@ body {
 .photo-add-menu-item:hover { background: var(--bg); }
 .photo-add-menu-item + .photo-add-menu-item { border-top: 1px solid var(--border); }
 
-/* Gmail link input */
+/* ── HOME PAGE ── */
+.home-page { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 40px; }
+.home-page.active { display: block; }
+.home-hero {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2d5a8e 60%, #1a6b5a 100%);
+  padding: 48px 20px 32px; text-align: center; position: relative; overflow: hidden;
+}
+.home-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.home-logo { font-size: 36px; font-weight: 800; color: white; letter-spacing: -1px; position: relative; }
+.home-logo span { opacity: 0.7; font-weight: 400; font-size: 14px; display: block; margin-top: 4px; letter-spacing: 2px; }
+.home-subtitle { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 8px; position: relative; }
+.trips-section { padding: 24px 16px 0; }
+.trips-section-title { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+.trip-card {
+  background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+  margin-bottom: 14px; overflow: hidden; cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.trip-card:active { transform: scale(0.98); }
+.trip-card-cover {
+  height: 120px; background: linear-gradient(135deg, #1a3a5c, #2d5a8e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; position: relative; overflow: hidden;
+}
+.trip-card-cover-label {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+  border-radius: 20px; padding: 3px 10px; font-size: 11px; color: white;
+}
+.trip-card-body { padding: 14px 16px; }
+.trip-card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.trip-card-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+.trip-card-meta span { display: flex; align-items: center; gap: 4px; }
+.trip-card-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.trip-card-status { font-size: 11px; color: var(--accent); font-weight: 600; }
+.trip-card-arrow { color: var(--muted); font-size: 16px; }
+.trip-add-card {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 24px; text-align: center; cursor: pointer;
+  color: var(--muted); font-size: 13px; transition: all 0.15s;
+  margin-bottom: 14px;
+}
+.trip-add-card:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── TRIP WRAPPER ── */
+.trip-wrapper { display: none; }
+.trip-wrapper.active { display: block; }
+.back-btn {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; font-size: 13px; color: var(--accent); font-weight: 600;
+}
+.back-btn:active { background: var(--bg); }
+
 .gmail-input-row {
   display: flex; gap: 6px; margin-top: 6px; align-items: center;
 }
@@ -538,7 +596,47 @@ body {
 </head>
 <body>
 
-<div class="top-nav">
+<!-- ══════════════════ HOME PAGE ══════════════════ -->
+<div id="home" class="home-page active">
+  <div class="home-hero">
+    <div class="home-logo">旅圖 <span>WANDR · MY TRIPS</span></div>
+    <div class="home-subtitle">點選行程開始規劃</div>
+  </div>
+  <div class="trips-section">
+    <div class="trips-section-title">我的行程</div>
+
+    <!-- 北海道 2026 -->
+    <div class="trip-card" onclick="openTrip('hokkaido')">
+      <div class="trip-card-cover" style="background: linear-gradient(135deg,#1a3a5c,#2d5a8e);">
+        🗾
+        <div class="trip-card-cover-label">13 天</div>
+      </div>
+      <div class="trip-card-body">
+        <div class="trip-card-title">北海道 2026</div>
+        <div class="trip-card-meta">
+          <span>📅 8/27 – 9/8</span>
+          <span>✈️ TR892</span>
+          <span>🚗 自駕</span>
+        </div>
+      </div>
+      <div class="trip-card-footer">
+        <span class="trip-card-status">進行中規劃</span>
+        <span class="trip-card-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- 新增行程 -->
+    <div class="trip-add-card" onclick="alert('新行程功能即將開放！')">
+      ＋ 新增行程
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ 北海道行程 WRAPPER ══════════════════ -->
+<div id="trip-hokkaido" class="trip-wrapper">
+  <div class="back-btn" onclick="closeTrip()">‹ 旅圖首頁</div>
+
+<div class="top-nav" style="top:44px;">
   <div class="nav-title">✈️ 旅圖 · 北海道 2026</div>
   <div class="tab-scroll">
     <div class="tab active" onclick="switchDay('booking')">📋 預訂清單</div>
@@ -557,6 +655,7 @@ body {
     <div class="tab" onclick="switchDay('d0908')">9/8</div>
   </div>
 </div>
+<div style="height:88px;"></div>
 
 <!-- ══════════════════ BOOKING CHECKLIST ══════════════════ -->
 <div id="booking" class="booking-page active">
@@ -3394,7 +3493,28 @@ function _renderSavedPhoto(d, key, slotsEl) {
 // Init done
 </script>
 
+<script>
+// ── HOME / TRIP NAVIGATION ──
+function openTrip(id) {
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('trip-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  // 更新 body padding
+  document.body.style.paddingTop = '0';
+}
 
+function closeTrip() {
+  document.querySelectorAll('.trip-wrapper').forEach(t => t.classList.remove('active'));
+  document.getElementById('home').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// 掛到 window
+window.openTrip = openTrip;
+window.closeTrip = closeTrip;
+</script>
+
+</div><!-- end trip-hokkaido wrapper -->
 
 </body>
 </html>
