@@ -287,8 +287,10 @@ body {
 }
 .checklist-title { font-size: 12px; font-weight: 700; color: var(--warning); margin-bottom: 7px; }
 .checklist ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-.checklist li { font-size: 13px; color: #78350F; padding-left: 18px; position: relative; line-height: 1.5; }
-.checklist li::before { content: '□'; position: absolute; left: 0; font-size: 13px; color: var(--warning); }
+.checklist li { font-size: 13px; color: #78350F; padding-left: 24px; position: relative; line-height: 1.5; cursor: pointer; user-select: none; transition: all 0.2s; }
+.checklist li::before { content: '☐'; position: absolute; left: 0; font-size: 15px; color: var(--warning); transition: all 0.2s; }
+.checklist li.checked { color: #a0785a; text-decoration: line-through; opacity: 0.55; }
+.checklist li.checked::before { content: '☑'; color: #0F6E56; }
 
 /* ── TIMELINE ── */
 .timeline { padding: 12px 16px 0; }
@@ -617,6 +619,48 @@ body {
 }
 .back-btn:active { background: var(--bg); }
 
+/* ── BOOKING FAB & MODAL ── */
+.booking-fab {
+  position: fixed; top: 12px; right: 16px; z-index: 500;
+  background: var(--accent); color: white;
+  border: none; border-radius: 20px; padding: 7px 14px;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; box-shadow: 0 2px 10px rgba(45,90,142,0.4);
+  display: none; align-items: center; gap: 5px;
+  transition: transform 0.15s;
+}
+.booking-fab.visible { display: flex; }
+.booking-fab:active { transform: scale(0.96); }
+.booking-fab .fab-count {
+  background: white; color: var(--accent);
+  border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 700;
+}
+.booking-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+}
+.booking-modal-overlay.open { display: flex; align-items: flex-end; }
+.booking-modal-sheet {
+  background: var(--card); border-radius: 20px 20px 0 0;
+  width: 100%; max-height: 85vh; overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.booking-modal-header {
+  position: sticky; top: 0; background: var(--card);
+  padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; z-index: 1;
+}
+.booking-modal-title { font-size: 15px; font-weight: 700; }
+.booking-modal-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--muted);
+}
+.booking-modal-body { padding: 0 0 12px; }
+
 .gmail-input-row {
   display: flex; gap: 6px; margin-top: 6px; align-items: center;
 }
@@ -692,15 +736,27 @@ body {
   </div>
 </div>
 
-<!-- ══════════════════ 北海道行程 WRAPPER ══════════════════ -->
-<div id="trip-hokkaido" class="trip-wrapper">
+<!-- ══ BOOKING FAB ══ -->
+<button class="booking-fab" id="booking-fab" onclick="openBookingModal()">
+  📋 預訂 <span class="fab-count" id="fab-count">0</span>
+</button>
+
+<!-- ══ BOOKING MODAL ══ -->
+<div class="booking-modal-overlay" id="booking-modal" onclick="if(event.target===this)closeBookingModal()">
+  <div class="booking-modal-sheet">
+    <div class="booking-modal-header">
+      <div class="booking-modal-title">📋 預訂清單</div>
+      <button class="booking-modal-close" onclick="closeBookingModal()">✕</button>
+    </div>
+    <div class="booking-modal-body" id="booking-modal-body"></div>
+  </div>
+</div>
   <div class="back-btn" onclick="closeTrip()">‹ 旅圖首頁</div>
 
 <div class="top-nav" style="top:44px;">
   <div class="nav-title">✈️ 旅圖 · 北海道 2026</div>
   <div class="tab-scroll">
-    <div class="tab active" onclick="switchDay('booking')">📋 預訂清單</div>
-    <div class="tab" onclick="switchDay('d0827')">8/27</div>
+    <div class="tab active" onclick="switchDay('d0827')">8/27</div>
     <div class="tab" onclick="switchDay('d0828')">8/28</div>
     <div class="tab" onclick="switchDay('d0829')">8/29</div>
     <div class="tab" onclick="switchDay('d0830')">8/30</div>
@@ -2258,7 +2314,23 @@ body {
       </div></div>
     </div>
     <div class="item">
-      <div class="item-left"><div class="item-time">22:00</div><div class="item-dot dot-onsen"></div></div>
+      <div class="item-left"><div class="item-time">21:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🍨 Parfaiteria Pal 夜パフェ専門店パフェテリア パル</div><span class="tag tag-food">宵夜</span></div>
+        <div class="card-desc">花火後宵夜パフェ · 札幌名物深夜パフェ文化 · <span style="color:#0F6E56;font-size:11px;">⏰ 週六 ❓ 出發前確認</span></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=パフェテリアパル+札幌" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Parfaiteria Pal</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">22:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🥛 ESPRESSO D WORKS ココノススキノ店</div><span class="tag tag-food">外帶</span></div>
+        <div class="card-desc">買牛奶布丁 · ススキノ · <span style="color:#0F6E56;font-size:11px;">⏰ 週六 ❓ 出發前確認</span></div>
+        <a class="nav-btn" href="https://maps.google.com/?q=ESPRESSO+D+WORKS+ココノススキノ" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ESPRESSO D WORKS</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">23:00</div><div class="item-dot dot-onsen"></div></div>
       <div class="item-content"><div class="card" data-sync="stay_holidayinn" style="border-color:var(--onsen);border-width:1.5px;">
         <div class="card-header"><div class="card-title">🏨 Holiday Inn &amp; Suites 大通公園</div><span class="tag tag-hotel">住宿</span></div>
         <div class="card-desc">車程20分· 停車¥2,000/晚 · 頂樓大浴場＋桑拿 · Check-out 11:00</div>
@@ -2523,6 +2595,7 @@ function toggleBooking(el) {
   if (bid) syncBadges(bid, el.classList.contains('done'));
   updateProgress();
   saveProgress();
+  if (typeof syncFabCount === 'function') syncFabCount();
 }
 
 // Toggle from day card badge
@@ -2852,11 +2925,25 @@ window._fbDb = db;
     <div class="item">
       <div class="item-left"><div class="item-time">16:30</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
       <div class="item-content"><div class="card card-drive">
-        <div class="card-desc">🚕 計程車 → InterContinental 札幌 · 車程15分 · 約¥800～</div>
+        <div class="card-desc">🚕 計程車 → Holiday Inn & Suites 大通公園（昨晚住的）取車 · 車程5分 · 約¥500～</div>
       </div></div>
     </div>
     <div class="item">
-      <div class="item-left"><div class="item-time">16:50</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-left"><div class="item-time">16:40</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card">
+        <div class="card-header"><div class="card-title">🚗 Holiday Inn 取車</div><span class="tag tag-drive">取車</span></div>
+        <div class="card-desc">至停車場取回自駕車 · 再開車前往 InterContinental · 車程15分</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Holiday+Inn+Suites+Sapporo+Odori+Park" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Holiday Inn & Suites</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 開車 → InterContinental 札幌 · 車程15分 · 停車：ホテル地下駐車場</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:15</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
       <div class="item-content"><div class="card" data-sync="stay_ic" style="border-color:var(--hotel);border-width:1.5px;">
         <div class="card-header"><div class="card-title">🏨 Check-in — InterContinental 札幌</div><span class="tag tag-hotel">住宿</span></div>
         <div class="card-desc">15:00 C/I ✅ · 室內泳池・Club Lounge（14F）· 42㎡以上</div>
@@ -3083,7 +3170,7 @@ function saveEdit() {
   const key = document.getElementById('edit-key').value;
   const time = document.getElementById('edit-time').value.trim();
   const note = document.getElementById('edit-note').value.trim();
-  
+
   const allData = getUserAllData();
   if (time || note) {
     allData[key] = { time, note };
@@ -3091,12 +3178,31 @@ function saveEdit() {
     delete allData[key];
   }
   saveUserAllData(allData);
-  
-  // Re-render note on card
+
+  // 同步到 Firebase
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
+    window._fbSet(editsRef, allData).catch(e => console.warn('Edit save error:', e));
+  }
+
   const card = document.querySelector(`[data-edit-key="${key}"]`);
   if (card) renderNote(card, key);
-  
   closeModal();
+}
+
+function loadEditsFromFirebase() {
+  if (!window._fbDb || !window._fbRef || !window._fbOnValue) return;
+  const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
+  window._fbOnValue(editsRef, (snap) => {
+    const data = snap.val();
+    if (!data) return;
+    try { localStorage.setItem('user_edits', JSON.stringify(data)); } catch(e) {}
+    // Re-render all notes
+    Object.keys(data).forEach(key => {
+      const card = document.querySelector(`[data-edit-key="${key}"]`);
+      if (card) renderNote(card, key);
+    });
+  }, { onlyOnce: false });
 }
 
 function renderNote(card, key) {
@@ -3492,7 +3598,23 @@ async function importEmailPDFs() {
   }
 }
 // run after firebase is ready
-waitForFirebase(() => { importEmailPDFs(); });
+// ── CHECKLIST TOGGLE ──
+function initChecklists() {
+  document.querySelectorAll('.checklist li').forEach((li, i) => {
+    const key = 'chk_' + li.closest('.day-section')?.id + '_' + i;
+    if (localStorage.getItem(key) === '1') li.classList.add('checked');
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      localStorage.setItem(key, li.classList.contains('checked') ? '1' : '0');
+    });
+  });
+}
+waitForFirebase(() => {
+  initPhotoSections();
+  loadEditsFromFirebase();
+  importEmailPDFs();
+  initChecklists();
+});
 
 </script>
 
@@ -3502,13 +3624,61 @@ function openTrip(id) {
   document.getElementById('home').classList.remove('active');
   document.getElementById('trip-' + id).classList.add('active');
   window.scrollTo(0, 0);
+  // 顯示 FAB
+  const fab = document.getElementById('booking-fab');
+  if (fab) { fab.classList.add('visible'); syncFabCount(); }
+  // 預設顯示 8/27
+  switchDay('d0827');
 }
 
 function closeTrip() {
   document.querySelectorAll('.trip-wrapper').forEach(t => t.classList.remove('active'));
   document.getElementById('home').classList.add('active');
+  document.getElementById('booking-fab')?.classList.remove('visible');
   window.scrollTo(0, 0);
 }
+
+function openBookingModal() {
+  const modal = document.getElementById('booking-modal');
+  const body = document.getElementById('booking-modal-body');
+  const src = document.getElementById('booking');
+  if (src && body) {
+    body.innerHTML = src.innerHTML;
+    // 同步勾選狀態
+    body.querySelectorAll('.booking-item').forEach(item => {
+      const bid = item.dataset.bid;
+      if (bid) {
+        const original = document.querySelector(`#booking .booking-item[data-bid="${bid}"]`);
+        if (original?.classList.contains('done')) item.classList.add('done');
+      }
+      item.onclick = function() {
+        // 同步回原始 booking page
+        const bid = this.dataset.bid;
+        const original = document.querySelector(`#booking .booking-item[data-bid="${bid}"]`);
+        if (original) { original.click(); }
+        this.classList.toggle('done', original?.classList.contains('done'));
+        syncFabCount();
+      };
+    });
+  }
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBookingModal() {
+  document.getElementById('booking-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function syncFabCount() {
+  const total = document.querySelectorAll('#booking .booking-item').length;
+  const done = document.querySelectorAll('#booking .booking-item.done').length;
+  const el = document.getElementById('fab-count');
+  if (el) el.textContent = `${done}/${total}`;
+}
+
+window.openBookingModal = openBookingModal;
+window.closeBookingModal = closeBookingModal;
 
 // 封面圖片：存 localStorage，跨裝置用 Firebase
 function setCoverImage(tripId, input) {
