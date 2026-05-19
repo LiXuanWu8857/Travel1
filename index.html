@@ -517,7 +517,7 @@ body {
 .home-hero {
   position: relative; height: 260px; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: linear-gradient(160deg, #e8e0d4 0%, #f0ebe2 40%, #dde8e4 100%);
+  background: #f5f2ed;
 }
 .home-hero-glow {
   position: absolute; inset: 0;
@@ -525,12 +525,8 @@ body {
     radial-gradient(ellipse 70% 50% at 30% 80%, rgba(180,155,110,0.2) 0%, transparent 60%),
     radial-gradient(ellipse 50% 40% at 80% 20%, rgba(100,150,130,0.15) 0%, transparent 55%);
 }
-.home-hero::after {
-  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 36px;
-  background: #f5f2ed; clip-path: ellipse(55% 100% at 50% 100%);
-}
 .home-hero-content { position: relative; z-index: 1; text-align: center; }
-.home-logo-img { height: 90px; width: auto; display: block; margin: 0 auto; }
+.home-logo-img { height: 90px; width: auto; display: block; margin: 0 auto; filter: brightness(0) saturate(100%); }
 .home-logo-sub {
   font-size: 10px; letter-spacing: 5px; font-weight: 300;
   color: rgba(40,35,28,0.4); margin-top: 12px; text-transform: uppercase;
