@@ -620,29 +620,7 @@ body {
 }
 .back-btn:active { background: var(--bg); }
 
-/* ── HOTEL COST INPUT ── */
-.hotel-cost-row {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-.hotel-cost-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
-.hotel-cost-input {
-  flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
-  padding: 7px 10px; font-size: 14px; font-family: inherit;
-  background: var(--bg); color: var(--text); text-align: right; min-width: 0;
-}
-.hotel-cost-input:focus { outline: none; border-color: var(--accent); }
-.hotel-cost-select {
-  border: 1.5px solid var(--border); border-radius: 8px;
-  padding: 7px 8px; font-size: 13px; font-family: inherit;
-  background: var(--bg); color: var(--text); flex-shrink: 0;
-}
-.hotel-cost-select:focus { outline: none; border-color: var(--accent); }
-.hotel-cost-twd {
-  font-size: 13px; font-weight: 700; color: var(--accent);
-  white-space: nowrap; min-width: 80px; text-align: right;
-}
+
 .expense-section { padding: 0 16px 16px; }
 .expense-section-title {
   font-size: 11px; font-weight: 700; color: var(--muted);
@@ -3910,7 +3888,6 @@ waitForFirebase(() => {
   initPhotoSections();
   loadEditsFromFirebase();
   initChecklists();
-  initHotelCosts();
 });
 
 </script>
@@ -4004,53 +3981,6 @@ function loadCoverImages() {
 loadCoverImages();
 
 // ══ HOTEL COST INPUTS ══
-function initHotelCosts() {
-  // 只找行程 day-section 內的住宿卡片，排除預訂清單
-  document.querySelectorAll('.day-section .card').forEach(card => {
-    // 有 .tag 標籤且文字是「住宿」
-    const tag = Array.from(card.querySelectorAll('.tag')).find(t => t.textContent.trim() === '住宿');
-    if (!tag) return;
-    if (card.querySelector('.hotel-cost-row')) return; // 已注入
-
-    const titleEl = card.querySelector('.card-title');
-    const title = titleEl ? titleEl.textContent.trim() : 'hotel';
-    const key = 'hcost_' + title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_').slice(0, 40);
-
-    let saved = {};
-    try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
-
-    const row = document.createElement('div');
-    row.className = 'hotel-cost-row';
-    row.innerHTML = `
-      <span class="hotel-cost-label">💴 住宿費</span>
-      <select class="hotel-cost-select">
-        <option value="JPY" ${!saved.cur||saved.cur==='JPY'?'selected':''}>JPY</option>
-        <option value="NTD" ${saved.cur==='NTD'?'selected':''}>NTD</option>
-      </select>
-      <input class="hotel-cost-input" type="number" placeholder="輸入金額"
-        value="${saved.amount||''}" min="0">
-      <div class="hotel-cost-twd">${saved.amount ? calcTwd(saved.amount, saved.cur||'JPY') : '—'}</div>`;
-
-    const navBtn = card.querySelector('.nav-btn');
-    if (navBtn) card.insertBefore(row, navBtn);
-    else card.appendChild(row);
-
-    const input = row.querySelector('.hotel-cost-input');
-    const select = row.querySelector('.hotel-cost-select');
-    const twdEl = row.querySelector('.hotel-cost-twd');
-
-    function update() {
-      const amount = parseFloat(input.value) || 0;
-      const cur = select.value;
-      localStorage.setItem(key, JSON.stringify({ amount, cur }));
-      twdEl.textContent = amount ? calcTwd(amount, cur) : '—';
-      updateHotelTotal();
-    }
-    input.addEventListener('input', update);
-    select.addEventListener('change', update);
-  });
-  updateHotelTotal();
-}
 
 function calcTwd(amount, cur) {
   const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur==='JPY' ? 0.215 : 1);
