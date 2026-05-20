@@ -619,7 +619,29 @@ body {
 }
 .back-btn:active { background: var(--bg); }
 
-/* ── EXPENSE MODAL ── */
+/* ── HOTEL COST INPUT ── */
+.hotel-cost-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.hotel-cost-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.hotel-cost-input {
+  flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 7px 10px; font-size: 14px; font-family: inherit;
+  background: var(--bg); color: var(--text); text-align: right; min-width: 0;
+}
+.hotel-cost-input:focus { outline: none; border-color: var(--accent); }
+.hotel-cost-select {
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 7px 8px; font-size: 13px; font-family: inherit;
+  background: var(--bg); color: var(--text); flex-shrink: 0;
+}
+.hotel-cost-select:focus { outline: none; border-color: var(--accent); }
+.hotel-cost-twd {
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  white-space: nowrap; min-width: 80px; text-align: right;
+}
 .expense-section { padding: 0 16px 16px; }
 .expense-section-title {
   font-size: 11px; font-weight: 700; color: var(--muted);
@@ -912,6 +934,16 @@ body {
         <div class="currency-result" id="cur-result">— TWD</div>
         <div class="currency-rate" id="cur-rate">載入匯率中…</div>
       </div>
+    </div>
+
+    <!-- 住宿費總計 -->
+    <div class="expense-section">
+      <div class="expense-section-title">🏨 住宿費總計</div>
+      <div class="expense-row">
+        <div class="expense-label">所有住宿合計（換算 NTD）</div>
+        <div class="expense-amount" id="hotel-total-twd">—</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);padding:4px 0 8px;">※ 請至各住宿方塊輸入金額，此處自動加總</div>
     </div>
 
     <!-- 開車費用 -->
@@ -3847,6 +3879,7 @@ waitForFirebase(() => {
   initPhotoSections();
   loadEditsFromFirebase();
   initChecklists();
+  initHotelCosts();
 });
 
 </script>
@@ -3938,6 +3971,73 @@ function loadCoverImages() {
 }
 
 loadCoverImages();
+
+// ══ HOTEL COST INPUTS ══
+function initHotelCosts() {
+  document.querySelectorAll('.tag-hotel, .tag-onsen').forEach(tag => {
+    if (tag.textContent.trim() !== '住宿') return;
+    const card = tag.closest('.card');
+    if (!card || card.querySelector('.hotel-cost-row')) return;
+
+    const titleEl = card.querySelector('.card-title');
+    const title = titleEl ? titleEl.textContent.trim() : 'hotel';
+    const key = 'hotel_cost_' + title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_').slice(0, 40);
+
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+
+    const row = document.createElement('div');
+    row.className = 'hotel-cost-row';
+    row.innerHTML = `
+      <span class="hotel-cost-label">💴 住宿費</span>
+      <select class="hotel-cost-select" data-key="${key}">
+        <option value="JPY" ${!saved.cur || saved.cur==='JPY' ? 'selected':''}>JPY</option>
+        <option value="NTD" ${saved.cur==='NTD' ? 'selected':''}>NTD</option>
+      </select>
+      <input class="hotel-cost-input" type="number" placeholder="輸入金額"
+        value="${saved.amount||''}" data-key="${key}" min="0">
+      <div class="hotel-cost-twd" data-twd="${key}">${saved.amount ? calcTwd(saved.amount, saved.cur||'JPY') : '—'}</div>`;
+
+    const navBtn = card.querySelector('.nav-btn');
+    if (navBtn) card.insertBefore(row, navBtn);
+    else card.appendChild(row);
+
+    const input = row.querySelector('.hotel-cost-input');
+    const select = row.querySelector('.hotel-cost-select');
+    const twdEl = row.querySelector('.hotel-cost-twd');
+
+    function update() {
+      const amount = parseFloat(input.value) || 0;
+      const cur = select.value;
+      localStorage.setItem(key, JSON.stringify({ amount, cur }));
+      twdEl.textContent = amount ? calcTwd(amount, cur) : '—';
+      updateHotelTotal();
+    }
+    input.addEventListener('input', update);
+    select.addEventListener('change', update);
+  });
+  updateHotelTotal();
+}
+
+function calcTwd(amount, cur) {
+  const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur==='JPY' ? 0.215 : 1);
+  return 'NT$\u00a0' + Math.round(amount * rate).toLocaleString();
+}
+
+function updateHotelTotal() {
+  let total = 0;
+  document.querySelectorAll('.hotel-cost-input').forEach(inp => {
+    const amt = parseFloat(inp.value) || 0;
+    if (!amt) return;
+    const sel = inp.parentElement?.querySelector('.hotel-cost-select');
+    const cur = sel ? sel.value : 'JPY';
+    const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur==='JPY' ? 0.215 : 1);
+    total += amt * rate;
+  });
+  const el = document.getElementById('hotel-total-twd');
+  if (el) el.textContent = total ? 'NT$ ' + Math.round(total).toLocaleString() : '—';
+}
+window.updateHotelTotal = updateHotelTotal;
 
 // ══ EXPENSE MODAL ══
 const DRIVE_SEGMENTS = [
