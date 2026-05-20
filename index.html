@@ -2730,13 +2730,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 function switchDay(id) {
-  document.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const wrapper = document.getElementById('trip-hokkaido');
+  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active'));
+  wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
   const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
   const idx = ids.indexOf(id);
-  const tabs = document.querySelectorAll('.tab');
+  const tabs = wrapper.querySelectorAll('.tab');
   if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
   window.scrollTo(0, 0);
 }
