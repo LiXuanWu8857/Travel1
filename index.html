@@ -619,6 +619,110 @@ body {
 }
 .back-btn:active { background: var(--bg); }
 
+/* ── NEW TRIP MODAL ── */
+.new-trip-overlay {
+  display: none; position: fixed; inset: 0; z-index: 800;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  align-items: flex-end;
+}
+.new-trip-overlay.open { display: flex; }
+.new-trip-sheet {
+  background: var(--card); border-radius: 24px 24px 0 0;
+  width: 100%; max-height: 92vh; overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+  animation: slideUp 0.28s ease;
+}
+.new-trip-header {
+  position: sticky; top: 0; background: var(--card);
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; z-index: 1;
+}
+.new-trip-title { font-size: 16px; font-weight: 700; }
+.new-trip-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  font-size: 16px; color: var(--muted);
+}
+.new-trip-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.new-trip-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+.new-trip-field input {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 11px 14px; font-size: 15px; font-family: inherit;
+  background: var(--bg); color: var(--text); transition: border-color 0.15s;
+}
+.new-trip-field input:focus { outline: none; border-color: var(--accent); }
+.new-trip-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.new-trip-submit {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--accent); color: white; font-size: 15px;
+  font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px;
+}
+.new-trip-submit:active { opacity: 0.8; }
+
+/* ── CUSTOM TRIP ── */
+.custom-trip-wrapper { display: none; }
+.custom-trip-wrapper.active { display: block; }
+
+/* ── ADD PLACE BUTTON ── */
+.add-place-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 12px 16px;
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 13px; color: var(--accent); font-size: 14px; font-weight: 600;
+  cursor: pointer; background: transparent; font-family: inherit;
+  width: calc(100% - 32px); transition: all 0.15s;
+}
+.add-place-btn:active { background: rgba(45,90,142,0.06); }
+
+/* ── ADD PLACE MODAL ── */
+.add-place-overlay {
+  display: none; position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  align-items: flex-end;
+}
+.add-place-overlay.open { display: flex; }
+.add-place-sheet {
+  background: var(--card); border-radius: 24px 24px 0 0;
+  width: 100%; padding-bottom: env(safe-area-inset-bottom, 20px);
+  animation: slideUp 0.28s ease;
+}
+.add-place-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.add-place-input-wrap { padding: 16px 20px; display: flex; gap: 10px; }
+.add-place-input {
+  flex: 1; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; font-size: 15px; font-family: inherit;
+  background: var(--bg); color: var(--text);
+}
+.add-place-input:focus { outline: none; border-color: var(--accent); }
+.add-place-go {
+  border: none; border-radius: 10px; background: var(--accent);
+  color: white; padding: 12px 18px; font-size: 14px; font-weight: 700;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+}
+.add-place-go:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── AI LOADING ── */
+.ai-loading-card {
+  margin: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 22px; text-align: center; color: var(--muted); font-size: 13px;
+}
+.ai-dots { display: inline-flex; gap: 5px; margin-bottom: 10px; }
+.ai-dots span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+.ai-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ── BOOKING FAB & MODAL ── */
 .booking-fab {
   background: var(--accent); color: white;
@@ -727,14 +831,61 @@ body {
     </div>
 
     <!-- 新增行程 -->
-    <div class="trip-add-card" onclick="alert('新行程功能即將開放！')">
+    <div class="trip-add-card" onclick="openNewTripModal()">
       <div class="trip-add-icon">＋</div>
       新增下一段旅程
     </div>
   </div>
 </div>
 
-<!-- ══════════════════ 北海道行程 WRAPPER ══════════════════ -->
+<!-- ══ NEW TRIP MODAL ══ -->
+<div class="new-trip-overlay" id="new-trip-overlay" onclick="if(event.target===this)closeNewTripModal()">
+  <div class="new-trip-sheet">
+    <div class="new-trip-header">
+      <div class="new-trip-title">✈️ 新增旅程</div>
+      <button class="new-trip-close" onclick="closeNewTripModal()">✕</button>
+    </div>
+    <div class="new-trip-body">
+      <div class="new-trip-field">
+        <label>旅程名稱</label>
+        <input id="nt-name" type="text" placeholder="例：沖繩 2026、首爾春遊…">
+      </div>
+      <div class="new-trip-field">
+        <label>目的地</label>
+        <input id="nt-dest" type="text" placeholder="例：沖繩、首爾、京都…">
+      </div>
+      <div class="new-trip-dates">
+        <div class="new-trip-field">
+          <label>出發日期</label>
+          <input id="nt-start" type="date">
+        </div>
+        <div class="new-trip-field">
+          <label>返回日期</label>
+          <input id="nt-end" type="date">
+        </div>
+      </div>
+      <button class="new-trip-submit" onclick="createNewTrip()">🗺 建立行程</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD PLACE MODAL ══ -->
+<div class="add-place-overlay" id="add-place-overlay" onclick="if(event.target===this)closeAddPlace()">
+  <div class="add-place-sheet">
+    <div class="add-place-header">
+      <div style="font-size:15px;font-weight:700;">📍 新增地點</div>
+      <button class="new-trip-close" onclick="closeAddPlace()">✕</button>
+    </div>
+    <div class="add-place-input-wrap">
+      <input class="add-place-input" id="add-place-input" type="text" placeholder="輸入地點名稱，例：淺草寺、黑門市場…" onkeydown="if(event.key==='Enter')doAddPlace()">
+      <button class="add-place-go" id="add-place-go" onclick="doAddPlace()">搜尋</button>
+    </div>
+    <div style="padding:0 20px 16px;font-size:12px;color:var(--muted);">AI 將自動查詢營業時間、注意事項、交通方式與推薦體驗</div>
+  </div>
+</div>
+
+<!-- ══ CUSTOM TRIPS CONTAINER ══ -->
+<div id="custom-trips-container"></div>
 <div id="trip-hokkaido" class="trip-wrapper">
 
 <!-- ══ BOOKING MODAL ══ -->
@@ -3689,7 +3840,353 @@ function loadCoverImages() {
 
 loadCoverImages();
 
-window.setCoverImage = setCoverImage;
+// ══════════════════════════════════════════════
+// ── NEW TRIP SYSTEM ──
+// ══════════════════════════════════════════════
+
+let _addPlaceTripId = null;
+let _addPlaceDayId = null;
+let _customTrips = JSON.parse(localStorage.getItem('wandr_custom_trips') || '[]');
+
+function saveCustomTrips() {
+  localStorage.setItem('wandr_custom_trips', JSON.stringify(_customTrips));
+}
+
+// ── 日期工具 ──
+function dateRange(startStr, endStr) {
+  const dates = [];
+  const cur = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  while (cur <= end) {
+    dates.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+function fmtTabDate(d) {
+  return (d.getMonth()+1) + '/' + d.getDate();
+}
+function fmtDayTitle(d) {
+  const wd = ['日','一','二','三','四','五','六'][d.getDay()];
+  return `${d.getFullYear()} · ${d.getMonth()+1}月${d.getDate()}日 (${wd})`;
+}
+function dayId(tripId, d) {
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `ct_${tripId}_${d.getFullYear()}${m}${dd}`;
+}
+
+// ── 開啟/關閉 Modal ──
+window.openNewTripModal = function() {
+  document.getElementById('new-trip-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // 預設日期：今天開始 + 3天
+  const t = new Date();
+  const e = new Date(); e.setDate(e.getDate()+3);
+  document.getElementById('nt-start').value = t.toISOString().slice(0,10);
+  document.getElementById('nt-end').value = e.toISOString().slice(0,10);
+};
+window.closeNewTripModal = function() {
+  document.getElementById('new-trip-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// ── 建立旅程 ──
+window.createNewTrip = function() {
+  const name = document.getElementById('nt-name').value.trim();
+  const dest = document.getElementById('nt-dest').value.trim();
+  const start = document.getElementById('nt-start').value;
+  const end = document.getElementById('nt-end').value;
+  if (!name || !start || !end) { alert('請填入旅程名稱及日期！'); return; }
+  if (new Date(start) > new Date(end)) { alert('出發日期不能晚於返回日期！'); return; }
+
+  const id = 'ct_' + Date.now();
+  const trip = { id, name, dest, start, end, places: {} };
+  _customTrips.push(trip);
+  saveCustomTrips();
+  closeNewTripModal();
+  renderCustomTrip(trip);
+  openCustomTrip(id);
+  // 加到首頁卡片
+  addTripCard(trip);
+};
+
+// ── 加首頁卡片 ──
+function addTripCard(trip) {
+  const sec = document.querySelector('.trips-section');
+  const addBtn = document.querySelector('.trip-add-card');
+  const days = dateRange(trip.start, trip.end).length;
+  const card = document.createElement('div');
+  card.className = 'trip-card';
+  card.id = 'card-' + trip.id;
+  const s = trip.start.replace(/-/g,'/').slice(5);
+  const e = trip.end.replace(/-/g,'/').slice(5);
+  card.innerHTML = `
+    <div class="trip-card-cover" onclick="openCustomTrip('${trip.id}')" style="background:linear-gradient(135deg,#2d5a8e,#1a8c6e);">
+      <div class="trip-card-cover-badge">${days} 天</div>
+      <div class="trip-card-cover-info">
+        <div class="trip-card-cover-name">${trip.name}</div>
+        <div class="trip-card-cover-dates">${s} – ${e}</div>
+      </div>
+    </div>
+    <div class="trip-card-info">
+      <div class="trip-card-tags">
+        ${trip.dest ? `<span class="trip-card-tag">📍 ${trip.dest}</span>` : ''}
+        <span class="trip-card-tag">✏️ 編輯中</span>
+      </div>
+      <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
+    </div>`;
+  sec.insertBefore(card, addBtn);
+}
+
+// ── 渲染旅程頁面 ──
+function renderCustomTrip(trip) {
+  if (document.getElementById('trip-' + trip.id)) return; // 已存在
+  const dates = dateRange(trip.start, trip.end);
+  const container = document.getElementById('custom-trips-container');
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'trip-' + trip.id;
+  wrapper.className = 'trip-wrapper custom-trip-wrapper';
+
+  // tabs html
+  const tabsHtml = dates.map((d,i) =>
+    `<div class="tab${i===0?' active':''}" onclick="switchCustomDay('${trip.id}','${dayId(trip.id,d)}')">${fmtTabDate(d)}</div>`
+  ).join('');
+
+  // days html
+  const daysHtml = dates.map((d,i) => {
+    const did = dayId(trip.id, d);
+    return `
+    <div id="${did}" class="day-section${i===0?' active':''}">
+      <div class="day-header">
+        <div class="day-date">${fmtDayTitle(d)}</div>
+      </div>
+      <div class="timeline" id="tl_${did}"></div>
+      <button class="add-place-btn" onclick="openAddPlace('${trip.id}','${did}')">
+        ＋ 新增地點
+      </button>
+      <div class="footer">${fmtTabDate(d)} · ${trip.name}</div>
+    </div>`;
+  }).join('');
+
+  wrapper.innerHTML = `
+    <button class="booking-fab visible" id="fab-${trip.id}" onclick="event.stopPropagation();alert('此旅程暫無預訂清單')" style="position:fixed;top:12px;right:16px;z-index:500;display:flex;">
+      📍 ${trip.dest||trip.name}
+    </button>
+    <div class="back-btn" onclick="closeCustomTrip('${trip.id}')" style="justify-content:space-between;">
+      <span>‹ 旅圖首頁</span>
+    </div>
+    <div class="top-nav" style="top:44px;">
+      <div class="nav-title">✈️ 旅圖 · ${trip.name}</div>
+      <div class="tab-scroll">${tabsHtml}</div>
+    </div>
+    <div style="height:88px;"></div>
+    ${daysHtml}`;
+
+  container.appendChild(wrapper);
+
+  // 還原已儲存的地點
+  if (trip.places) {
+    Object.entries(trip.places).forEach(([did, places]) => {
+      places.forEach(p => insertPlaceCard(trip.id, did, p, false));
+    });
+  }
+}
+
+// ── 切換 Tab ──
+window.switchCustomDay = function(tripId, targetId) {
+  const wrapper = document.getElementById('trip-' + tripId);
+  wrapper.querySelectorAll('.day-section').forEach(s => s.classList.remove('active'));
+  wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(targetId)?.classList.add('active');
+  // highlight tab
+  wrapper.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick').includes(targetId)) t.classList.add('active');
+  });
+  window.scrollTo(0,0);
+};
+
+// ── 開啟/關閉旅程 ──
+window.openCustomTrip = function(tripId) {
+  const trip = _customTrips.find(t => t.id === tripId);
+  if (!trip) return;
+  if (!document.getElementById('trip-' + tripId)) renderCustomTrip(trip);
+  document.getElementById('home').classList.remove('active');
+  document.querySelectorAll('.trip-wrapper').forEach(w => w.classList.remove('active'));
+  document.getElementById('trip-' + tripId).classList.add('active');
+  window.scrollTo(0,0);
+};
+window.closeCustomTrip = function(tripId) {
+  document.getElementById('trip-' + tripId)?.classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  window.scrollTo(0,0);
+};
+
+// ── Add Place Modal ──
+window.openAddPlace = function(tripId, did) {
+  _addPlaceTripId = tripId;
+  _addPlaceDayId = did;
+  const inp = document.getElementById('add-place-input');
+  inp.value = '';
+  document.getElementById('add-place-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => inp.focus(), 300);
+};
+window.closeAddPlace = function() {
+  document.getElementById('add-place-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.doAddPlace = async function() {
+  const place = document.getElementById('add-place-input').value.trim();
+  if (!place) return;
+  const trip = _customTrips.find(t => t.id === _addPlaceTripId);
+  if (!trip) return;
+
+  closeAddPlace();
+
+  // 先插入 loading card
+  const tl = document.getElementById('tl_' + _addPlaceDayId);
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'ai-loading-card';
+  loadingEl.innerHTML = `<div class="ai-dots"><span></span><span></span><span></span></div><div>正在查詢「${place}」的資訊…</div>`;
+  tl.appendChild(loadingEl);
+
+  const tripId = _addPlaceTripId;
+  const dayId_ = _addPlaceDayId;
+  const dest = trip.dest || '';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `你是一個旅遊行程助手。用繁體中文回答。必須嚴格只輸出 JSON，不要任何其他文字。
+
+輸出格式：
+{
+  "name": "地點全名（含表情符號）",
+  "tag": "景點/美食/交通/住宿/購物/體驗",
+  "hours": "營業時間（若不確定請寫「建議出發前確認」）",
+  "hoursOk": true或false（是否有固定營業時間）,
+  "notes": ["注意事項1", "注意事項2"],
+  "transport": "交通方式（最近交通方式）",
+  "tips": ["推薦體驗或亮點1", "推薦體驗或亮點2"],
+  "duration": "建議停留時間",
+  "price": "費用（免費/約XXX/需預訂）",
+  "website": "官方網站或 Google Maps 搜尋關鍵字"
+}`,
+        messages: [{
+          role: 'user',
+          content: `目的地：${dest}。請提供「${place}」的旅遊資訊。`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const raw = data.content?.[0]?.text || '{}';
+    let info;
+    try { info = JSON.parse(raw.replace(/```json|```/g,'')); }
+    catch(e) { info = { name: '🗺 ' + place, tag: '景點', hours: '建議出發前確認', notes: [], tips: [], transport: '', duration: '1-2小時', price: '－', website: place }; }
+
+    loadingEl.remove();
+
+    const placeData = { id: Date.now(), name: info.name || place, raw: info };
+    if (!trip.places[dayId_]) trip.places[dayId_] = [];
+    trip.places[dayId_].push(placeData);
+    saveCustomTrips();
+
+    insertPlaceCard(tripId, dayId_, placeData, true);
+
+  } catch(err) {
+    loadingEl.innerHTML = `<div style="color:#dc2626;">查詢失敗，請稍後再試。</div>`;
+    console.error(err);
+  }
+};
+
+// ── 插入地點卡片 ──
+function insertPlaceCard(tripId, did, placeData, animate) {
+  const tl = document.getElementById('tl_' + did);
+  if (!tl) return;
+  const i = placeData.raw;
+  const tagColor = {
+    '美食':'food','景點':'sightseeing','交通':'drive','住宿':'hotel',
+    '購物':'shopping','體驗':'activity'
+  }[i.tag] || 'sightseeing';
+
+  // notes html
+  const notesHtml = (i.notes||[]).length ? `
+    <div class="checklist">
+      <div class="checklist-title">⚠️ 注意事項</div>
+      <ul>${(i.notes||[]).map(n=>`<li>${n}</li>`).join('')}</ul>
+    </div>` : '';
+
+  // tips html
+  const tipsHtml = (i.tips||[]).length ? `
+    <div class="checklist" style="background:rgba(15,110,86,0.07);border-left-color:var(--success);">
+      <div class="checklist-title" style="color:var(--success);">✨ 推薦亮點</div>
+      <ul style="color:#065f46;">${(i.tips||[]).map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>` : '';
+
+  const mapQ = encodeURIComponent((i.website && !i.website.startsWith('http')) ? i.website : placeData.name);
+
+  const item = document.createElement('div');
+  item.className = 'item';
+  if (animate) item.style.animation = 'fadeInUp 0.35s ease';
+  item.innerHTML = `
+    <div class="item-left">
+      <div class="item-dot dot-${tagColor}"></div>
+    </div>
+    <div class="item-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">${i.name || placeData.name}</div>
+          <span class="tag tag-${tagColor}">${i.tag||'景點'}</span>
+        </div>
+        <div class="card-desc">
+          ${i.duration ? `🕐 建議停留 ${i.duration}` : ''}
+          ${i.price && i.price!=='－' ? ` · 💴 ${i.price}` : ''}
+        </div>
+        ${notesHtml}
+        ${tipsHtml}
+        <div class="card-meta-row" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+          ${i.hours ? `<div style="font-size:11px;color:var(--success);font-weight:600;">⏰ ${i.hours}</div>` : ''}
+          ${i.transport ? `<div style="font-size:11px;color:var(--muted);">🚇 ${i.transport}</div>` : ''}
+        </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=${mapQ}" target="_blank">
+          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Google Maps
+        </a>
+      </div>
+    </div>`;
+
+  // 插在 add-place-btn 前
+  const addBtn = tl.parentElement.querySelector('.add-place-btn');
+  if (addBtn) tl.parentElement.insertBefore(item, addBtn);
+  else tl.appendChild(item);
+
+  // 初始化 checklist 點擊
+  item.querySelectorAll('.checklist li').forEach((li, idx) => {
+    const key = `chk_${did}_place_${placeData.id}_${idx}`;
+    if (localStorage.getItem(key) === '1') li.classList.add('checked');
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      localStorage.setItem(key, li.classList.contains('checked') ? '1' : '0');
+    });
+  });
+}
+
+// ── 頁面載入時還原已有旅程 ──
+(function restoreCustomTrips() {
+  _customTrips.forEach(trip => {
+    addTripCard(trip);
+    renderCustomTrip(trip);
+  });
+})();
+
+window.openNewTripModal = window.openNewTripModal;
 </script>
 
 </div><!-- end trip-hokkaido wrapper -->
