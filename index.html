@@ -619,7 +619,52 @@ body {
 }
 .back-btn:active { background: var(--bg); }
 
-/* ── NEW TRIP MODAL ── */
+/* ── EXPENSE MODAL ── */
+.expense-section { padding: 0 16px 16px; }
+.expense-section-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 16px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+}
+.expense-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 13px;
+}
+.expense-row:last-child { border-bottom: none; }
+.expense-label { color: var(--text); flex: 1; }
+.expense-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.expense-amount { font-weight: 700; color: var(--text); white-space: nowrap; margin-left: 12px; }
+.expense-total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; margin: 8px 16px 0;
+  background: var(--accent); border-radius: 10px; color: white;
+}
+.expense-total-label { font-size: 13px; font-weight: 600; }
+.expense-total-amount { font-size: 18px; font-weight: 800; }
+
+/* ── CURRENCY CONVERTER ── */
+.currency-box {
+  margin: 0 16px 16px; background: var(--bg);
+  border-radius: 12px; padding: 14px; border: 1px solid var(--border);
+}
+.currency-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.currency-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.currency-select {
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 13px; font-family: inherit;
+  background: var(--card); color: var(--text); flex-shrink: 0;
+}
+.currency-input {
+  flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 15px; font-family: inherit;
+  background: var(--card); color: var(--text); text-align: right;
+}
+.currency-input:focus, .currency-select:focus { outline: none; border-color: var(--accent); }
+.currency-result {
+  text-align: center; padding: 10px; background: var(--card);
+  border-radius: 8px; font-size: 20px; font-weight: 800; color: var(--accent);
+}
+.currency-rate { text-align: center; font-size: 11px; color: var(--muted); margin-top: 4px; }
 .new-trip-overlay {
   display: none; position: fixed; inset: 0; z-index: 800;
   background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
@@ -838,7 +883,55 @@ body {
   </div>
 </div>
 
-<!-- ══ NEW TRIP MODAL ══ -->
+<!-- ══ EXPENSE MODAL ══ -->
+<div class="booking-modal-overlay" id="expense-modal" onclick="if(event.target===this)closeExpenseModal()">
+  <div class="booking-modal-sheet">
+    <div class="booking-modal-header">
+      <div class="booking-modal-title">💴 花費試算</div>
+      <button class="booking-modal-close" onclick="closeExpenseModal()">✕</button>
+    </div>
+
+    <!-- 幣別轉換 -->
+    <div style="padding:16px 16px 0;">
+      <div class="currency-box">
+        <div class="currency-title">💱 即時幣別換算</div>
+        <div class="currency-row">
+          <select class="currency-select" id="cur-from" onchange="updateCurrency()">
+            <option value="JPY">🇯🇵 JPY 日圓</option>
+            <option value="USD">🇺🇸 USD 美元</option>
+            <option value="EUR">🇪🇺 EUR 歐元</option>
+            <option value="KRW">🇰🇷 KRW 韓元</option>
+            <option value="HKD">🇭🇰 HKD 港幣</option>
+            <option value="CNY">🇨🇳 CNY 人民幣</option>
+            <option value="GBP">🇬🇧 GBP 英鎊</option>
+            <option value="AUD">🇦🇺 AUD 澳幣</option>
+            <option value="THB">🇹🇭 THB 泰銖</option>
+          </select>
+          <input class="currency-input" id="cur-amount" type="number" value="1000" oninput="updateCurrency()">
+        </div>
+        <div class="currency-result" id="cur-result">— TWD</div>
+        <div class="currency-rate" id="cur-rate">載入匯率中…</div>
+      </div>
+    </div>
+
+    <!-- 開車費用 -->
+    <div class="expense-section">
+      <div class="expense-section-title">🚗 行駛距離 &amp; 通行費估算</div>
+      <div id="drive-rows"></div>
+    </div>
+
+    <!-- 總計 -->
+    <div class="expense-total-row">
+      <div class="expense-total-label">預估通行費總計</div>
+      <div class="expense-total-amount" id="toll-total">— JPY</div>
+    </div>
+    <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
+      ※ 通行費以一般車輛（ETCなし）估算，實際金額依車型與ETC折扣而異。<br>
+      ※ 利尻島段（渡輪）不含在內。
+    </div>
+
+  </div>
+</div>
 <div class="new-trip-overlay" id="new-trip-overlay" onclick="if(event.target===this)closeNewTripModal()">
   <div class="new-trip-sheet">
     <div class="new-trip-header">
@@ -901,9 +994,14 @@ body {
 
   <div class="back-btn" onclick="closeTrip()" style="justify-content:space-between;">
     <span>‹ 旅圖首頁</span>
-    <button class="booking-fab" id="booking-fab" onclick="event.stopPropagation();openBookingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;">
-      📋 預訂 <span class="fab-count" id="fab-count">0</span>
-    </button>
+    <div style="display:flex;gap:8px;">
+      <button class="booking-fab" id="booking-fab" onclick="event.stopPropagation();openBookingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;">
+        📋 預訂 <span class="fab-count" id="fab-count">0</span>
+      </button>
+      <button class="booking-fab" onclick="event.stopPropagation();openExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
+        💴 花費
+      </button>
+    </div>
   </div>
 
 <div class="top-nav" style="top:44px;">
@@ -3841,8 +3939,94 @@ function loadCoverImages() {
 
 loadCoverImages();
 
-// ══════════════════════════════════════════════
-// ── NEW TRIP SYSTEM ──
+// ══ EXPENSE MODAL ══
+const DRIVE_SEGMENTS = [
+  { day:'8/27', from:'新千歲空港', to:'小樽', km:87,  toll:1760 },
+  { day:'8/28', from:'小樽（市區往返）', to:'祝津/水族館/市區', km:30, toll:0 },
+  { day:'8/29', from:'小樽', to:'美瑛・旭川', km:170, toll:2340 },
+  { day:'8/30', from:'旭川', to:'稚内（日本海沿岸ルート）', km:260, toll:1820 },
+  { day:'8/31', from:'稚内フェリー', to:'利尻島（島內）', km:40,  toll:0 },
+  { day:'9/1',  from:'利尻島フェリー→', to:'網走', km:290, toll:1980 },
+  { day:'9/2',  from:'網走', to:'知床ウトロ', km:65,  toll:0 },
+  { day:'9/3',  from:'知床（市內）', to:'知床五湖ほか', km:35,  toll:0 },
+  { day:'9/4',  from:'知床', to:'糠平温泉', km:180, toll:0 },
+  { day:'9/5',  from:'糠平', to:'洞爺・札幌', km:230, toll:2550 },
+  { day:'9/6',  from:'札幌（市內）', to:'さとらんど・ススキノ', km:30,  toll:0 },
+  { day:'9/7',  from:'札幌', to:'InterContinental', km:5,   toll:0 },
+  { day:'9/8',  from:'札幌', to:'新千歲空港', km:55,  toll:1020 },
+];
+
+function openExpenseModal() {
+  document.getElementById('expense-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderDriveRows();
+  fetchRates();
+}
+function closeExpenseModal() {
+  document.getElementById('expense-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+window.openExpenseModal = openExpenseModal;
+window.closeExpenseModal = closeExpenseModal;
+
+function renderDriveRows() {
+  const container = document.getElementById('drive-rows');
+  let totalKm = 0, totalToll = 0;
+  container.innerHTML = DRIVE_SEGMENTS.map(s => {
+    totalKm += s.km;
+    totalToll += s.toll;
+    return `<div class="expense-row">
+      <div class="expense-label">
+        ${s.day} ${s.from} → ${s.to}
+        <div class="expense-note">${s.km} km</div>
+      </div>
+      <div class="expense-amount">${s.toll ? '¥' + s.toll.toLocaleString() : '免費'}</div>
+    </div>`;
+  }).join('') + `<div class="expense-row" style="font-weight:700;padding-top:10px;">
+    <div class="expense-label">合計行駛距離</div>
+    <div class="expense-amount">${totalKm.toLocaleString()} km</div>
+  </div>`;
+  document.getElementById('toll-total').textContent = '¥' + totalToll.toLocaleString() + ' JPY';
+}
+
+// ── 即時匯率 ──
+let _rates = {};
+async function fetchRates() {
+  const rateEl = document.getElementById('cur-rate');
+  try {
+    const res = await fetch('https://api.exchangerate-api.com/v4/latest/TWD');
+    const data = await res.json();
+    // data.rates 是 TWD 為基準的匯率，需要反轉
+    // 1 TWD = X JPY → 1 JPY = 1/X TWD
+    const base = data.rates; // base = TWD
+    _rates = base;
+    const updated = new Date(data.time_last_updated * 1000).toLocaleString('zh-TW');
+    rateEl.textContent = `匯率更新時間：${updated}`;
+    updateCurrency();
+  } catch(e) {
+    // fallback rates (approximate)
+    _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
+    rateEl.textContent = '（使用離線參考匯率，僅供參考）';
+    updateCurrency();
+  }
+}
+
+function updateCurrency() {
+  const from = document.getElementById('cur-from').value;
+  const amount = parseFloat(document.getElementById('cur-amount').value) || 0;
+  const resultEl = document.getElementById('cur-result');
+  const rateEl = document.getElementById('cur-rate');
+  if (!_rates[from]) { resultEl.textContent = '—'; return; }
+  // _rates[from] = how many units of `from` per 1 TWD
+  // so 1 unit of `from` = 1/_rates[from] TWD
+  const twd = amount / _rates[from];
+  resultEl.textContent = 'NT$ ' + twd.toLocaleString('zh-TW', { maximumFractionDigits: 0 });
+  if (_rates[from]) {
+    const rate = (1 / _rates[from]).toFixed(from === 'JPY' || from === 'KRW' ? 4 : 3);
+    rateEl.textContent = `1 ${from} ≈ NT$ ${rate}`;
+  }
+}
+window.updateCurrency = updateCurrency;
 // ══════════════════════════════════════════════
 
 let _addPlaceTripId = null;
