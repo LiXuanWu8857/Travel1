@@ -3408,6 +3408,14 @@ window._fbDb = db;
     <input class="modal-input" id="edit-time" type="text" placeholder="例：09:30">
     <label class="modal-label">備註內容</label>
     <textarea class="modal-textarea" id="edit-note" placeholder="輸入備註，例：需要預約、注意事項..."></textarea>
+    <label class="modal-label">💴 金額（選填）</label>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <select class="modal-input" id="edit-currency" style="flex:0 0 80px;padding:10px 8px;">
+        <option value="JPY">JPY</option>
+        <option value="TWD">TWD</option>
+      </select>
+      <input class="modal-input" id="edit-amount" type="number" min="0" placeholder="輸入金額" style="flex:1;margin-bottom:0;">
+    </div>
     <div class="modal-row">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
       <button class="modal-btn modal-btn-save" onclick="saveEdit()">儲存</button>
@@ -3442,6 +3450,8 @@ function openModal(key, card) {
   document.getElementById('edit-key').value = key;
   document.getElementById('edit-time').value = saved.time || '';
   document.getElementById('edit-note').value = saved.note || '';
+  document.getElementById('edit-amount').value = saved.amount || '';
+  document.getElementById('edit-currency').value = saved.currency || 'JPY';
   document.getElementById('edit-modal').classList.add('open');
 }
 
@@ -3455,19 +3465,18 @@ function saveEdit() {
   const key = document.getElementById('edit-key').value;
   const time = document.getElementById('edit-time').value.trim();
   const note = document.getElementById('edit-note').value.trim();
-
-  console.log('[saveEdit] key:', key, 'time:', time, 'note:', note);
+  const amount = document.getElementById('edit-amount').value.trim();
+  const currency = document.getElementById('edit-currency').value;
 
   if (!key) { console.warn('[saveEdit] no key!'); return; }
 
   const allData = getUserAllData();
-  if (time || note) {
-    allData[key] = { time, note };
+  if (time || note || amount) {
+    allData[key] = { time, note, amount, currency };
   } else {
     delete allData[key];
   }
   saveUserAllData(allData);
-  console.log('[saveEdit] localStorage saved, keys:', Object.keys(allData));
 
   // 同步到 Firebase
   if (window._fbDb && window._fbRef && window._fbSet) {
@@ -3504,12 +3513,19 @@ function renderNote(card, key) {
   const existing = card.querySelector('.user-note');
   if (existing) existing.remove();
   const saved = getUserData(key);
-  if (saved && (saved.time || saved.note)) {
+  if (saved && (saved.time || saved.note || saved.amount)) {
     const div = document.createElement('div');
     div.className = 'user-note';
-    div.innerHTML = (saved.time ? `<span class="user-time">${saved.time}</span>` : '') +
-                    (saved.note ? saved.note.replace(/\n/g, '<br>') : '');
-    // 安全插入：找 card 內的直接子元素參考點
+    let html = '';
+    if (saved.time) html += `<span class="user-time">${saved.time}</span>`;
+    if (saved.note) html += saved.note.replace(/\n/g, '<br>');
+    if (saved.amount) {
+      const cur = saved.currency || 'JPY';
+      const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
+      const twd = Math.round(parseFloat(saved.amount) * rate).toLocaleString();
+      html += `<div style="margin-top:5px;font-size:12px;font-weight:700;color:var(--accent);">💴 ${parseInt(saved.amount).toLocaleString()} ${cur} ≈ NT$\u00a0${twd}</div>`;
+    }
+    div.innerHTML = html;
     const photoSection = card.querySelector('.photo-section');
     if (photoSection) card.insertBefore(div, photoSection);
     else card.appendChild(div);
@@ -4043,13 +4059,12 @@ function calcTwd(amount, cur) {
 
 function updateHotelTotal() {
   let total = 0;
-  document.querySelectorAll('.hotel-cost-input').forEach(inp => {
-    const amt = parseFloat(inp.value) || 0;
-    if (!amt) return;
-    const sel = inp.parentElement?.querySelector('.hotel-cost-select');
-    const cur = sel ? sel.value : 'JPY';
-    const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur==='JPY' ? 0.215 : 1);
-    total += amt * rate;
+  const allData = getUserAllData();
+  Object.values(allData).forEach(saved => {
+    if (!saved.amount) return;
+    const cur = saved.currency || 'JPY';
+    const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
+    total += parseFloat(saved.amount) * rate;
   });
   const el = document.getElementById('hotel-total-twd');
   if (el) el.textContent = total ? 'NT$ ' + Math.round(total).toLocaleString() : '—';
