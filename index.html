@@ -3974,14 +3974,16 @@ loadCoverImages();
 
 // ══ HOTEL COST INPUTS ══
 function initHotelCosts() {
-  document.querySelectorAll('.tag-hotel, .tag-onsen').forEach(tag => {
-    if (tag.textContent.trim() !== '住宿') return;
-    const card = tag.closest('.card');
-    if (!card || card.querySelector('.hotel-cost-row')) return;
+  // 只找行程 day-section 內的住宿卡片，排除預訂清單
+  document.querySelectorAll('.day-section .card').forEach(card => {
+    // 有 .tag 標籤且文字是「住宿」
+    const tag = Array.from(card.querySelectorAll('.tag')).find(t => t.textContent.trim() === '住宿');
+    if (!tag) return;
+    if (card.querySelector('.hotel-cost-row')) return; // 已注入
 
     const titleEl = card.querySelector('.card-title');
     const title = titleEl ? titleEl.textContent.trim() : 'hotel';
-    const key = 'hotel_cost_' + title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_').slice(0, 40);
+    const key = 'hcost_' + title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_').slice(0, 40);
 
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
@@ -3990,13 +3992,13 @@ function initHotelCosts() {
     row.className = 'hotel-cost-row';
     row.innerHTML = `
       <span class="hotel-cost-label">💴 住宿費</span>
-      <select class="hotel-cost-select" data-key="${key}">
-        <option value="JPY" ${!saved.cur || saved.cur==='JPY' ? 'selected':''}>JPY</option>
-        <option value="NTD" ${saved.cur==='NTD' ? 'selected':''}>NTD</option>
+      <select class="hotel-cost-select">
+        <option value="JPY" ${!saved.cur||saved.cur==='JPY'?'selected':''}>JPY</option>
+        <option value="NTD" ${saved.cur==='NTD'?'selected':''}>NTD</option>
       </select>
       <input class="hotel-cost-input" type="number" placeholder="輸入金額"
-        value="${saved.amount||''}" data-key="${key}" min="0">
-      <div class="hotel-cost-twd" data-twd="${key}">${saved.amount ? calcTwd(saved.amount, saved.cur||'JPY') : '—'}</div>`;
+        value="${saved.amount||''}" min="0">
+      <div class="hotel-cost-twd">${saved.amount ? calcTwd(saved.amount, saved.cur||'JPY') : '—'}</div>`;
 
     const navBtn = card.querySelector('.nav-btn');
     if (navBtn) card.insertBefore(row, navBtn);
