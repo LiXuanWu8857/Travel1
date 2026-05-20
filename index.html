@@ -857,7 +857,7 @@ body {
       <div class="new-trip-dates">
         <div class="new-trip-field">
           <label>出發日期</label>
-          <input id="nt-start" type="date">
+          <input id="nt-start" type="date" onchange="document.getElementById('nt-end').value=this.value">
         </div>
         <div class="new-trip-field">
           <label>返回日期</label>
