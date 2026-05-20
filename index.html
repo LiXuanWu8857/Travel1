@@ -3875,6 +3875,20 @@ function _renderSavedPhoto(d, key, slotsEl) {
 
 // Init done
 
+// ── CHECKLIST TOGGLE ──
+function initChecklists() {
+  document.querySelectorAll('.checklist li').forEach((li, i) => {
+    if (li.dataset.clInit) return;
+    li.dataset.clInit = '1';
+    const key = 'chk_' + (li.closest('.day-section')?.id || 'x') + '_' + i;
+    if (localStorage.getItem(key) === '1') li.classList.add('checked');
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      localStorage.setItem(key, li.classList.contains('checked') ? '1' : '0');
+    });
+  });
+}
+
 waitForFirebase(() => {
   initPhotoSections();
   loadEditsFromFirebase();
