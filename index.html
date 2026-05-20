@@ -928,16 +928,60 @@ body {
     <!-- 開車費用 -->
     <div class="expense-section">
       <div class="expense-section-title">🚗 行駛距離 &amp; 通行費估算</div>
+
+      <!-- 車型選擇 -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;">車型選擇</div>
+        <select id="car-type-select" class="currency-select" onchange="onCarTypeChange()" style="flex:1;">
+          <option value="">── 選擇車型 ──</option>
+          <optgroup label="軽自動車 (係數 ×0.8)">
+            <option value="kei">🚗 軽自動車（Suzuki Alto、Honda N-Box…）</option>
+          </optgroup>
+          <optgroup label="普通車 (係數 ×1.0)">
+            <option value="std" selected>🚗 普通車 Toyota Raize（現在預訂）</option>
+            <option value="std">🚗 普通車 Toyota Corolla / Aqua</option>
+            <option value="std">🚗 普通車 Honda Fit / Vezel</option>
+            <option value="std">🚗 普通車 Mazda CX-5</option>
+            <option value="std">🚗 普通車 Toyota RAV4 / Harrier</option>
+          </optgroup>
+          <optgroup label="中型車 (係數 ×1.2)">
+            <option value="mid">🚐 中型車 Toyota Alphard / Vellfire</option>
+            <option value="mid">🚐 中型車 Toyota Noah / Voxy（7人座）</option>
+            <option value="mid">🚐 中型車 Honda Stepwgn</option>
+          </optgroup>
+          <optgroup label="大型車 (係數 ×1.65)">
+            <option value="lrg">🚌 大型車（巴士 / 大型トラック）</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- ETC 切換 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:8px;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">ETC 折扣</span>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="etc" id="etc-no" value="1" checked onchange="renderDriveRows()"> 無 ETC
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="etc" id="etc-yes" value="0.9" onchange="renderDriveRows()"> ETC（約9折）
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="etc" id="etc-night" value="0.7" onchange="renderDriveRows()"> ETC深夜（7折）
+        </label>
+      </div>
+
       <div id="drive-rows"></div>
     </div>
 
     <!-- 總計 -->
     <div class="expense-total-row">
-      <div class="expense-total-label">預估通行費總計</div>
+      <div>
+        <div class="expense-total-label">預估通行費總計</div>
+        <div id="car-type-label" style="font-size:11px;opacity:0.8;margin-top:2px;">普通車・無ETC</div>
+      </div>
       <div class="expense-total-amount" id="toll-total">— JPY</div>
     </div>
     <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
-      ※ 通行費以一般車輛（ETCなし）估算，實際金額依車型與ETC折扣而異。<br>
+      ※ 以 NEXCO 北海道の距離基準料金估算，實際依路線略有差異。<br>
       ※ 利尻島段（渡輪）不含在內。
     </div>
 
@@ -4033,6 +4077,8 @@ function openExpenseModal() {
   const savedAmount = localStorage.getItem('cur_amount');
   if (savedFrom) document.getElementById('cur-from').value = savedFrom;
   if (savedAmount) document.getElementById('cur-amount').value = savedAmount;
+  const savedCar = localStorage.getItem('car_type');
+  if (savedCar) document.getElementById('car-type-select').value = savedCar;
   renderDriveRows();
   fetchRates();
 }
@@ -4044,24 +4090,55 @@ function closeExpenseModal() {
 window.openExpenseModal = openExpenseModal;
 window.closeExpenseModal = closeExpenseModal;
 
+// 車型係數對照（普通車基準=1.0）
+const CAR_TYPE_RATIO = { kei: 0.8, std: 1.0, mid: 1.2, lrg: 1.65, '': 1.0 };
+const CAR_TYPE_NAME  = { kei: '軽自動車', std: '普通車', mid: '中型車', lrg: '大型車', '': '普通車' };
+
+function getCarMultiplier() {
+  const sel = document.getElementById('car-type-select');
+  return CAR_TYPE_RATIO[sel?.value || 'std'] || 1.0;
+}
+function getEtcMultiplier() {
+  return parseFloat(document.querySelector('input[name="etc"]:checked')?.value || '1');
+}
+function onCarTypeChange() {
+  const sel = document.getElementById('car-type-select');
+  localStorage.setItem('car_type', sel.value);
+  renderDriveRows();
+}
+
 function renderDriveRows() {
   const container = document.getElementById('drive-rows');
+  if (!container) return;
+  const carMult = getCarMultiplier();
+  const etcMult = getEtcMultiplier();
   let totalKm = 0, totalToll = 0;
+
   container.innerHTML = DRIVE_SEGMENTS.map(s => {
     totalKm += s.km;
-    totalToll += s.toll;
+    const adjToll = Math.round(s.toll * carMult * etcMult / 10) * 10;
+    totalToll += adjToll;
     return `<div class="expense-row">
       <div class="expense-label">
-        ${s.day} ${s.from} → ${s.to}
+        <span style="font-size:11px;color:var(--muted);">${s.day}</span>
+        ${s.from} → ${s.to}
         <div class="expense-note">${s.km} km</div>
       </div>
-      <div class="expense-amount">${s.toll ? '¥' + s.toll.toLocaleString() : '免費'}</div>
+      <div class="expense-amount">${adjToll ? '¥' + adjToll.toLocaleString() : '免費'}</div>
     </div>`;
-  }).join('') + `<div class="expense-row" style="font-weight:700;padding-top:10px;">
-    <div class="expense-label">合計行駛距離</div>
+  }).join('') + `<div class="expense-row" style="font-weight:700;padding-top:10px;border-top:1px solid var(--border);">
+    <div class="expense-label">總行駛距離</div>
     <div class="expense-amount">${totalKm.toLocaleString()} km</div>
   </div>`;
-  document.getElementById('toll-total').textContent = '¥' + totalToll.toLocaleString() + ' JPY';
+
+  document.getElementById('toll-total').textContent = '¥' + totalToll.toLocaleString();
+
+  // 更新說明
+  const sel = document.getElementById('car-type-select');
+  const carName = CAR_TYPE_NAME[sel?.value || 'std'];
+  const etcName = etcMult === 1 ? '無ETC' : etcMult === 0.9 ? 'ETC 9折' : 'ETC深夜 7折';
+  const lbl = document.getElementById('car-type-label');
+  if (lbl) lbl.textContent = `${carName} ・ ${etcName}`;
 }
 
 // ── 即時匯率 ──
