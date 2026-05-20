@@ -4046,22 +4046,6 @@ function updateHotelTotal() {
 window.updateHotelTotal = updateHotelTotal;
 
 // ══ EXPENSE MODAL ══
-const DRIVE_SEGMENTS = [
-  { day:'8/27', from:'新千歲空港', to:'小樽', km:87,  toll:1760 },
-  { day:'8/28', from:'小樽（市區往返）', to:'祝津/水族館/市區', km:30, toll:0 },
-  { day:'8/29', from:'小樽', to:'美瑛・旭川', km:170, toll:2340 },
-  { day:'8/30', from:'旭川', to:'稚内（日本海沿岸ルート）', km:260, toll:1820 },
-  { day:'8/31', from:'稚内フェリー', to:'利尻島（島內）', km:40,  toll:0 },
-  { day:'9/1',  from:'利尻島フェリー→', to:'網走', km:290, toll:1980 },
-  { day:'9/2',  from:'網走', to:'知床ウトロ', km:65,  toll:0 },
-  { day:'9/3',  from:'知床（市內）', to:'知床五湖ほか', km:35,  toll:0 },
-  { day:'9/4',  from:'知床', to:'糠平温泉', km:180, toll:0 },
-  { day:'9/5',  from:'糠平', to:'洞爺・札幌', km:230, toll:2550 },
-  { day:'9/6',  from:'札幌（市內）', to:'さとらんど・ススキノ', km:30,  toll:0 },
-  { day:'9/7',  from:'札幌', to:'InterContinental', km:5,   toll:0 },
-  { day:'9/8',  from:'札幌', to:'新千歲空港', km:55,  toll:1020 },
-];
-
 function saveCurPref() {
   const from = document.getElementById('cur-from')?.value;
   const amount = document.getElementById('cur-amount')?.value;
