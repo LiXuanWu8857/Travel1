@@ -919,7 +919,7 @@ body {
       <div class="currency-box">
         <div class="currency-title">💱 即時幣別換算</div>
         <div class="currency-row">
-          <select class="currency-select" id="cur-from" onchange="updateCurrency()">
+          <select class="currency-select" id="cur-from" onchange="saveCurPref();updateCurrency()">
             <option value="JPY">🇯🇵 JPY 日圓</option>
             <option value="USD">🇺🇸 USD 美元</option>
             <option value="EUR">🇪🇺 EUR 歐元</option>
@@ -930,7 +930,7 @@ body {
             <option value="AUD">🇦🇺 AUD 澳幣</option>
             <option value="THB">🇹🇭 THB 泰銖</option>
           </select>
-          <input class="currency-input" id="cur-amount" type="number" value="1000" oninput="updateCurrency()">
+          <input class="currency-input" id="cur-amount" type="number" value="1000" oninput="saveCurPref();updateCurrency()">
         </div>
         <div class="currency-result" id="cur-result">— TWD</div>
         <div class="currency-rate" id="cur-rate">載入匯率中…</div>
@@ -4073,12 +4073,25 @@ const DRIVE_SEGMENTS = [
   { day:'9/8',  from:'札幌', to:'新千歲空港', km:55,  toll:1020 },
 ];
 
+function saveCurPref() {
+  const from = document.getElementById('cur-from')?.value;
+  const amount = document.getElementById('cur-amount')?.value;
+  if (from) localStorage.setItem('cur_from', from);
+  if (amount) localStorage.setItem('cur_amount', amount);
+}
+
 function openExpenseModal() {
   document.getElementById('expense-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  // 還原上次的幣別和金額
+  const savedFrom = localStorage.getItem('cur_from');
+  const savedAmount = localStorage.getItem('cur_amount');
+  if (savedFrom) document.getElementById('cur-from').value = savedFrom;
+  if (savedAmount) document.getElementById('cur-amount').value = savedAmount;
   renderDriveRows();
   fetchRates();
 }
+window.saveCurPref = saveCurPref;
 function closeExpenseModal() {
   document.getElementById('expense-modal').classList.remove('open');
   document.body.style.overflow = '';
