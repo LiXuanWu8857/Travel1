@@ -857,7 +857,7 @@ body {
       <div class="new-trip-dates">
         <div class="new-trip-field">
           <label>出發日期</label>
-          <input id="nt-start" type="date" onchange="document.getElementById('nt-end').value=this.value">
+          <input id="nt-start" type="date" onchange="const e=document.getElementById('nt-end');if(!e.value||e.value<this.value)e.value=this.value;">
         </div>
         <div class="new-trip-field">
           <label>返回日期</label>
@@ -3882,9 +3882,9 @@ window.openNewTripModal = function() {
   document.body.style.overflow = 'hidden';
   // 預設日期：今天開始 + 3天
   const t = new Date();
-  const e = new Date(); e.setDate(e.getDate()+3);
-  document.getElementById('nt-start').value = t.toISOString().slice(0,10);
-  document.getElementById('nt-end').value = e.toISOString().slice(0,10);
+  const today = t.toISOString().slice(0,10);
+  document.getElementById('nt-start').value = today;
+  document.getElementById('nt-end').value = today;
 };
 window.closeNewTripModal = function() {
   document.getElementById('new-trip-overlay').classList.remove('open');
