@@ -941,6 +941,16 @@ body {
       <div style="font-size:11px;color:var(--muted);padding:4px 0 8px;">※ 請至各方塊點「✏️ 編輯」輸入金額，此處自動加總</div>
     </div>
 
+    <!-- 花費明細 -->
+    <div class="expense-section">
+      <div class="expense-section-title">💰 已記錄花費明細</div>
+      <div id="expense-breakdown"></div>
+      <div class="expense-total-row" style="margin:8px 0 0;border-radius:10px;">
+        <div class="expense-total-label">所有項目合計</div>
+        <div class="expense-total-amount" id="expense-grand-total">—</div>
+      </div>
+    </div>
+
     <!-- 開車費用 -->
     <div class="expense-section">
       <div class="expense-section-title">🚗 行駛距離 &amp; 通行費估算</div>
@@ -4360,7 +4370,48 @@ function updateHotelTotal() {
 window.updateHotelTotal = updateHotelTotal;
 
 // ══ EXPENSE MODAL ══
-function saveCurPref() {
+function renderExpenseBreakdown() {
+  const container = document.getElementById('expense-breakdown');
+  if (!container) return;
+  const allData = getUserAllData();
+  const items = Object.entries(allData)
+    .filter(([k, v]) => v.amount && parseFloat(v.amount) > 0)
+    .map(([k, v]) => {
+      const cur = v.currency || 'JPY';
+      const amt = parseFloat(v.amount);
+      const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
+      const twd = Math.round(amt * rate);
+      // 從 key 推算日期和標題
+      const dayMatch = k.match(/^d(\d{4})_/);
+      const day = dayMatch ? dayMatch[1].replace(/^(\d{2})(\d{2})$/, '$1/$2') : '';
+      const titleSlug = k.replace(/^d\d{4}_/, '').replace(/_/g, ' ').replace(/^[\s_]+/, '');
+      return { day, titleSlug, amt, cur, twd };
+    })
+    .sort((a, b) => a.day.localeCompare(b.day));
+
+  if (!items.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">尚未記錄任何花費。請至各方塊點 ✏️ 編輯輸入金額。</div>';
+    document.getElementById('expense-grand-total').textContent = '—';
+    return;
+  }
+
+  let grandTotal = 0;
+  container.innerHTML = items.map(item => {
+    grandTotal += item.twd;
+    return `<div class="expense-row">
+      <div class="expense-label">
+        ${item.day ? `<span style="font-size:11px;color:var(--muted);font-weight:600;">${item.day}</span>　` : ''}${item.titleSlug}
+      </div>
+      <div class="expense-amount">
+        <span style="font-size:11px;color:var(--muted);margin-right:6px;">${parseInt(item.amt).toLocaleString()} ${item.cur}</span>
+        NT$${item.twd.toLocaleString()}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('expense-grand-total').textContent = 'NT$ ' + grandTotal.toLocaleString();
+}
+window.renderExpenseBreakdown = renderExpenseBreakdown;
   const from = document.getElementById('cur-from')?.value;
   const amount = document.getElementById('cur-amount')?.value;
   if (from) localStorage.setItem('cur_from', from);
@@ -4378,6 +4429,7 @@ function openExpenseModal() {
   const savedCar = localStorage.getItem('car_type');
   if (savedCar) document.getElementById('car-type-select').value = savedCar;
   renderDriveRows();
+  renderExpenseBreakdown();
   fetchRates();
 }
 window.saveCurPref = saveCurPref;
@@ -4508,12 +4560,14 @@ async function fetchRates() {
     rateEl.textContent = `匯率更新時間：${updated}`;
     updateCurrency();
     updateHotelTotal();
+    renderExpenseBreakdown();
   } catch(e) {
     // fallback rates (approximate)
     _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
     rateEl.textContent = '（使用離線參考匯率，僅供參考）';
     updateCurrency();
     updateHotelTotal();
+    renderExpenseBreakdown();
   }
 }
 
