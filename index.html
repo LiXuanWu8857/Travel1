@@ -3667,9 +3667,6 @@ function saveUserAllData(data) {
 }
 
 // Init
-injectEditButtons();
-console.log('[debug] injectEditButtons done');
-
 // 等 Firebase module 載入後再跑 initPhotoSections
 function waitForFirebase(cb, tries = 0) {
   if (window._fbDb && window._fbRef) { cb(); }
@@ -4034,6 +4031,7 @@ waitForFirebase(() => {
   initPhotoSections();
   loadEditsFromFirebase();
   initChecklists();
+  injectEditButtons();
 });
 
 </script>
