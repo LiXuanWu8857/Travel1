@@ -3974,31 +3974,32 @@ function addUrlSlot(section, key) {
   const url = prompt('請輸入網址：', 'https://');
   if (!url || url === 'https://') return;
   const label = prompt('顯示名稱（選填，留空用網址）:', '') || url;
-  saveUrlLink(key, { url, label });
-  renderUrlLink(section, { url, label }, key);
+  const linkObj = { url, label };
+  saveUrlLinks(key, [...getUrlLinks(key), linkObj]);
+  renderUrlLink(section, linkObj, key);
 }
 
-function saveUrlLink(key, linkObj) {
-  const storKey = 'urls_' + key;
-  try {
-    const links = JSON.parse(localStorage.getItem(storKey) || '[]');
-    links.push(linkObj);
-    localStorage.setItem(storKey, JSON.stringify(links));
-  } catch(e) {}
+function getUrlLinks(key) {
+  try { return JSON.parse(localStorage.getItem('urls_' + key) || '[]'); } catch(e) { return []; }
+}
+
+function saveUrlLinks(key, links) {
+  localStorage.setItem('urls_' + key, JSON.stringify(links));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    const ref = window._fbRef(window._fbDb, 'hokkaido2026/urls/' + key);
+    window._fbSet(ref, links.length ? links : null);
+  }
 }
 
 function renderUrlLink(section, linkObj, key) {
-  // Find or create url-slots container
   let container = section.querySelector('.url-slots');
   if (!container) {
     container = document.createElement('div');
     container.className = 'url-slots';
-    // Insert before actionsRow
     const actionsRow = section.querySelector('.photo-actions-row');
     if (actionsRow) section.insertBefore(container, actionsRow);
     else section.appendChild(container);
   }
-
   const wrap = document.createElement('div');
   wrap.className = 'url-slot';
   wrap.innerHTML = `
@@ -4008,25 +4009,28 @@ function renderUrlLink(section, linkObj, key) {
 }
 
 function removeUrlSlot(btn, key) {
-  const wrap = btn.closest('.url-slot');
-  const label = wrap.querySelector('a')?.textContent?.replace('🔗 ','').trim();
-  wrap.remove();
-  // Re-save remaining
-  const storKey = 'urls_' + key;
-  try {
-    const section = btn.closest('.photo-section');
-    const remaining = Array.from(section.querySelectorAll('.url-slot a')).map(a => ({
-      url: a.href, label: a.textContent.replace('🔗 ','').trim()
-    }));
-    localStorage.setItem(storKey, JSON.stringify(remaining));
-  } catch(e) {}
+  btn.closest('.url-slot').remove();
+  const section = btn.closest('.photo-section');
+  const remaining = Array.from(section?.querySelectorAll('.url-slot a') || []).map(a => ({
+    url: a.href, label: a.textContent.replace('🔗 ','').trim()
+  }));
+  saveUrlLinks(key, remaining);
 }
 
 function loadUrlLinks(key, section) {
-  try {
-    const links = JSON.parse(localStorage.getItem('urls_' + key) || '[]');
-    links.forEach(linkObj => renderUrlLink(section, linkObj, key));
-  } catch(e) {}
+  // 優先從 Firebase 讀，fallback localStorage
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    const ref = window._fbRef(window._fbDb, 'hokkaido2026/urls/' + key);
+    window._fbOnValue(ref, (snap) => {
+      const links = snap.val() || [];
+      localStorage.setItem('urls_' + key, JSON.stringify(links));
+      // 清除舊的再重新渲染
+      section.querySelectorAll('.url-slot').forEach(s => s.remove());
+      links.forEach(linkObj => renderUrlLink(section, linkObj, key));
+    }, { onlyOnce: false });
+  } else {
+    getUrlLinks(key).forEach(linkObj => renderUrlLink(section, linkObj, key));
+  }
 }
 
 function addPhotoSlot(section, savedData) {
