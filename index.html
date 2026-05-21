@@ -652,13 +652,15 @@ body {
 .currency-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .currency-select {
   border: 1.5px solid var(--border); border-radius: 8px;
-  padding: 8px 10px; font-size: 13px; font-family: inherit;
-  background: var(--card); color: var(--text); flex-shrink: 0;
+  padding: 10px 10px; font-size: 14px; font-family: inherit;
+  background: var(--card); color: var(--text);
+  flex: 0 0 130px; width: 130px;
 }
 .currency-input {
-  flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
-  padding: 8px 10px; font-size: 15px; font-family: inherit;
+  flex: 1; min-width: 0; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 10px 10px; font-size: 16px; font-family: inherit;
   background: var(--card); color: var(--text); text-align: right;
+  width: 100%; box-sizing: border-box;
 }
 .currency-input:focus, .currency-select:focus { outline: none; border-color: var(--accent); }
 .currency-result {
@@ -908,7 +910,7 @@ body {
             <option value="AUD">🇦🇺 AUD 澳幣</option>
             <option value="THB">🇹🇭 THB 泰銖</option>
           </select>
-          <input class="currency-input" id="cur-amount" type="number" value="1000" oninput="saveCurPref();updateCurrency()">
+          <input class="currency-input" id="cur-amount" type="number" value="0" oninput="saveCurPref();updateCurrency()">
         </div>
         <div class="currency-result" id="cur-result">— TWD</div>
         <div class="currency-rate" id="cur-rate">載入匯率中…</div>
