@@ -3975,8 +3975,8 @@ function addUrlSlot(section, key) {
   if (!url || url === 'https://') return;
   const label = prompt('顯示名稱（選填，留空用網址）:', '') || url;
   const linkObj = { url, label };
+  // 只儲存，讓 Firebase onValue 自動觸發 render，不手動 render
   saveUrlLinks(key, [...getUrlLinks(key), linkObj]);
-  renderUrlLink(section, linkObj, key);
 }
 
 function getUrlLinks(key) {
@@ -3996,36 +3996,56 @@ function renderUrlLink(section, linkObj, key) {
   if (!container) {
     container = document.createElement('div');
     container.className = 'url-slots';
-    const actionsRow = section.querySelector('.photo-actions-row');
-    if (actionsRow) section.insertBefore(container, actionsRow);
-    else section.appendChild(container);
+    // 放在 card 的 nav-btn/web-btn 區域後面，photo-section 之前
+    const card = section.closest('.card') || section.parentElement;
+    const photoSection = card?.querySelector('.photo-section');
+    if (photoSection) card.insertBefore(container, photoSection);
+    else {
+      const actionsRow = section.querySelector('.photo-actions-row');
+      if (actionsRow) section.insertBefore(container, actionsRow);
+      else section.appendChild(container);
+    }
   }
-  const wrap = document.createElement('div');
+
+  const wrap = document.createElement('span');
   wrap.className = 'url-slot';
-  wrap.innerHTML = `
-    <a class="web-btn" href="${linkObj.url}" target="_blank" style="margin-top:4px;font-size:12px;">🔗 ${linkObj.label}</a>
-    <button class="url-delete" onclick="removeUrlSlot(this,'${key}')">✕</button>`;
+  // 同官方網站膠囊樣式，用不同顏色（靛藍色）
+  wrap.style.cssText = 'display:inline-flex;align-items:stretch;gap:0;margin-top:9px;vertical-align:top;margin-right:6px;';
+
+  const a = document.createElement('a');
+  a.href = linkObj.url;
+  a.target = '_blank';
+  a.textContent = '🔗 ' + linkObj.label;
+  a.style.cssText = 'display:inline-flex;align-items:center;padding:7px 12px;background:#3b5bdb;color:white;border-radius:6px 0 0 6px;font-size:12px;font-weight:500;text-decoration:none;';
+
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '✕';
+  delBtn.style.cssText = 'border:none;background:#2f4ac7;color:white;padding:0 9px;border-radius:0 6px 6px 0;cursor:pointer;font-size:12px;flex-shrink:0;';
+  delBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (confirm(`刪除「${linkObj.label}」？`)) {
+      wrap.remove();
+      const remaining = Array.from(section.querySelectorAll('.url-slot a')).map(a => ({
+        url: a.href, label: a.textContent.replace('🔗 ','').trim()
+      }));
+      saveUrlLinks(key, remaining);
+    }
+  };
+
+  wrap.appendChild(a);
+  wrap.appendChild(delBtn);
   container.appendChild(wrap);
 }
 
-function removeUrlSlot(btn, key) {
-  btn.closest('.url-slot').remove();
-  const section = btn.closest('.photo-section');
-  const remaining = Array.from(section?.querySelectorAll('.url-slot a') || []).map(a => ({
-    url: a.href, label: a.textContent.replace('🔗 ','').trim()
-  }));
-  saveUrlLinks(key, remaining);
-}
-
 function loadUrlLinks(key, section) {
-  // 優先從 Firebase 讀，fallback localStorage
   if (window._fbDb && window._fbRef && window._fbOnValue) {
     const ref = window._fbRef(window._fbDb, 'hokkaido2026/urls/' + key);
     window._fbOnValue(ref, (snap) => {
       const links = snap.val() || [];
       localStorage.setItem('urls_' + key, JSON.stringify(links));
       // 清除舊的再重新渲染
-      section.querySelectorAll('.url-slot').forEach(s => s.remove());
+      const container = section.querySelector('.url-slots');
+      if (container) container.remove();
       links.forEach(linkObj => renderUrlLink(section, linkObj, key));
     }, { onlyOnce: false });
   } else {
