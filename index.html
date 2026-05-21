@@ -3858,7 +3858,9 @@ function initPhotoSections() {
         }
       };
       const wrap = document.createElement('span');
-      wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+      wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0;';
+      link.style.borderRadius = '6px 0 0 6px';
+      delBtn.style.cssText = 'border:none;background:#0a5a44;color:white;padding:7px 8px;border-radius:0 6px 6px 0;cursor:pointer;font-size:12px;line-height:1;margin-top:9px;flex-shrink:0;';
       link.parentNode.insertBefore(wrap, link);
       wrap.appendChild(link);
       wrap.appendChild(delBtn);
