@@ -348,7 +348,14 @@ body {
   text-decoration: none; -webkit-tap-highlight-color: transparent;
 }
 
-.footer { text-align: center; font-size: 11px; color: var(--muted); padding: 20px 16px 32px; letter-spacing: 0.5px; }
+.url-slots { display: flex; flex-direction: column; gap: 4px; }
+.url-slot { display: flex; align-items: center; gap: 6px; }
+.url-delete {
+  border: none; background: none; color: var(--muted);
+  font-size: 14px; cursor: pointer; padding: 2px 6px; flex-shrink: 0;
+  border-radius: 4px;
+}
+.url-delete:active { background: var(--bg); } font-size: 11px; color: var(--muted); padding: 20px 16px 32px; letter-spacing: 0.5px; }
 
 /* ── BOOKING SYNC BADGE ── */
 .booking-badge {
@@ -3726,7 +3733,8 @@ function initPhotoSections() {
     menu.innerHTML = `
       <button class="photo-add-menu-item" data-type="photo">📷 照片</button>
       <button class="photo-add-menu-item" data-type="pdf">📄 PDF / 文件</button>
-      <button class="photo-add-menu-item" data-type="gmail">📧 Gmail 連結</button>`;
+      <button class="photo-add-menu-item" data-type="gmail">📧 Gmail 連結</button>
+      <button class="photo-add-menu-item" data-type="url">🔗 新增網址</button>`;
     addBtn.appendChild(menu);
 
     addBtn.addEventListener('click', (e) => {
@@ -3744,6 +3752,8 @@ function initPhotoSections() {
           addFileSlot(section, type === 'pdf' ? 'application/pdf,*' : 'image/*', type);
         } else if (type === 'gmail') {
           addGmailSlot(section);
+        } else if (type === 'url') {
+          addUrlSlot(section, key);
         }
       });
     });
@@ -3773,6 +3783,7 @@ function initPhotoSections() {
     // Load saved data
     loadPhotos(key, slotsDiv, addBtn);
     loadGmailLinks(key, gmailDiv);
+    loadUrlLinks(key, section);
     }); // end cards.forEach
   }); // end daySection.forEach
   console.log(`[debug] initPhotoSections total cards processed: ${total}`);
@@ -3874,6 +3885,66 @@ function loadGmailLinks(key, container) {
   try {
     const links = JSON.parse(localStorage.getItem('gmail_' + key) || '[]');
     links.forEach(url => renderGmailLink(container, url, key));
+  } catch(e) {}
+}
+
+// ── URL SLOTS ──
+function addUrlSlot(section, key) {
+  const url = prompt('請輸入網址：', 'https://');
+  if (!url || url === 'https://') return;
+  const label = prompt('顯示名稱（選填，留空用網址）:', '') || url;
+  saveUrlLink(key, { url, label });
+  renderUrlLink(section, { url, label }, key);
+}
+
+function saveUrlLink(key, linkObj) {
+  const storKey = 'urls_' + key;
+  try {
+    const links = JSON.parse(localStorage.getItem(storKey) || '[]');
+    links.push(linkObj);
+    localStorage.setItem(storKey, JSON.stringify(links));
+  } catch(e) {}
+}
+
+function renderUrlLink(section, linkObj, key) {
+  // Find or create url-slots container
+  let container = section.querySelector('.url-slots');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'url-slots';
+    // Insert before actionsRow
+    const actionsRow = section.querySelector('.photo-actions-row');
+    if (actionsRow) section.insertBefore(container, actionsRow);
+    else section.appendChild(container);
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'url-slot';
+  wrap.innerHTML = `
+    <a class="web-btn" href="${linkObj.url}" target="_blank" style="margin-top:4px;font-size:12px;">🔗 ${linkObj.label}</a>
+    <button class="url-delete" onclick="removeUrlSlot(this,'${key}')">✕</button>`;
+  container.appendChild(wrap);
+}
+
+function removeUrlSlot(btn, key) {
+  const wrap = btn.closest('.url-slot');
+  const label = wrap.querySelector('a')?.textContent?.replace('🔗 ','').trim();
+  wrap.remove();
+  // Re-save remaining
+  const storKey = 'urls_' + key;
+  try {
+    const section = btn.closest('.photo-section');
+    const remaining = Array.from(section.querySelectorAll('.url-slot a')).map(a => ({
+      url: a.href, label: a.textContent.replace('🔗 ','').trim()
+    }));
+    localStorage.setItem(storKey, JSON.stringify(remaining));
+  } catch(e) {}
+}
+
+function loadUrlLinks(key, section) {
+  try {
+    const links = JSON.parse(localStorage.getItem('urls_' + key) || '[]');
+    links.forEach(linkObj => renderUrlLink(section, linkObj, key));
   } catch(e) {}
 }
 
