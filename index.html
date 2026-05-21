@@ -3828,6 +3828,15 @@ function initPhotoSections() {
     // 為已有的 web-btn（官方網站）加刪除按鈕
     card.querySelectorAll('a.web-btn').forEach(link => {
       if (link.dataset.deletable) return;
+      const url = link.href;
+
+      // 檢查此 URL 是否已被刪除過
+      const deletedKey = 'deleted_webbtn_' + btoa(unescape(encodeURIComponent(url))).slice(0, 40);
+      if (localStorage.getItem(deletedKey)) {
+        link.closest('span')?.remove() || link.remove();
+        return;
+      }
+
       link.dataset.deletable = '1';
       const delBtn = document.createElement('button');
       delBtn.className = 'url-delete';
@@ -3837,12 +3846,11 @@ function initPhotoSections() {
         e.preventDefault();
         e.stopPropagation();
         if (confirm(`刪除「${link.textContent.trim()}」？`)) {
-          link.parentElement === delBtn.parentElement
-            ? (link.remove(), delBtn.remove())
-            : link.closest('.url-slot')?.remove() || (link.remove(), delBtn.remove());
+          localStorage.setItem(deletedKey, '1');
+          link.closest('span')?.remove() || (link.remove(), delBtn.remove());
         }
       };
-      // 包進 url-slot
+      // 包進 span
       const wrap = document.createElement('span');
       wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
       link.parentNode.insertBefore(wrap, link);
