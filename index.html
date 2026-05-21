@@ -3107,12 +3107,14 @@ function injectBadges() {
     badge.dataset.bid = bid;
     badge.innerHTML = isDone ? '✅ 已預訂' : '⬜ 未預訂';
     badge.onclick = () => toggleFromBadge(bid);
-    card.appendChild(badge);
+    // 插在 photo-section 前，不然會跑到外面
+    const photoSection = card.querySelector('.photo-section');
+    if (photoSection) card.insertBefore(badge, photoSection);
+    else card.appendChild(badge);
   });
 }
 
 loadProgress();
-injectBadges();
 
 // 讓 HTML onclick 能呼叫到這些函式（module scope 需要掛到 window）
 window.switchDay = switchDay;
@@ -3784,6 +3786,31 @@ function initPhotoSections() {
     loadPhotos(key, slotsDiv, addBtn);
     loadGmailLinks(key, gmailDiv);
     loadUrlLinks(key, section);
+
+    // 為已有的 web-btn（官方網站）加刪除按鈕
+    card.querySelectorAll('a.web-btn').forEach(link => {
+      if (link.dataset.deletable) return;
+      link.dataset.deletable = '1';
+      const delBtn = document.createElement('button');
+      delBtn.className = 'url-delete';
+      delBtn.textContent = '✕';
+      delBtn.title = '刪除此連結';
+      delBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (confirm(`刪除「${link.textContent.trim()}」？`)) {
+          link.parentElement === delBtn.parentElement
+            ? (link.remove(), delBtn.remove())
+            : link.closest('.url-slot')?.remove() || (link.remove(), delBtn.remove());
+        }
+      };
+      // 包進 url-slot
+      const wrap = document.createElement('span');
+      wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+      link.parentNode.insertBefore(wrap, link);
+      wrap.appendChild(link);
+      wrap.appendChild(delBtn);
+    });
     }); // end cards.forEach
   }); // end daySection.forEach
   console.log(`[debug] initPhotoSections total cards processed: ${total}`);
@@ -4123,6 +4150,7 @@ waitForFirebase(() => {
   initPhotoSections();
   loadEditsFromFirebase();
   initChecklists();
+  injectBadges();
 });
 
 </script>
