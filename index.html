@@ -3829,10 +3829,10 @@ function initPhotoSections() {
     card.querySelectorAll('a.web-btn').forEach(link => {
       if (link.dataset.deletable) return;
       const url = link.href;
-
-      // 檢查此 URL 是否已被刪除過
       const deletedKey = 'deleted_webbtn_' + btoa(unescape(encodeURIComponent(url))).slice(0, 40);
-      if (localStorage.getItem(deletedKey)) {
+
+      // 檢查 localStorage 或 Firebase 是否已刪除
+      if (localStorage.getItem(deletedKey) || window._deletedWebBtns?.[deletedKey]) {
         link.closest('span')?.remove() || link.remove();
         return;
       }
@@ -3846,11 +3846,17 @@ function initPhotoSections() {
         e.preventDefault();
         e.stopPropagation();
         if (confirm(`刪除「${link.textContent.trim()}」？`)) {
+          // 存 localStorage + Firebase
           localStorage.setItem(deletedKey, '1');
+          if (!window._deletedWebBtns) window._deletedWebBtns = {};
+          window._deletedWebBtns[deletedKey] = '1';
+          if (window._fbDb && window._fbRef && window._fbSet) {
+            const ref = window._fbRef(window._fbDb, 'hokkaido2026/deletedWebBtns/' + deletedKey);
+            window._fbSet(ref, '1');
+          }
           link.closest('span')?.remove() || (link.remove(), delBtn.remove());
         }
       };
-      // 包進 span
       const wrap = document.createElement('span');
       wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
       link.parentNode.insertBefore(wrap, link);
@@ -4193,10 +4199,24 @@ function initChecklists() {
 }
 
 waitForFirebase(() => {
-  initPhotoSections();
-  loadEditsFromFirebase();
-  initChecklists();
-  injectBadges();
+  // 先從 Firebase 載入已刪除的官網連結，再初始化
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    const ref = window._fbRef(window._fbDb, 'hokkaido2026/deletedWebBtns');
+    window._fbOnValue(ref, (snap) => {
+      window._deletedWebBtns = snap.val() || {};
+      // 同步到 localStorage
+      Object.keys(window._deletedWebBtns).forEach(k => localStorage.setItem(k, '1'));
+      initPhotoSections();
+      loadEditsFromFirebase();
+      initChecklists();
+      injectBadges();
+    }, { onlyOnce: true });
+  } else {
+    initPhotoSections();
+    loadEditsFromFirebase();
+    initChecklists();
+    injectBadges();
+  }
 });
 
 </script>
