@@ -938,7 +938,7 @@ body {
         <div class="expense-label">所有住宿合計（換算 NTD）</div>
         <div class="expense-amount" id="hotel-total-twd">—</div>
       </div>
-      <div style="font-size:11px;color:var(--muted);padding:4px 0 8px;">※ 請至各住宿方塊輸入金額，此處自動加總</div>
+      <div style="font-size:11px;color:var(--muted);padding:4px 0 8px;">※ 請至各方塊點「✏️ 編輯」輸入金額，此處自動加總</div>
     </div>
 
     <!-- 開車費用 -->
@@ -4347,9 +4347,12 @@ function updateHotelTotal() {
   const allData = getUserAllData();
   Object.values(allData).forEach(saved => {
     if (!saved.amount) return;
+    const amt = parseFloat(saved.amount);
+    if (!amt) return;
     const cur = saved.currency || 'JPY';
+    // 使用即時匯率，若尚未載入則用固定參考值
     const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
-    total += parseFloat(saved.amount) * rate;
+    total += amt * rate;
   });
   const el = document.getElementById('hotel-total-twd');
   if (el) el.textContent = total ? 'NT$ ' + Math.round(total).toLocaleString() : '—';
@@ -4504,11 +4507,13 @@ async function fetchRates() {
     const updated = new Date(data.time_last_updated * 1000).toLocaleString('zh-TW');
     rateEl.textContent = `匯率更新時間：${updated}`;
     updateCurrency();
+    updateHotelTotal();
   } catch(e) {
     // fallback rates (approximate)
     _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
     rateEl.textContent = '（使用離線參考匯率，僅供參考）';
     updateCurrency();
+    updateHotelTotal();
   }
 }
 
