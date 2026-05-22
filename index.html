@@ -4692,7 +4692,8 @@ window.openFuelLog = openFuelLog;
 window.closeFuelLog = closeFuelLog;
 window.saveFuelLog = saveFuelLog;
 window.deleteFuelLog = deleteFuelLog;
-  if (!jpy) return '—';
+
+function tollToJpyTwd(jpy) {
   const rate = (_rates && _rates['JPY']) ? (1 / _rates['JPY']) : 0.215;
   const twd = Math.round(jpy * rate);
   return `¥${jpy.toLocaleString()} <span style="font-size:13px;opacity:0.75;">/ NT$${twd.toLocaleString()}</span>`;
