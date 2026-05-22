@@ -4572,6 +4572,13 @@ function onEtcChange() {
 }
 
 
+function tollToJpyTwd(jpy) {
+  if (!jpy) return '—';
+  const rate = (_rates && _rates['JPY']) ? (1 / _rates['JPY']) : 0.215;
+  const twd = Math.round(jpy * rate);
+  return `¥${jpy.toLocaleString()} <span style="font-size:13px;opacity:0.75;">/ NT$${twd.toLocaleString()}</span>`;
+}
+
 function renderDriveRows() {
   const container = document.getElementById('drive-rows');
   if (!container) return;
@@ -4598,7 +4605,7 @@ function renderDriveRows() {
     <div class="expense-amount">${totalKm.toLocaleString()} km</div>
   </div>`;
 
-  document.getElementById('toll-total').textContent = '¥' + totalToll.toLocaleString();
+  document.getElementById('toll-total').innerHTML = tollToJpyTwd(totalToll);
 
   // 油費：直接用總公里 ÷ 油耗
   const fuelEl = document.getElementById('fuel-total');
@@ -4609,7 +4616,7 @@ function renderDriveRows() {
   if (hasCar) {
     const totalLiters = totalKm / kmpl;
     const totalFuel = Math.round(totalLiters * pricePerL / 100) * 100;
-    if (fuelEl) fuelEl.textContent = '¥' + totalFuel.toLocaleString();
+    if (fuelEl) fuelEl.innerHTML = tollToJpyTwd(totalFuel);
     if (fuelLabelEl) fuelLabelEl.textContent = `${carName} · ${totalKm} km ÷ ${kmpl} km/L = ${totalLiters.toFixed(0)} L × ¥${pricePerL}`;
   } else {
     if (fuelEl) fuelEl.textContent = '—';
