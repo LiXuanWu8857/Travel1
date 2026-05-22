@@ -4412,6 +4412,8 @@ function renderExpenseBreakdown() {
   document.getElementById('expense-grand-total').textContent = 'NT$ ' + grandTotal.toLocaleString();
 }
 window.renderExpenseBreakdown = renderExpenseBreakdown;
+
+function saveCurPref() {
   const from = document.getElementById('cur-from')?.value;
   const amount = document.getElementById('cur-amount')?.value;
   if (from) localStorage.setItem('cur_from', from);
