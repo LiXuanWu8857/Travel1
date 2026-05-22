@@ -956,17 +956,26 @@ body {
 
     <!-- 花費明細 -->
     <div class="expense-section">
-      <div class="expense-section-title">💰 已記錄花費明細</div>
-      <div id="expense-breakdown"></div>
-      <div class="expense-total-row" style="margin:8px 0 0;border-radius:10px;">
-        <div class="expense-total-label">所有已記錄項目合計</div>
-        <div class="expense-total-amount" id="expense-grand-total">—</div>
+      <div class="expense-section-title" onclick="toggleSection('breakdown-body','breakdown-arrow')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <span>💰 已記錄花費明細</span>
+        <span id="breakdown-arrow" style="font-size:12px;color:var(--muted);transition:transform 0.2s;">▲</span>
+      </div>
+      <div id="breakdown-body">
+        <div id="expense-breakdown"></div>
+        <div class="expense-total-row" style="margin:8px 0 0;border-radius:10px;">
+          <div class="expense-total-label">所有已記錄項目合計</div>
+          <div class="expense-total-amount" id="expense-grand-total">—</div>
+        </div>
       </div>
     </div>
 
     <!-- 開車費用 -->
     <div class="expense-section">
-      <div class="expense-section-title">🚗 行駛距離 &amp; 通行費估算</div>
+      <div class="expense-section-title" onclick="toggleSection('drive-body','drive-arrow')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <span>🚗 行駛距離 &amp; 通行費估算</span>
+        <span id="drive-arrow" style="font-size:12px;color:var(--muted);transition:transform 0.2s;">▲</span>
+      </div>
+      <div id="drive-body">
 
       <!-- 車型選擇 -->
       <!-- 車型選擇 -->
@@ -1018,6 +1027,7 @@ body {
       </div>
 
       <div id="drive-rows"></div>
+      </div><!-- end drive-body -->
     </div>
 
     <!-- 通行費總計 -->
@@ -5031,6 +5041,16 @@ window.openFuelLog = openFuelLog;
 window.closeFuelLog = closeFuelLog;
 window.saveFuelLog = saveFuelLog;
 window.deleteFuelLog = deleteFuelLog;
+
+function toggleSection(bodyId, arrowId) {
+  const body = document.getElementById(bodyId);
+  const arrow = document.getElementById(arrowId);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+window.toggleSection = toggleSection;
 
 function toggleAllTotal() {
   const rows = document.getElementById('all-total-rows');
