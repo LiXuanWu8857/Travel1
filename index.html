@@ -947,7 +947,7 @@ body {
       <div class="expense-section-title">💰 已記錄花費明細</div>
       <div id="expense-breakdown"></div>
       <div class="expense-total-row" style="margin:8px 0 0;border-radius:10px;">
-        <div class="expense-total-label">所有項目合計</div>
+        <div class="expense-total-label">所有已記錄項目合計</div>
         <div class="expense-total-amount" id="expense-grand-total">—</div>
       </div>
     </div>
@@ -1069,6 +1069,16 @@ body {
     <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
       ※ 通行費以 NEXCO 北海道距離基準估算，實際依路線略有差異。ETC 折扣已套用。<br>
       ※ 油費 = 總行駛 km ÷ 油耗 × 油價（北海道平均約 170–180円/L）。
+    </div>
+
+    <!-- 旅程總花費 -->
+    <div style="margin:0 16px 20px;background:linear-gradient(135deg,var(--accent),#0F6E56);border-radius:14px;padding:16px 20px;">
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:10px;letter-spacing:0.05em;">✈️ 旅程總花費估算</div>
+      <div id="all-total-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+      <div style="border-top:1px solid rgba(255,255,255,0.3);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:13px;color:white;font-weight:600;">合計（NT$）</div>
+        <div style="font-size:22px;font-weight:800;color:white;" id="all-grand-total">—</div>
+      </div>
     </div>
 
   </div>
@@ -4652,6 +4662,7 @@ function openExpenseModal() {
   renderDriveRows();
   renderFuelLog();
   renderExpenseBreakdown();
+  renderAllTotal();
   fetchRates();
 }
 window.saveCurPref = saveCurPref;
@@ -5018,6 +5029,65 @@ window.closeFuelLog = closeFuelLog;
 window.saveFuelLog = saveFuelLog;
 window.deleteFuelLog = deleteFuelLog;
 
+function renderAllTotal() {
+  const rowsEl = document.getElementById('all-total-rows');
+  const grandEl = document.getElementById('all-grand-total');
+  if (!rowsEl || !grandEl) return;
+
+  const jpyRate = (_rates?.JPY) ? (1/_rates.JPY) : 0.215;
+
+  // 1. 已記錄花費（從 user_edits）
+  const allData = getUserAllData();
+  let recordedTwd = 0;
+  Object.values(allData).forEach(v => {
+    if (!v.amount || !parseFloat(v.amount)) return;
+    const cur = v.currency || 'JPY';
+    const rate = (_rates?.[cur]) ? (1/_rates[cur]) : (cur==='JPY' ? 0.215 : 1);
+    recordedTwd += parseFloat(v.amount) * rate;
+  });
+
+  // 2. 通行費
+  const tollEl = document.getElementById('toll-total');
+  let tollJpy = 0;
+  if (tollEl) {
+    const t = tollEl.textContent.replace(/[¥,\s]/g,'').split('/')[0].trim();
+    tollJpy = parseInt(t) || 0;
+  }
+  const tollTwd = Math.round(tollJpy * jpyRate);
+
+  // 3. 油費
+  const fuelEl = document.getElementById('fuel-total');
+  let fuelJpy = 0;
+  if (fuelEl) {
+    const f = fuelEl.textContent.replace(/[¥,\s]/g,'').split('/')[0].trim();
+    fuelJpy = parseInt(f) || 0;
+  }
+  const fuelTwd = Math.round(fuelJpy * jpyRate);
+
+  const rows = [
+    { label: '💰 已記錄花費', twd: Math.round(recordedTwd), show: recordedTwd > 0 },
+    { label: '🚗 預估通行費', twd: tollTwd, show: tollJpy > 0 },
+    { label: '⛽ 預估油費',   twd: fuelTwd, show: fuelJpy > 0 },
+  ].filter(r => r.show);
+
+  if (!rows.length) {
+    rowsEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.6);">請輸入花費並選擇車型</div>';
+    grandEl.textContent = '—';
+    return;
+  }
+
+  rowsEl.innerHTML = rows.map(r =>
+    `<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,0.9);">
+      <span>${r.label}</span>
+      <span>NT$ ${r.twd.toLocaleString()}</span>
+    </div>`
+  ).join('');
+
+  const total = rows.reduce((s,r) => s + r.twd, 0);
+  grandEl.textContent = 'NT$ ' + total.toLocaleString();
+}
+window.renderAllTotal = renderAllTotal;
+
 function tollToJpyTwd(jpy) {
   const rate = (_rates && _rates['JPY']) ? (1 / _rates['JPY']) : 0.215;
   const twd = Math.round(jpy * rate);
@@ -5077,6 +5147,7 @@ function renderDriveRows() {
   }
 
   localStorage.setItem('fuel_price', pricePerL);
+  renderAllTotal();
 }
 
 // ── 即時匯率 ──
