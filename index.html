@@ -985,17 +985,24 @@ body {
       </div>
 
       <!-- ETC 切換 -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:8px;">
-        <span style="font-size:12px;font-weight:700;color:var(--muted);">ETC 折扣</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">ETC</span>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-no" value="1" onchange="onEtcChange()"> 無 ETC
+          <input type="radio" name="etc" id="etc-no" value="1" onchange="onEtcChange()"> 無
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-yes" value="0.9" onchange="onEtcChange()"> ETC（約9折）
+          <input type="radio" name="etc" id="etc-yes" value="0.9" onchange="onEtcChange()"> 9折
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-night" value="0.7" onchange="onEtcChange()"> ETC深夜（7折）
+          <input type="radio" name="etc" id="etc-night" value="0.7" onchange="onEtcChange()"> 深夜7折
         </label>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);">⛽</span>
+          <input id="fuel-price-input" type="number" value="175" min="100" max="300"
+            class="currency-input" style="width:70px;flex:none;text-align:center;font-size:13px;padding:6px 8px;"
+            oninput="renderDriveRows()">
+          <span style="font-size:11px;color:var(--muted);">円/L</span>
+        </div>
       </div>
 
       <div id="drive-rows"></div>
@@ -1010,19 +1017,8 @@ body {
       <div class="expense-total-amount" id="toll-total">— JPY</div>
     </div>
 
-    <!-- 油費估算 -->
-    <div class="expense-section" style="margin-top:0;">
-      <div class="expense-section-title">⛽ 油費估算</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-        <span style="font-size:12px;color:var(--muted);font-weight:600;">油價（円/L）</span>
-        <input id="fuel-price-input" type="number" value="175" min="100" max="300"
-          class="currency-input" style="width:90px;flex:none;text-align:center;font-size:14px;"
-          oninput="renderFuelCost()">
-        <span style="font-size:11px;color:var(--muted);">※ 北海道平均約175円/L</span>
-      </div>
-      <div id="fuel-rows"></div>
-    </div>
-    <div class="expense-total-row" style="margin-top:0;">
+    <!-- 油費估算（整合在通行費總計下方） -->
+    <div class="expense-total-row" style="margin-top:8px;">
       <div>
         <div class="expense-total-label">⛽ 預估油費總計</div>
         <div id="fuel-type-label" style="font-size:11px;opacity:0.8;margin-top:2px;">請先選擇車型</div>
@@ -1030,9 +1026,8 @@ body {
       <div class="expense-total-amount" id="fuel-total">— JPY</div>
     </div>
     <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
-      ※ 以 NEXCO 北海道の距離基準料金估算，實際依路線略有差異。<br>
-      ※ 油耗為實際路況估算值（市區+高速混合），北海道油價約170–180円/L。<br>
-      ※ 利尻島段（渡輪）不含在內。
+      ※ 通行費以 NEXCO 北海道距離基準估算，實際依路線略有差異。ETC 折扣已套用。<br>
+      ※ 油費 = 總行駛 km ÷ 油耗 × 油價（北海道平均約 170–180円/L）。
     </div>
 
   </div>
@@ -4483,7 +4478,6 @@ function openExpenseModal() {
   const fpEl = document.getElementById('fuel-price-input');
   if (fp && fpEl) fpEl.value = fp;
   renderDriveRows();
-  renderFuelCost();
   renderExpenseBreakdown();
   fetchRates();
 }
@@ -4570,7 +4564,6 @@ function onCarTypeChange() {
   localStorage.setItem('car_type_idx', sel.selectedIndex);
   localStorage.setItem('car_type', sel.value);
   renderDriveRows();
-  renderFuelCost();
 }
 function onEtcChange() {
   const val = document.querySelector('input[name="etc"]:checked')?.value || '0.9';
@@ -4578,46 +4571,15 @@ function onEtcChange() {
   renderDriveRows();
 }
 
-function renderFuelCost() {
-  const container = document.getElementById('fuel-rows');
-  const totalEl = document.getElementById('fuel-total');
-  const labelEl = document.getElementById('fuel-type-label');
-  if (!container) return;
-  const kmpl = getCarKmpl();
-  const pricePerL = parseFloat(document.getElementById('fuel-price-input')?.value || 175);
-  const sel = document.getElementById('car-type-select');
-  const carName = sel?.options[sel.selectedIndex]?.text?.replace(/^[🚗🚐🚌]\s+/, '').split('（')[0] || '—';
-  if (!sel?.value) {
-    container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">請先選擇車型</div>';
-    if (totalEl) totalEl.textContent = '—';
-    return;
-  }
-  let totalFuel = 0;
-  container.innerHTML = DRIVE_SEGMENTS.map(s => {
-    const liters = s.km / kmpl;
-    const cost = Math.round(liters * pricePerL / 10) * 10;
-    totalFuel += cost;
-    return `<div class="expense-row">
-      <div class="expense-label">
-        <span style="font-size:11px;color:var(--muted);font-weight:600;">${s.day}</span>　${s.from} → ${s.to}
-        <div class="expense-note">${s.km} km ÷ ${kmpl} km/L = ${liters.toFixed(1)} L</div>
-      </div>
-      <div class="expense-amount">${cost ? '¥' + cost.toLocaleString() : '<span style="color:var(--muted);">—</span>'}</div>
-    </div>`;
-  }).join('') + `<div class="expense-row" style="font-weight:700;padding-top:10px;border-top:2px solid var(--border);">
-    <div class="expense-label">總行駛距離</div>
-    <div class="expense-amount">${DRIVE_SEGMENTS.reduce((s,d)=>s+d.km,0).toLocaleString()} km</div>
-  </div>`;
-  if (totalEl) totalEl.textContent = '¥' + totalFuel.toLocaleString();
-  if (labelEl) labelEl.textContent = `${carName} · ${kmpl} km/L · ¥${pricePerL}/L`;
-  localStorage.setItem('fuel_price', pricePerL);
-}
 
 function renderDriveRows() {
   const container = document.getElementById('drive-rows');
   if (!container) return;
   const carMult = getCarMultiplier();
   const etcMult = getEtcMultiplier();
+  const kmpl = getCarKmpl();
+  const pricePerL = parseFloat(document.getElementById('fuel-price-input')?.value || 175);
+  const hasCar = !!document.getElementById('car-type-select')?.value;
   let totalKm = 0, totalToll = 0;
 
   container.innerHTML = DRIVE_SEGMENTS.map(s => {
@@ -4626,8 +4588,7 @@ function renderDriveRows() {
     totalToll += adjToll;
     return `<div class="expense-row">
       <div class="expense-label">
-        <span style="font-size:11px;color:var(--muted);font-weight:600;">${s.day}</span>
-        　${s.from} → ${s.to}
+        <span style="font-size:11px;color:var(--muted);font-weight:600;">${s.day}</span>　${s.from} → ${s.to}
         <div class="expense-note">${s.km} km　${s.route}</div>
       </div>
       <div class="expense-amount">${adjToll ? '¥' + adjToll.toLocaleString() : '<span style="color:var(--muted);font-weight:400;">無料</span>'}</div>
@@ -4639,12 +4600,31 @@ function renderDriveRows() {
 
   document.getElementById('toll-total').textContent = '¥' + totalToll.toLocaleString();
 
-  // 更新說明
+  // 油費：直接用總公里 ÷ 油耗
+  const fuelEl = document.getElementById('fuel-total');
+  const fuelLabelEl = document.getElementById('fuel-type-label');
   const sel = document.getElementById('car-type-select');
-  const carName = CAR_TYPE_NAME[sel?.value || 'std'];
-  const etcName = etcMult === 1 ? '無ETC' : etcMult === 0.9 ? 'ETC 9折' : 'ETC深夜 7折';
+  const carName = sel?.options[sel.selectedIndex]?.text?.replace(/^[🚗🚐🚌]\s+/, '').split('（')[0] || '—';
+
+  if (hasCar) {
+    const totalLiters = totalKm / kmpl;
+    const totalFuel = Math.round(totalLiters * pricePerL / 100) * 100;
+    if (fuelEl) fuelEl.textContent = '¥' + totalFuel.toLocaleString();
+    if (fuelLabelEl) fuelLabelEl.textContent = `${carName} · ${totalKm} km ÷ ${kmpl} km/L = ${totalLiters.toFixed(0)} L × ¥${pricePerL}`;
+  } else {
+    if (fuelEl) fuelEl.textContent = '—';
+    if (fuelLabelEl) fuelLabelEl.textContent = '請先選擇車型';
+  }
+
+  // 更新通行費說明
   const lbl = document.getElementById('car-type-label');
-  if (lbl) lbl.textContent = `${carName} ・ ${etcName}`;
+  if (lbl) {
+    const carTypeName = CAR_TYPE_NAME[sel?.value || 'std'];
+    const etcName = etcMult === 1 ? '無ETC' : etcMult === 0.9 ? 'ETC 9折' : 'ETC深夜 7折';
+    lbl.textContent = `${carTypeName} ・ ${etcName}`;
+  }
+
+  localStorage.setItem('fuel_price', pricePerL);
 }
 
 // ── 即時匯率 ──
@@ -4663,16 +4643,14 @@ async function fetchRates() {
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
-    renderFuelCost();
-  } catch(e) {
+    } catch(e) {
     // fallback rates (approximate)
     _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
     rateEl.textContent = '（使用離線參考匯率，僅供參考）';
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
-    renderFuelCost();
-  }
+    }
 }
 
 function updateCurrency() {
