@@ -1073,6 +1073,95 @@ body {
 
   </div>
 </div>
+<!-- ══ GENERIC TRIP EXPENSE MODAL ══ -->
+<div class="booking-modal-overlay" id="trip-expense-modal" onclick="if(event.target===this)closeTripExpenseModal()">
+  <div class="booking-modal-sheet">
+    <div class="booking-modal-header">
+      <div class="booking-modal-title" id="trip-expense-title">💴 花費試算</div>
+      <button class="booking-modal-close" onclick="closeTripExpenseModal()">✕</button>
+    </div>
+    <div style="padding:16px 16px 0;">
+      <div class="currency-box">
+        <div class="currency-title">💱 即時幣別換算</div>
+        <div class="currency-row">
+          <select class="currency-select" id="ct-cur-from" onchange="ctUpdateCurrency()">
+            <option value="JPY">🇯🇵 JPY 日圓</option>
+            <option value="USD">🇺🇸 USD 美元</option>
+            <option value="EUR">🇪🇺 EUR 歐元</option>
+            <option value="KRW">🇰🇷 KRW 韓元</option>
+            <option value="HKD">🇭🇰 HKD 港幣</option>
+            <option value="THB">🇹🇭 THB 泰銖</option>
+            <option value="CNY">🇨🇳 CNY 人民幣</option>
+          </select>
+          <input class="currency-input" id="ct-cur-amount" type="number" value="0" oninput="ctUpdateCurrency()">
+        </div>
+        <div class="currency-result" id="ct-cur-result">— TWD</div>
+        <div class="currency-rate" id="ct-cur-rate">載入匯率中…</div>
+      </div>
+    </div>
+    <div class="expense-section">
+      <div class="expense-section-title">💰 已記錄花費明細</div>
+      <div id="ct-expense-breakdown"></div>
+      <div class="expense-total-row" style="margin:8px 0 0;border-radius:10px;">
+        <div class="expense-total-label">所有項目合計</div>
+        <div class="expense-total-amount" id="ct-grand-total">—</div>
+      </div>
+    </div>
+    <div id="ct-toll-section" style="display:none;">
+      <div class="expense-section">
+        <div class="expense-section-title">🚗 通行費 &amp; 油費估算</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+          <select id="ct-car-select" class="currency-select" onchange="ctCarChange()" style="flex:1;">
+            <option value="">── 選擇車型 ──</option>
+            <option value="kei" data-kmpl="17">🚗 軽自動車（油耗約17km/L）</option>
+            <option value="std" data-kmpl="14">🚗 普通車（油耗約14km/L）</option>
+            <option value="mid" data-kmpl="17">🚐 Noah/Voxy HV（油耗約17km/L）</option>
+            <option value="mid" data-kmpl="13">🚐 Alphard HV（油耗約13km/L）</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);">ETC</span>
+          <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;"><input type="radio" name="ct-etc" value="1" onchange="ctCarChange()"> 無</label>
+          <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;"><input type="radio" name="ct-etc" value="0.9" checked onchange="ctCarChange()"> 9折</label>
+          <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;"><input type="radio" name="ct-etc" value="0.7" onchange="ctCarChange()"> 深夜7折</label>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+            <span style="font-size:12px;color:var(--muted);">⛽</span>
+            <input id="ct-fuel-price" type="number" value="175" class="currency-input"
+              style="width:65px;flex:none;text-align:center;font-size:13px;padding:5px 6px;" oninput="ctCarChange()">
+            <span style="font-size:11px;color:var(--muted);">円/L</span>
+          </div>
+        </div>
+        <div id="ct-drive-rows" style="font-size:13px;color:var(--muted);padding:8px 0;">選擇車型後自動計算</div>
+      </div>
+      <div class="expense-total-row" style="margin-top:0;">
+        <div>
+          <div class="expense-total-label">預估通行費</div>
+          <div id="ct-toll-label" style="font-size:11px;opacity:0.8;margin-top:2px;"></div>
+        </div>
+        <div class="expense-total-amount" id="ct-toll-total">—</div>
+      </div>
+      <div class="expense-total-row" style="margin-top:8px;">
+        <div>
+          <div class="expense-total-label">⛽ 預估油費</div>
+          <div id="ct-fuel-label" style="font-size:11px;opacity:0.8;margin-top:2px;"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="expense-total-amount" id="ct-fuel-total">—</div>
+          <button onclick="openCtFuelLog()" style="border:none;background:rgba(255,255,255,0.25);color:white;width:28px;height:28px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
+        </div>
+      </div>
+      <div id="ct-fuel-log-section" style="margin:0 16px 8px;display:none;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;padding:12px 0 8px;border-top:1px solid var(--border);">⛽ 加油紀錄</div>
+        <div id="ct-fuel-log-list"></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:8px 0;border-top:1px solid var(--border);">
+          <span>實際加油合計</span><span id="ct-fuel-log-sum">—</span>
+        </div>
+      </div>
+      <div style="padding:6px 16px 12px;font-size:11px;color:var(--muted);">※ 通行費以 NEXCO 基準估算，油費 = 總km ÷ 油耗 × 油價</div>
+    </div>
+  </div>
+</div>
+
 <div class="new-trip-overlay" id="new-trip-overlay" onclick="if(event.target===this)closeNewTripModal()">
   <div class="new-trip-sheet">
     <div class="new-trip-header">
@@ -1096,6 +1185,17 @@ body {
         <div class="new-trip-field">
           <label>返回日期</label>
           <input id="nt-end" type="date">
+        </div>
+      </div>
+      <div class="new-trip-field">
+        <label>🚗 有租車？</label>
+        <div style="display:flex;gap:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+            <input type="radio" name="nt-car" value="1" checked> 是，需要通行費估算
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+            <input type="radio" name="nt-car" value="0"> 否
+          </label>
         </div>
       </div>
       <button class="new-trip-submit" onclick="createNewTrip()">🗺 建立行程</button>
@@ -4614,7 +4714,201 @@ function onEtcChange() {
 }
 
 
-// ── 加油紀錄 ──
+// ══ 通用旅程花費 MODAL ══
+let _ctTripId = null;
+
+window.openTripExpenseModal = function(tripId) {
+  _ctTripId = tripId;
+  const trip = _customTrips.find(t => t.id === tripId);
+  if (!trip) return;
+  document.getElementById('trip-expense-title').textContent = `💴 ${trip.name} 花費試算`;
+  document.getElementById('trip-expense-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // 顯示/隱藏通行費區塊
+  document.getElementById('ct-toll-section').style.display = trip.hasCar ? 'block' : 'none';
+
+  // 還原車型設定
+  const savedIdx = localStorage.getItem(`ct_car_idx_${tripId}`);
+  const sel = document.getElementById('ct-car-select');
+  if (savedIdx && sel) sel.selectedIndex = parseInt(savedIdx);
+  const savedEtc = localStorage.getItem(`ct_etc_${tripId}`) || '0.9';
+  const etcEl = document.querySelector(`input[name="ct-etc"][value="${savedEtc}"]`);
+  if (etcEl) etcEl.checked = true;
+  const fp = localStorage.getItem(`ct_fuel_price_${tripId}`);
+  if (fp) document.getElementById('ct-fuel-price').value = fp;
+
+  ctRenderBreakdown();
+  if (trip.hasCar) ctCarChange();
+  ctRenderFuelLog();
+
+  // 匯率
+  if (!Object.keys(_rates).length) fetchRates();
+  ctUpdateCurrency();
+};
+
+window.closeTripExpenseModal = function() {
+  document.getElementById('trip-expense-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+function ctUpdateCurrency() {
+  const from = document.getElementById('ct-cur-from')?.value;
+  const amount = parseFloat(document.getElementById('ct-cur-amount')?.value) || 0;
+  const result = document.getElementById('ct-cur-result');
+  const rateEl = document.getElementById('ct-cur-rate');
+  if (!_rates[from]) return;
+  const twd = amount / _rates[from];
+  if (result) result.textContent = 'NT$ ' + twd.toLocaleString('zh-TW', { maximumFractionDigits: 0 });
+  if (rateEl && _rates[from]) rateEl.textContent = `1 ${from} ≈ NT$ ${(1/_rates[from]).toFixed(4)}`;
+}
+window.ctUpdateCurrency = ctUpdateCurrency;
+
+function ctCarChange() {
+  if (!_ctTripId) return;
+  const sel = document.getElementById('ct-car-select');
+  const etc = parseFloat(document.querySelector('input[name="ct-etc"]:checked')?.value || '0.9');
+  const fp = parseFloat(document.getElementById('ct-fuel-price')?.value || 175);
+  localStorage.setItem(`ct_car_idx_${_ctTripId}`, sel.selectedIndex);
+  localStorage.setItem(`ct_etc_${_ctTripId}`, etc);
+  localStorage.setItem(`ct_fuel_price_${_ctTripId}`, fp);
+
+  const container = document.getElementById('ct-drive-rows');
+  if (!sel.value || !container) return;
+
+  const opt = sel.options[sel.selectedIndex];
+  const kmpl = parseFloat(opt?.dataset?.kmpl || 14);
+  const ratio = CAR_TYPE_RATIO[sel.value] || 1.0;
+  const trip = _customTrips.find(t => t.id === _ctTripId);
+
+  // 計算總公里（從 places 裡的資料 或 日期天數估算）
+  const days = trip ? dateRange(trip.start, trip.end).length : 1;
+  const estKm = days * 80; // 估算每天平均 80km
+  const estToll = Math.round(days * 500 * ratio * etc / 100) * 100;
+  const totalLiters = estKm / kmpl;
+  const fuelCost = Math.round(totalLiters * fp / 100) * 100;
+
+  container.innerHTML = `<div class="expense-row">
+    <div class="expense-label">估算行駛距離<div class="expense-note">${days} 天 × 80km = 約 ${estKm} km（請手動調整）</div></div>
+    <div class="expense-amount">${estKm.toLocaleString()} km</div>
+  </div>`;
+
+  document.getElementById('ct-toll-total').innerHTML = tollToJpyTwd(estToll);
+  document.getElementById('ct-toll-label').textContent = `${CAR_TYPE_NAME[sel.value]} · ETC ${etc < 1 ? (etc*10)+'折' : '無'}`;
+  document.getElementById('ct-fuel-total').innerHTML = tollToJpyTwd(fuelCost);
+  document.getElementById('ct-fuel-label').textContent = `${estKm} km ÷ ${kmpl} km/L = ${totalLiters.toFixed(0)} L × ¥${fp}`;
+}
+window.ctCarChange = ctCarChange;
+
+function ctRenderBreakdown() {
+  const container = document.getElementById('ct-expense-breakdown');
+  const grandEl = document.getElementById('ct-grand-total');
+  if (!container || !_ctTripId) return;
+  const key = `user_edits_${_ctTripId}`;
+  let allData = {};
+  try { allData = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+
+  const items = Object.entries(allData)
+    .filter(([k,v]) => v.amount && parseFloat(v.amount) > 0)
+    .map(([k,v]) => {
+      const cur = v.currency || 'JPY';
+      const amt = parseFloat(v.amount);
+      const rate = (_rates[cur]) ? (1/_rates[cur]) : (cur==='JPY' ? 0.215 : 1);
+      const twd = Math.round(amt * rate);
+      const titleSlug = k.replace(/^[^_]+_[^_]+_/, '').replace(/_/g,' ').trim();
+      return { titleSlug, amt, cur, twd };
+    });
+
+  if (!items.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">尚未記錄花費。點 ✏️ 編輯可輸入金額。</div>';
+    if (grandEl) grandEl.textContent = '—';
+    return;
+  }
+  let grand = 0;
+  container.innerHTML = items.map(item => {
+    grand += item.twd;
+    return `<div class="expense-row">
+      <div class="expense-label">${item.titleSlug}</div>
+      <div class="expense-amount"><span style="font-size:11px;color:var(--muted);margin-right:6px;">${parseInt(item.amt).toLocaleString()} ${item.cur}</span>NT$${item.twd.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  if (grandEl) grandEl.textContent = 'NT$ ' + grand.toLocaleString();
+}
+
+function openCtFuelLog() {
+  // 重用北海道的加油 modal，但綁定到 ct trip id
+  const m = document.getElementById('fuel-log-modal');
+  m.style.display = 'flex';
+  m.dataset.forTrip = _ctTripId;
+  document.getElementById('fl-liters').value = '';
+  document.getElementById('fl-amount').value = '';
+  document.getElementById('fl-place').value = '';
+}
+window.openCtFuelLog = openCtFuelLog;
+
+function ctRenderFuelLog() {
+  const key = `fuel_logs_${_ctTripId}`;
+  let logs = [];
+  try { logs = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  const section = document.getElementById('ct-fuel-log-section');
+  const list = document.getElementById('ct-fuel-log-list');
+  const sumEl = document.getElementById('ct-fuel-log-sum');
+  if (!section) return;
+  if (!logs.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  let totalL = 0, totalJPY = 0;
+  list.innerHTML = logs.map((e,i) => {
+    totalL += e.liters||0; totalJPY += e.amount||0;
+    return `<div class="expense-row">
+      <div class="expense-label"><span style="font-size:11px;color:var(--muted);">${e.ts}</span>${e.place?`　${e.place}`:''}${e.liters?`<div class="expense-note">${e.liters} L</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="expense-amount">${e.amount?'¥'+e.amount.toLocaleString():'—'}</div>
+        <button onclick="ctDeleteFuelLog(${i})" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  const rate = (_rates?.JPY)?(1/_rates.JPY):0.215;
+  sumEl.innerHTML = `${totalL.toFixed(1)} L · ¥${totalJPY.toLocaleString()} <span style="font-size:11px;color:var(--muted);">/ NT$${Math.round(totalJPY*rate).toLocaleString()}</span>`;
+}
+function ctDeleteFuelLog(idx) {
+  const key = `fuel_logs_${_ctTripId}`;
+  let logs = [];
+  try { logs = JSON.parse(localStorage.getItem(key)||'[]'); } catch(e) {}
+  logs.splice(idx,1);
+  localStorage.setItem(key, JSON.stringify(logs));
+  ctRenderFuelLog();
+}
+window.ctDeleteFuelLog = ctDeleteFuelLog;
+
+// 覆寫 saveFuelLog 判斷是北海道還是自訂旅程
+const _origSaveFuelLog = window.saveFuelLog;
+window.saveFuelLog = function() {
+  const m = document.getElementById('fuel-log-modal');
+  const forTrip = m?.dataset?.forTrip;
+  const liters = parseFloat(document.getElementById('fl-liters').value)||0;
+  const amount = parseFloat(document.getElementById('fl-amount').value)||0;
+  const place = document.getElementById('fl-place').value.trim();
+  if (!liters && !amount) return;
+  const now = new Date();
+  const ts = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const entry = { ts, liters, amount, place };
+  if (forTrip && forTrip !== 'hokkaido') {
+    const key = `fuel_logs_${forTrip}`;
+    let logs = [];
+    try { logs = JSON.parse(localStorage.getItem(key)||'[]'); } catch(e) {}
+    logs.push(entry);
+    localStorage.setItem(key, JSON.stringify(logs));
+    closeFuelLog();
+    ctRenderFuelLog();
+  } else {
+    m.dataset.forTrip = '';
+    _origSaveFuelLog.call(this);
+  }
+};
+
+window.openTripExpenseModal = window.openTripExpenseModal;
+window.closeTripExpenseModal = window.closeTripExpenseModal;
 function openFuelLog() {
   const m = document.getElementById('fuel-log-modal');
   m.style.display = 'flex';
@@ -4851,17 +5145,17 @@ window.createNewTrip = function() {
   const dest = document.getElementById('nt-dest').value.trim();
   const start = document.getElementById('nt-start').value;
   const end = document.getElementById('nt-end').value;
+  const hasCar = document.querySelector('input[name="nt-car"]:checked')?.value === '1';
   if (!name || !start || !end) { alert('請填入旅程名稱及日期！'); return; }
   if (new Date(start) > new Date(end)) { alert('出發日期不能晚於返回日期！'); return; }
 
   const id = 'ct_' + Date.now();
-  const trip = { id, name, dest, start, end, places: {} };
+  const trip = { id, name, dest, start, end, hasCar, places: {} };
   _customTrips.push(trip);
   saveCustomTrips();
   closeNewTripModal();
   renderCustomTrip(trip);
   openCustomTrip(id);
-  // 加到首頁卡片
   addTripCard(trip);
 };
 
@@ -4925,11 +5219,12 @@ function renderCustomTrip(trip) {
   }).join('');
 
   wrapper.innerHTML = `
-    <button class="booking-fab visible" id="fab-${trip.id}" onclick="event.stopPropagation();alert('此旅程暫無預訂清單')" style="position:fixed;top:12px;right:16px;z-index:500;display:flex;">
-      📍 ${trip.dest||trip.name}
-    </button>
     <div class="back-btn" onclick="closeCustomTrip('${trip.id}')" style="justify-content:space-between;">
       <span>‹ 旅圖首頁</span>
+      <button class="booking-fab" onclick="event.stopPropagation();openTripExpenseModal('${trip.id}')"
+        style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
+        💴 花費
+      </button>
     </div>
     <div class="top-nav" style="top:44px;">
       <div class="nav-title">✈️ 旅圖 · ${trip.name}</div>
