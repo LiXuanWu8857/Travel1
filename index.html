@@ -957,27 +957,29 @@ body {
       <div class="expense-section-title">🚗 行駛距離 &amp; 通行費估算</div>
 
       <!-- 車型選擇 -->
+      <!-- 車型選擇 -->
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
         <div style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;">車型選擇</div>
         <select id="car-type-select" class="currency-select" onchange="onCarTypeChange()" style="flex:1;">
           <option value="">── 選擇車型 ──</option>
-          <optgroup label="軽自動車 (係數 ×0.8)">
-            <option value="kei">🚗 軽自動車（Suzuki Alto、Honda N-Box…）</option>
+          <optgroup label="軽自動車 (係數 ×0.8 · 油耗約17km/L)">
+            <option value="kei" data-kmpl="17">🚗 軽自動車（Suzuki Alto、Honda N-Box…）</option>
           </optgroup>
           <optgroup label="普通車 (係數 ×1.0)">
-            <option value="std" selected>🚗 普通車 Toyota Raize（現在預訂）</option>
-            <option value="std">🚗 普通車 Toyota Corolla / Aqua</option>
-            <option value="std">🚗 普通車 Honda Fit / Vezel</option>
-            <option value="std">🚗 普通車 Mazda CX-5</option>
-            <option value="std">🚗 普通車 Toyota RAV4 / Harrier</option>
+            <option value="std" data-kmpl="14">🚗 Toyota Raize（油耗約14km/L）</option>
+            <option value="std" data-kmpl="15">🚗 Toyota Corolla / Aqua（油耗約15km/L）</option>
+            <option value="std" data-kmpl="13">🚗 Honda Fit / Vezel（油耗約13km/L）</option>
+            <option value="std" data-kmpl="13">🚗 Mazda CX-5（油耗約13km/L）</option>
+            <option value="std" data-kmpl="12">🚗 Toyota RAV4 / Harrier（油耗約12km/L）</option>
           </optgroup>
           <optgroup label="中型車 (係數 ×1.2)">
-            <option value="mid">🚐 中型車 Toyota Alphard / Vellfire</option>
-            <option value="mid">🚐 中型車 Toyota Noah / Voxy（7人座）</option>
-            <option value="mid">🚐 中型車 Honda Stepwgn</option>
+            <option value="mid" data-kmpl="13">🚐 Toyota Alphard / Vellfire HV（油耗約13km/L）</option>
+            <option value="mid" data-kmpl="17">🚐 Toyota Noah / Voxy HV 7人座（油耗約17km/L）</option>
+            <option value="mid" data-kmpl="13">🚐 Toyota Noah / Voxy（非HV，油耗約13km/L）</option>
+            <option value="mid" data-kmpl="13">🚐 Honda Stepwgn（油耗約13km/L）</option>
           </optgroup>
           <optgroup label="大型車 (係數 ×1.65)">
-            <option value="lrg">🚌 大型車（巴士 / 大型トラック）</option>
+            <option value="lrg" data-kmpl="7">🚌 大型車（巴士 / 大型トラック）</option>
           </optgroup>
         </select>
       </div>
@@ -986,20 +988,20 @@ body {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:8px;">
         <span style="font-size:12px;font-weight:700;color:var(--muted);">ETC 折扣</span>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-no" value="1" checked onchange="renderDriveRows()"> 無 ETC
+          <input type="radio" name="etc" id="etc-no" value="1" onchange="onEtcChange()"> 無 ETC
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-yes" value="0.9" onchange="renderDriveRows()"> ETC（約9折）
+          <input type="radio" name="etc" id="etc-yes" value="0.9" onchange="onEtcChange()"> ETC（約9折）
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="radio" name="etc" id="etc-night" value="0.7" onchange="renderDriveRows()"> ETC深夜（7折）
+          <input type="radio" name="etc" id="etc-night" value="0.7" onchange="onEtcChange()"> ETC深夜（7折）
         </label>
       </div>
 
       <div id="drive-rows"></div>
     </div>
 
-    <!-- 總計 -->
+    <!-- 通行費總計 -->
     <div class="expense-total-row">
       <div>
         <div class="expense-total-label">預估通行費總計</div>
@@ -1007,8 +1009,29 @@ body {
       </div>
       <div class="expense-total-amount" id="toll-total">— JPY</div>
     </div>
+
+    <!-- 油費估算 -->
+    <div class="expense-section" style="margin-top:0;">
+      <div class="expense-section-title">⛽ 油費估算</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;">油價（円/L）</span>
+        <input id="fuel-price-input" type="number" value="175" min="100" max="300"
+          class="currency-input" style="width:90px;flex:none;text-align:center;font-size:14px;"
+          oninput="renderFuelCost()">
+        <span style="font-size:11px;color:var(--muted);">※ 北海道平均約175円/L</span>
+      </div>
+      <div id="fuel-rows"></div>
+    </div>
+    <div class="expense-total-row" style="margin-top:0;">
+      <div>
+        <div class="expense-total-label">⛽ 預估油費總計</div>
+        <div id="fuel-type-label" style="font-size:11px;opacity:0.8;margin-top:2px;">請先選擇車型</div>
+      </div>
+      <div class="expense-total-amount" id="fuel-total">— JPY</div>
+    </div>
     <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
       ※ 以 NEXCO 北海道の距離基準料金估算，實際依路線略有差異。<br>
+      ※ 油耗為實際路況估算值（市區+高速混合），北海道油價約170–180円/L。<br>
       ※ 利尻島段（渡輪）不含在內。
     </div>
 
@@ -4441,14 +4464,26 @@ function saveCurPref() {
 function openExpenseModal() {
   document.getElementById('expense-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // 還原上次的幣別和金額
   const savedFrom = localStorage.getItem('cur_from');
   const savedAmount = localStorage.getItem('cur_amount');
   if (savedFrom) document.getElementById('cur-from').value = savedFrom;
   if (savedAmount) document.getElementById('cur-amount').value = savedAmount;
-  const savedCar = localStorage.getItem('car_type');
-  if (savedCar) document.getElementById('car-type-select').value = savedCar;
+  // 還原車型
+  const sel = document.getElementById('car-type-select');
+  const savedIdx = localStorage.getItem('car_type_idx');
+  if (savedIdx && sel) sel.selectedIndex = parseInt(savedIdx);
+  else if (sel && sel.selectedIndex <= 0) sel.selectedIndex = 1;
+  // 還原 ETC（預設 ETC 9折）
+  const savedEtc = localStorage.getItem('etc_val') || '0.9';
+  const etcEl = document.querySelector(`input[name="etc"][value="${savedEtc}"]`);
+  if (etcEl) etcEl.checked = true;
+  else { const el = document.getElementById('etc-yes'); if(el) el.checked = true; }
+  // 還原油價
+  const fp = localStorage.getItem('fuel_price');
+  const fpEl = document.getElementById('fuel-price-input');
+  if (fp && fpEl) fpEl.value = fp;
   renderDriveRows();
+  renderFuelCost();
   renderExpenseBreakdown();
   fetchRates();
 }
@@ -4522,13 +4557,60 @@ function getCarMultiplier() {
   const sel = document.getElementById('car-type-select');
   return CAR_TYPE_RATIO[sel?.value || 'std'] || 1.0;
 }
+function getCarKmpl() {
+  const sel = document.getElementById('car-type-select');
+  const opt = sel?.options[sel.selectedIndex];
+  return parseFloat(opt?.dataset?.kmpl || '14');
+}
 function getEtcMultiplier() {
-  return parseFloat(document.querySelector('input[name="etc"]:checked')?.value || '1');
+  return parseFloat(document.querySelector('input[name="etc"]:checked')?.value || '0.9');
 }
 function onCarTypeChange() {
   const sel = document.getElementById('car-type-select');
+  localStorage.setItem('car_type_idx', sel.selectedIndex);
   localStorage.setItem('car_type', sel.value);
   renderDriveRows();
+  renderFuelCost();
+}
+function onEtcChange() {
+  const val = document.querySelector('input[name="etc"]:checked')?.value || '0.9';
+  localStorage.setItem('etc_val', val);
+  renderDriveRows();
+}
+
+function renderFuelCost() {
+  const container = document.getElementById('fuel-rows');
+  const totalEl = document.getElementById('fuel-total');
+  const labelEl = document.getElementById('fuel-type-label');
+  if (!container) return;
+  const kmpl = getCarKmpl();
+  const pricePerL = parseFloat(document.getElementById('fuel-price-input')?.value || 175);
+  const sel = document.getElementById('car-type-select');
+  const carName = sel?.options[sel.selectedIndex]?.text?.replace(/^[🚗🚐🚌]\s+/, '').split('（')[0] || '—';
+  if (!sel?.value) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">請先選擇車型</div>';
+    if (totalEl) totalEl.textContent = '—';
+    return;
+  }
+  let totalFuel = 0;
+  container.innerHTML = DRIVE_SEGMENTS.map(s => {
+    const liters = s.km / kmpl;
+    const cost = Math.round(liters * pricePerL / 10) * 10;
+    totalFuel += cost;
+    return `<div class="expense-row">
+      <div class="expense-label">
+        <span style="font-size:11px;color:var(--muted);font-weight:600;">${s.day}</span>　${s.from} → ${s.to}
+        <div class="expense-note">${s.km} km ÷ ${kmpl} km/L = ${liters.toFixed(1)} L</div>
+      </div>
+      <div class="expense-amount">${cost ? '¥' + cost.toLocaleString() : '<span style="color:var(--muted);">—</span>'}</div>
+    </div>`;
+  }).join('') + `<div class="expense-row" style="font-weight:700;padding-top:10px;border-top:2px solid var(--border);">
+    <div class="expense-label">總行駛距離</div>
+    <div class="expense-amount">${DRIVE_SEGMENTS.reduce((s,d)=>s+d.km,0).toLocaleString()} km</div>
+  </div>`;
+  if (totalEl) totalEl.textContent = '¥' + totalFuel.toLocaleString();
+  if (labelEl) labelEl.textContent = `${carName} · ${kmpl} km/L · ¥${pricePerL}/L`;
+  localStorage.setItem('fuel_price', pricePerL);
 }
 
 function renderDriveRows() {
@@ -4581,6 +4663,7 @@ async function fetchRates() {
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
+    renderFuelCost();
   } catch(e) {
     // fallback rates (approximate)
     _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
@@ -4588,6 +4671,7 @@ async function fetchRates() {
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
+    renderFuelCost();
   }
 }
 
