@@ -4977,6 +4977,7 @@ function saveFuelLog() {
   saveFuelLogs(logs);
   closeFuelLog();
   renderFuelLog();
+  renderAllTotal();
 }
 function getFuelLogs() {
   try { return JSON.parse(localStorage.getItem('fuel_logs') || '[]'); } catch(e) { return []; }
@@ -5023,6 +5024,7 @@ function deleteFuelLog(idx) {
   logs.splice(idx, 1);
   saveFuelLogs(logs);
   renderFuelLog();
+  renderAllTotal();
 }
 window.openFuelLog = openFuelLog;
 window.closeFuelLog = closeFuelLog;
@@ -5035,40 +5037,48 @@ function renderAllTotal() {
   if (!rowsEl || !grandEl) return;
 
   const jpyRate = (_rates?.JPY) ? (1/_rates.JPY) : 0.215;
+  const toTwd = (amt, cur) => {
+    const r = (_rates?.[cur]) ? (1/_rates[cur]) : (cur==='JPY' ? 0.215 : 1);
+    return Math.round(parseFloat(amt) * r);
+  };
 
-  // 1. 已記錄花費（從 user_edits）
+  // 1. 所有已記錄花費（✏️ 編輯輸入的金額）
   const allData = getUserAllData();
-  let recordedTwd = 0;
-  Object.values(allData).forEach(v => {
-    if (!v.amount || !parseFloat(v.amount)) return;
-    const cur = v.currency || 'JPY';
-    const rate = (_rates?.[cur]) ? (1/_rates[cur]) : (cur==='JPY' ? 0.215 : 1);
-    recordedTwd += parseFloat(v.amount) * rate;
-  });
+  const items = Object.entries(allData)
+    .filter(([k,v]) => v.amount && parseFloat(v.amount) > 0)
+    .map(([k,v]) => {
+      const cur = v.currency || 'JPY';
+      const dayMatch = k.match(/^d(\d{2})(\d{2})_/);
+      const day = dayMatch ? `${parseInt(dayMatch[1])}/${parseInt(dayMatch[2])}` : '';
+      const titleSlug = k.replace(/^d\d{4}_+/, '').replace(/_+/g,' ').trim().slice(0,20);
+      return { label: `${day ? day+' ' : ''}${titleSlug}`, twd: toTwd(v.amount, cur) };
+    });
 
-  // 2. 通行費
+  // 2. 通行費（從 toll-total 讀 JPY）
   const tollEl = document.getElementById('toll-total');
   let tollJpy = 0;
   if (tollEl) {
-    const t = tollEl.textContent.replace(/[¥,\s]/g,'').split('/')[0].trim();
-    tollJpy = parseInt(t) || 0;
+    tollJpy = parseInt(tollEl.textContent.replace(/[^\d]/g,'')) || 0;
   }
   const tollTwd = Math.round(tollJpy * jpyRate);
 
-  // 3. 油費
-  const fuelEl = document.getElementById('fuel-total');
-  let fuelJpy = 0;
-  if (fuelEl) {
-    const f = fuelEl.textContent.replace(/[¥,\s]/g,'').split('/')[0].trim();
-    fuelJpy = parseInt(f) || 0;
+  // 3. 油費：優先用實際加油紀錄，否則用估算
+  const fuelLogs = getFuelLogs();
+  let fuelJpy = 0, fuelLabel = '⛽ 預估油費';
+  if (fuelLogs.length) {
+    fuelJpy = fuelLogs.reduce((s,e) => s + (e.amount||0), 0);
+    fuelLabel = `⛽ 實際油費（${fuelLogs.length}次加油）`;
+  } else {
+    const fuelEl = document.getElementById('fuel-total');
+    if (fuelEl) fuelJpy = parseInt(fuelEl.textContent.replace(/[^\d]/g,'')) || 0;
   }
   const fuelTwd = Math.round(fuelJpy * jpyRate);
 
   const rows = [
-    { label: '💰 已記錄花費', twd: Math.round(recordedTwd), show: recordedTwd > 0 },
-    { label: '🚗 預估通行費', twd: tollTwd, show: tollJpy > 0 },
-    { label: '⛽ 預估油費',   twd: fuelTwd, show: fuelJpy > 0 },
-  ].filter(r => r.show);
+    ...items,
+    ...(tollTwd > 0 ? [{ label: '🚗 預估通行費', twd: tollTwd }] : []),
+    ...(fuelTwd > 0 ? [{ label: fuelLabel, twd: fuelTwd }] : []),
+  ];
 
   if (!rows.length) {
     rowsEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.6);">請輸入花費並選擇車型</div>';
@@ -5077,9 +5087,9 @@ function renderAllTotal() {
   }
 
   rowsEl.innerHTML = rows.map(r =>
-    `<div style="display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,0.9);">
+    `<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.85);padding:2px 0;">
       <span>${r.label}</span>
-      <span>NT$ ${r.twd.toLocaleString()}</span>
+      <span style="font-weight:600;">NT$&nbsp;${r.twd.toLocaleString()}</span>
     </div>`
   ).join('');
 
