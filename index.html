@@ -1023,8 +1023,49 @@ body {
         <div class="expense-total-label">⛽ 預估油費總計</div>
         <div id="fuel-type-label" style="font-size:11px;opacity:0.8;margin-top:2px;">請先選擇車型</div>
       </div>
-      <div class="expense-total-amount" id="fuel-total">— JPY</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="expense-total-amount" id="fuel-total">— JPY</div>
+        <button onclick="openFuelLog()" style="border:none;background:rgba(255,255,255,0.25);color:white;width:28px;height:28px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">＋</button>
+      </div>
     </div>
+
+    <!-- 加油紀錄 -->
+    <div id="fuel-log-section" style="margin:0 16px 8px;display:none;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;padding:12px 0 8px;border-top:1px solid var(--border);">⛽ 加油紀錄</div>
+      <div id="fuel-log-list"></div>
+      <div id="fuel-log-total" style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:8px 0;border-top:1px solid var(--border);margin-top:4px;">
+        <span>實際加油合計</span><span id="fuel-log-sum">—</span>
+      </div>
+    </div>
+
+    <!-- 加油輸入 modal -->
+    <div id="fuel-log-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:flex-end;">
+      <div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 20px);animation:slideUp 0.25s ease;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:16px;">⛽ 新增加油紀錄</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;">油量（L）</div>
+            <input id="fl-liters" type="number" min="0" step="0.01" placeholder="例：42.5"
+              class="currency-input" style="width:100%;box-sizing:border-box;">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;">金額（JPY）</div>
+            <input id="fl-amount" type="number" min="0" placeholder="例：7430"
+              class="currency-input" style="width:100%;box-sizing:border-box;">
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;">地點（選填）</div>
+          <input id="fl-place" type="text" placeholder="例：稚内 ENEOS"
+            class="currency-input" style="width:100%;box-sizing:border-box;">
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="closeFuelLog()" style="flex:1;padding:13px;border:1.5px solid var(--border);background:var(--bg);border-radius:10px;font-size:14px;font-family:inherit;cursor:pointer;">取消</button>
+          <button onclick="saveFuelLog()" style="flex:2;padding:13px;border:none;background:var(--accent);color:white;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">儲存</button>
+        </div>
+      </div>
+    </div>
+
     <div style="padding:8px 16px 16px;font-size:11px;color:var(--muted);">
       ※ 通行費以 NEXCO 北海道距離基準估算，實際依路線略有差異。ETC 折扣已套用。<br>
       ※ 油費 = 總行駛 km ÷ 油耗 × 油價（北海道平均約 170–180円/L）。
@@ -4478,6 +4519,7 @@ function openExpenseModal() {
   const fpEl = document.getElementById('fuel-price-input');
   if (fp && fpEl) fpEl.value = fp;
   renderDriveRows();
+  renderFuelLog();
   renderExpenseBreakdown();
   fetchRates();
 }
@@ -4572,7 +4614,84 @@ function onEtcChange() {
 }
 
 
-function tollToJpyTwd(jpy) {
+// ── 加油紀錄 ──
+function openFuelLog() {
+  const m = document.getElementById('fuel-log-modal');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('fl-liters').value = '';
+  document.getElementById('fl-amount').value = '';
+  document.getElementById('fl-place').value = '';
+  setTimeout(() => document.getElementById('fl-liters').focus(), 300);
+}
+function closeFuelLog() {
+  document.getElementById('fuel-log-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function saveFuelLog() {
+  const liters = parseFloat(document.getElementById('fl-liters').value) || 0;
+  const amount = parseFloat(document.getElementById('fl-amount').value) || 0;
+  const place = document.getElementById('fl-place').value.trim();
+  if (!liters && !amount) return;
+  const now = new Date();
+  const ts = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const entry = { ts, liters, amount, place };
+  const logs = getFuelLogs();
+  logs.push(entry);
+  saveFuelLogs(logs);
+  closeFuelLog();
+  renderFuelLog();
+}
+function getFuelLogs() {
+  try { return JSON.parse(localStorage.getItem('fuel_logs') || '[]'); } catch(e) { return []; }
+}
+function saveFuelLogs(logs) {
+  localStorage.setItem('fuel_logs', JSON.stringify(logs));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/fuelLogs'), logs.length ? logs : null);
+  }
+}
+function renderFuelLog() {
+  const logs = getFuelLogs();
+  const section = document.getElementById('fuel-log-section');
+  const list = document.getElementById('fuel-log-list');
+  const sumEl = document.getElementById('fuel-log-sum');
+  if (!section || !list) return;
+
+  if (!logs.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  let totalL = 0, totalJPY = 0;
+  list.innerHTML = logs.map((e, i) => {
+    totalL += e.liters || 0;
+    totalJPY += e.amount || 0;
+    return `<div class="expense-row" style="align-items:flex-start;">
+      <div class="expense-label">
+        <span style="font-size:11px;color:var(--muted);">${e.ts}</span>
+        ${e.place ? `　${e.place}` : ''}
+        ${e.liters ? `<div class="expense-note">${e.liters} L</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="expense-amount">${e.amount ? '¥' + e.amount.toLocaleString() : '—'}</div>
+        <button onclick="deleteFuelLog(${i})" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const rate = (_rates?.JPY) ? (1/_rates.JPY) : 0.215;
+  const twd = Math.round(totalJPY * rate);
+  sumEl.innerHTML = `${totalL.toFixed(1)} L &nbsp;·&nbsp; ¥${totalJPY.toLocaleString()} <span style="font-size:11px;color:var(--muted);">/ NT$${twd.toLocaleString()}</span>`;
+}
+function deleteFuelLog(idx) {
+  const logs = getFuelLogs();
+  logs.splice(idx, 1);
+  saveFuelLogs(logs);
+  renderFuelLog();
+}
+window.openFuelLog = openFuelLog;
+window.closeFuelLog = closeFuelLog;
+window.saveFuelLog = saveFuelLog;
+window.deleteFuelLog = deleteFuelLog;
   if (!jpy) return '—';
   const rate = (_rates && _rates['JPY']) ? (1 / _rates['JPY']) : 0.215;
   const twd = Math.round(jpy * rate);
