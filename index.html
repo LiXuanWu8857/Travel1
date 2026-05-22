@@ -4650,15 +4650,11 @@ function saveCurPref() {
 function openExpenseModal() {
   document.getElementById('expense-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // 還原幣別（不重置，保留上次輸入）
+  // 還原幣別選擇，金額每次重置為 0
   const savedFrom = localStorage.getItem('cur_from');
-  const savedAmount = localStorage.getItem('cur_amount');
   if (savedFrom) document.getElementById('cur-from').value = savedFrom;
-  // 只在 localStorage 有值時才還原，不覆蓋當前輸入
-  const curAmountEl = document.getElementById('cur-amount');
-  if (savedAmount && curAmountEl && curAmountEl.value === '0') {
-    curAmountEl.value = savedAmount;
-  }
+  document.getElementById('cur-amount').value = '0';
+  document.getElementById('cur-result').textContent = '— TWD';
   // 還原車型
   const sel = document.getElementById('car-type-select');
   const savedIdx = localStorage.getItem('car_type_idx');
