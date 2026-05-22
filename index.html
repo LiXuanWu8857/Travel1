@@ -1072,13 +1072,15 @@ body {
     </div>
 
     <!-- 旅程總花費 -->
-    <div style="margin:0 16px 20px;background:linear-gradient(135deg,var(--accent),#0F6E56);border-radius:14px;padding:16px 20px;">
-      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:10px;letter-spacing:0.05em;">✈️ 旅程總花費估算</div>
-      <div id="all-total-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-      <div style="border-top:1px solid rgba(255,255,255,0.3);padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:13px;color:white;font-weight:600;">合計（NT$）</div>
-        <div style="font-size:22px;font-weight:800;color:white;" id="all-grand-total">—</div>
+    <div style="margin:0 16px 20px;background:linear-gradient(135deg,var(--accent),#0F6E56);border-radius:14px;overflow:hidden;">
+      <div onclick="toggleAllTotal()" style="padding:14px 20px 10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.05em;">✈️ 旅程總花費估算</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:18px;font-weight:800;color:white;" id="all-grand-total">—</div>
+          <div id="all-total-toggle" style="color:rgba(255,255,255,0.7);font-size:14px;transition:transform 0.2s;">▲</div>
+        </div>
       </div>
+      <div id="all-total-rows" style="padding:0 20px 14px;border-top:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;gap:5px;padding-top:10px;"></div>
     </div>
 
   </div>
@@ -5031,6 +5033,16 @@ window.closeFuelLog = closeFuelLog;
 window.saveFuelLog = saveFuelLog;
 window.deleteFuelLog = deleteFuelLog;
 
+function toggleAllTotal() {
+  const rows = document.getElementById('all-total-rows');
+  const toggle = document.getElementById('all-total-toggle');
+  if (!rows) return;
+  const isOpen = rows.style.display !== 'none';
+  rows.style.display = isOpen ? 'none' : 'flex';
+  if (toggle) toggle.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+window.toggleAllTotal = toggleAllTotal;
+
 function renderAllTotal() {
   const rowsEl = document.getElementById('all-total-rows');
   const grandEl = document.getElementById('all-grand-total');
@@ -5054,12 +5066,8 @@ function renderAllTotal() {
       return { label: `${day ? day+' ' : ''}${titleSlug}`, twd: toTwd(v.amount, cur) };
     });
 
-  // 2. 通行費（從 toll-total 讀 JPY）
-  const tollEl = document.getElementById('toll-total');
-  let tollJpy = 0;
-  if (tollEl) {
-    tollJpy = parseInt(tollEl.textContent.replace(/[^\d]/g,'')) || 0;
-  }
+  // 2. 通行費（從暫存變數讀 JPY）
+  const tollJpy = window._tollJpy || 0;
   const tollTwd = Math.round(tollJpy * jpyRate);
 
   // 3. 油費：優先用實際加油紀錄，否則用估算
@@ -5069,8 +5077,7 @@ function renderAllTotal() {
     fuelJpy = fuelLogs.reduce((s,e) => s + (e.amount||0), 0);
     fuelLabel = `⛽ 實際油費（${fuelLogs.length}次加油）`;
   } else {
-    const fuelEl = document.getElementById('fuel-total');
-    if (fuelEl) fuelJpy = parseInt(fuelEl.textContent.replace(/[^\d]/g,'')) || 0;
+    fuelJpy = window._fuelEstJpy || 0;
   }
   const fuelTwd = Math.round(fuelJpy * jpyRate);
 
@@ -5130,6 +5137,7 @@ function renderDriveRows() {
     <div class="expense-amount">${totalKm.toLocaleString()} km</div>
   </div>`;
 
+  window._tollJpy = totalToll;
   document.getElementById('toll-total').innerHTML = tollToJpyTwd(totalToll);
 
   // 油費：直接用總公里 ÷ 油耗
@@ -5141,6 +5149,7 @@ function renderDriveRows() {
   if (hasCar) {
     const totalLiters = totalKm / kmpl;
     const totalFuel = Math.round(totalLiters * pricePerL / 100) * 100;
+    window._fuelEstJpy = totalFuel;
     if (fuelEl) fuelEl.innerHTML = tollToJpyTwd(totalFuel);
     if (fuelLabelEl) fuelLabelEl.textContent = `${carName} · ${totalKm} km ÷ ${kmpl} km/L = ${totalLiters.toFixed(0)} L × ¥${pricePerL}`;
   } else {
