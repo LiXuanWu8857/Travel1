@@ -4650,16 +4650,21 @@ function saveCurPref() {
 function openExpenseModal() {
   document.getElementById('expense-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  // 還原幣別（不重置，保留上次輸入）
   const savedFrom = localStorage.getItem('cur_from');
   const savedAmount = localStorage.getItem('cur_amount');
   if (savedFrom) document.getElementById('cur-from').value = savedFrom;
-  if (savedAmount) document.getElementById('cur-amount').value = savedAmount;
+  // 只在 localStorage 有值時才還原，不覆蓋當前輸入
+  const curAmountEl = document.getElementById('cur-amount');
+  if (savedAmount && curAmountEl && curAmountEl.value === '0') {
+    curAmountEl.value = savedAmount;
+  }
   // 還原車型
   const sel = document.getElementById('car-type-select');
   const savedIdx = localStorage.getItem('car_type_idx');
   if (savedIdx && sel) sel.selectedIndex = parseInt(savedIdx);
   else if (sel && sel.selectedIndex <= 0) sel.selectedIndex = 1;
-  // 還原 ETC（預設 ETC 9折）
+  // 還原 ETC
   const savedEtc = localStorage.getItem('etc_val') || '0.9';
   const etcEl = document.querySelector(`input[name="etc"][value="${savedEtc}"]`);
   if (etcEl) etcEl.checked = true;
@@ -4668,15 +4673,19 @@ function openExpenseModal() {
   const fp = localStorage.getItem('fuel_price');
   const fpEl = document.getElementById('fuel-price-input');
   if (fp && fpEl) fpEl.value = fp;
+  // 還原展開/收合狀態
+  restoreSectionStates();
   renderDriveRows();
   renderFuelLog();
   renderExpenseBreakdown();
-  fetchRates(); // renderAllTotal 在 fetchRates 完成後自動呼叫
+  fetchRates();
 }
 window.saveCurPref = saveCurPref;
 function closeExpenseModal() {
   document.getElementById('expense-modal').classList.remove('open');
   document.body.style.overflow = '';
+  // 儲存當前幣別和金額
+  saveCurPref();
 }
 window.openExpenseModal = openExpenseModal;
 window.closeExpenseModal = closeExpenseModal;
@@ -5046,6 +5055,20 @@ function toggleSection(bodyId, arrowId) {
   const isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : 'block';
   if (arrow) arrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  localStorage.setItem('section_' + bodyId, isOpen ? '0' : '1');
+}
+
+function restoreSectionStates() {
+  ['breakdown-body', 'drive-body'].forEach(id => {
+    const saved = localStorage.getItem('section_' + id);
+    const body = document.getElementById(id);
+    const arrow = document.getElementById(id.replace('-body', '-arrow'));
+    if (!body) return;
+    if (saved === '0') {
+      body.style.display = 'none';
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+    }
+  });
 }
 window.toggleSection = toggleSection;
 
