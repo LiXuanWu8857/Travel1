@@ -4664,8 +4664,7 @@ function openExpenseModal() {
   renderDriveRows();
   renderFuelLog();
   renderExpenseBreakdown();
-  renderAllTotal();
-  fetchRates();
+  fetchRates(); // renderAllTotal 在 fetchRates 完成後自動呼叫
 }
 window.saveCurPref = saveCurPref;
 function closeExpenseModal() {
@@ -5185,6 +5184,8 @@ async function fetchRates() {
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
+    renderDriveRows();
+    renderAllTotal();
     } catch(e) {
     // fallback rates (approximate)
     _rates = { JPY: 4.65, USD: 0.031, EUR: 0.028, KRW: 41.2, HKD: 0.242, CNY: 0.224, GBP: 0.024, AUD: 0.047, THB: 1.07 };
@@ -5192,6 +5193,8 @@ async function fetchRates() {
     updateCurrency();
     updateHotelTotal();
     renderExpenseBreakdown();
+    renderDriveRows();
+    renderAllTotal();
     }
 }
 
