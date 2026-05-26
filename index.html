@@ -4003,7 +4003,16 @@ function initPhotoSections() {
   let total = 0;
   document.querySelectorAll('.day-section').forEach(daySection => {
     const dayId = daySection.id || 'unknown';
-    const cards = daySection.querySelectorAll('.item-content .card:not(.card-drive)');
+    // Only select cards that are DIRECT children of item-content, not nested ones
+    const itemContents = daySection.querySelectorAll('.item-content');
+    const cards = [];
+    itemContents.forEach(ic => {
+      ic.childNodes.forEach(child => {
+        if (child.nodeType === 1 && child.classList.contains('card') && !child.classList.contains('card-drive')) {
+          cards.push(child);
+        }
+      });
+    });
     console.log(`[debug] ${dayId}: ${cards.length} cards`);
     cards.forEach((card, idx) => {
       if (card.querySelector('.photo-section')) { console.log(`[debug] ${dayId}_${idx} skipped`); return; }
