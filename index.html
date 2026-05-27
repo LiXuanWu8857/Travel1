@@ -122,8 +122,12 @@
   --radius-sm: 8px;
 }
 
+@keyframes bannerPop {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 body {
-  font-family: 'Noto Sans TC', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -853,6 +857,26 @@ body {
 </style>
 </head>
 <body>
+<div id="update-banner"
+  onclick="location.reload()"
+  style="display:none;
+    position:fixed;
+    bottom:28px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#d45f7a;
+    color:#fff;
+    padding:10px 22px;
+    border-radius:30px;
+    font-size:0.82rem;
+    font-weight:700;
+    cursor:pointer;
+    z-index:9999;
+    box-shadow:0 4px 18px rgba(212,95,122,0.4);
+    white-space:nowrap;
+    animation:bannerPop 0.3s cubic-bezier(.34,1.56,.64,1) both;">
+  ✨ 有新版本，點一下更新
+</div>
 
 <!-- ══════════════════ HOME PAGE ══════════════════ -->
 <div id="home" class="home-page active">
@@ -3982,7 +4006,25 @@ function waitForFirebase(cb, tries = 0) {
   else { console.warn('Firebase timeout, running without sync'); cb(); }
 }
 
-// ── Key 遷移：舊 index-based -> 新 card-id-based ──
+// ── 版本偵測：有新版本時顯示更新通知 ──
+(function () {
+  let _knownSig = null;
+  async function _checkVersion() {
+    try {
+      const r = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
+      const sig = r.headers.get('etag') || r.headers.get('last-modified');
+      if (!sig) return;
+      if (_knownSig && sig !== _knownSig) {
+        const b = document.getElementById('update-banner');
+        if (b) b.style.display = 'flex';
+      }
+      _knownSig = sig;
+    } catch (_) {}
+  }
+  _checkVersion();
+  setInterval(_checkVersion, 90 * 1000); // 每90秒檢查一次
+})();
+
 const _PHOTO_KEY_MAP = {"photo_d0827_0": "photo_d0827_card_01", "photo_d0827_1": "photo_d0827_card_02", "photo_d0827_2": "photo_d0827_card_03", "photo_d0827_3": "photo_d0827_card_04", "photo_d0827_4": "photo_d0827_card_05", "photo_d0827_5": "photo_d0827_card_06", "photo_d0827_6": "photo_d0827_card_07", "photo_d0827_7": "photo_d0827_card_08", "photo_d0827_8": "photo_d0827_card_09", "photo_d0827_9": "photo_d0827_card_10", "photo_d0828_0": "photo_d0828_card_01", "photo_d0828_1": "photo_d0828_card_02", "photo_d0828_2": "photo_d0828_card_03", "photo_d0828_3": "photo_d0828_card_04", "photo_d0828_4": "photo_d0828_card_05", "photo_d0828_5": "photo_d0828_card_06", "photo_d0828_6": "photo_d0828_card_07", "photo_d0828_7": "photo_d0828_card_08", "photo_d0828_8": "photo_d0828_card_09", "photo_d0828_9": "photo_d0828_card_10", "photo_d0828_10": "photo_d0828_card_11", "photo_d0829_0": "photo_d0829_card_01", "photo_d0829_1": "photo_d0829_card_02", "photo_d0829_2": "photo_d0829_card_03", "photo_d0829_3": "photo_d0829_card_04", "photo_d0829_4": "photo_d0829_card_05", "photo_d0829_5": "photo_d0829_card_06", "photo_d0829_6": "photo_d0829_card_07", "photo_d0829_7": "photo_d0829_card_08", "photo_d0829_8": "photo_d0829_card_09", "photo_d0829_9": "photo_d0829_card_10", "photo_d0829_10": "photo_d0829_card_11", "photo_d0829_11": "photo_d0829_card_12", "photo_d0830_0": "photo_d0830_card_01", "photo_d0830_1": "photo_d0830_card_02", "photo_d0830_2": "photo_d0830_card_03", "photo_d0830_3": "photo_d0830_card_04", "photo_d0830_4": "photo_d0830_card_05", "photo_d0830_5": "photo_d0830_card_06", "photo_d0830_6": "photo_d0830_card_07", "photo_d0830_7": "photo_d0830_card_08", "photo_d0831_0": "photo_d0831_card_01", "photo_d0831_1": "photo_d0831_card_02", "photo_d0831_2": "photo_d0831_card_03", "photo_d0831_3": "photo_d0831_card_04", "photo_d0831_4": "photo_d0831_card_05", "photo_d0831_5": "photo_d0831_card_06", "photo_d0831_6": "photo_d0831_card_07", "photo_d0831_7": "photo_d0831_card_08", "photo_d0831_8": "photo_d0831_card_09", "photo_d0901_0": "photo_d0901_card_01", "photo_d0901_1": "photo_d0901_card_02", "photo_d0901_2": "photo_d0901_card_03", "photo_d0901_3": "photo_d0901_card_04", "photo_d0901_4": "photo_d0901_card_05", "photo_d0901_5": "photo_d0901_card_06", "photo_d0901_6": "photo_d0901_card_07", "photo_d0901_7": "photo_d0901_card_08", "photo_d0901_8": "photo_d0901_card_09", "photo_d0901_9": "photo_d0901_card_10", "photo_d0901_10": "photo_d0901_card_11", "photo_d0902_0": "photo_d0902_card_01", "photo_d0902_1": "photo_d0902_card_02", "photo_d0902_2": "photo_d0902_card_03", "photo_d0902_3": "photo_d0902_card_04", "photo_d0902_4": "photo_d0902_card_05", "photo_d0902_5": "photo_d0902_card_06", "photo_d0902_6": "photo_d0902_card_07", "photo_d0902_7": "photo_d0902_card_08", "photo_d0902_8": "photo_d0902_card_09", "photo_d0902_9": "photo_d0902_card_10", "photo_d0902_10": "photo_d0902_card_11", "photo_d0902_11": "photo_d0902_card_12", "photo_d0902_12": "photo_d0902_card_13", "photo_d0902_13": "photo_d0902_card_14", "photo_d0903_0": "photo_d0903_card_01", "photo_d0903_1": "photo_d0903_card_02", "photo_d0903_2": "photo_d0903_card_03", "photo_d0903_3": "photo_d0903_card_04", "photo_d0903_4": "photo_d0903_card_05", "photo_d0903_5": "photo_d0903_card_06", "photo_d0903_6": "photo_d0903_card_07", "photo_d0903_7": "photo_d0903_card_08", "photo_d0903_8": "photo_d0903_card_09", "photo_d0903_9": "photo_d0903_card_10", "photo_d0904_0": "photo_d0904_card_01", "photo_d0904_1": "photo_d0904_card_02", "photo_d0904_2": "photo_d0904_card_03", "photo_d0904_3": "photo_d0904_card_04", "photo_d0904_4": "photo_d0904_card_05", "photo_d0904_5": "photo_d0904_card_06", "photo_d0904_6": "photo_d0904_card_07", "photo_d0904_7": "photo_d0904_card_08", "photo_d0904_8": "photo_d0904_card_09", "photo_d0904_9": "photo_d0904_card_10", "photo_d0905_0": "photo_d0905_card_01", "photo_d0905_1": "photo_d0905_card_02", "photo_d0905_2": "photo_d0905_card_03", "photo_d0905_3": "photo_d0905_card_04", "photo_d0905_4": "photo_d0905_card_05", "photo_d0905_5": "photo_d0905_card_06", "photo_d0905_6": "photo_d0905_card_07", "photo_d0905_7": "photo_d0905_card_08", "photo_d0905_8": "photo_d0905_card_09", "photo_d0905_9": "photo_d0905_card_10", "photo_d0905_10": "photo_d0905_card_11", "photo_d0905_11": "photo_d0905_card_12", "photo_d0905_12": "photo_d0905_card_13", "photo_d0906_0": "photo_d0906_card_01", "photo_d0906_1": "photo_d0906_card_02", "photo_d0906_2": "photo_d0906_card_03", "photo_d0906_3": "photo_d0906_card_04", "photo_d0906_4": "photo_d0906_card_05", "photo_d0906_5": "photo_d0906_card_06", "photo_d0906_6": "photo_d0906_card_07", "photo_d0906_7": "photo_d0906_card_08", "photo_d0906_8": "photo_d0906_card_09", "photo_d0906_9": "photo_d0906_card_10", "photo_d0906_10": "photo_d0906_card_11", "photo_d0906_11": "photo_d0906_card_12", "photo_d0906_12": "photo_d0906_card_13", "photo_d0906_13": "photo_d0906_card_14", "photo_d0906_14": "photo_d0906_card_15", "photo_d0906_15": "photo_d0906_card_16", "photo_d0906_16": "photo_d0906_card_17", "photo_d0906_17": "photo_d0906_card_18", "photo_d0907_0": "photo_d0907_card_01", "photo_d0907_1": "photo_d0907_card_02", "photo_d0907_2": "photo_d0907_card_03", "photo_d0907_3": "photo_d0907_card_04", "photo_d0907_4": "photo_d0907_card_05", "photo_d0907_5": "photo_d0907_card_06", "photo_d0907_6": "photo_d0907_card_07", "photo_d0907_7": "photo_d0907_card_08", "photo_d0907_8": "photo_d0907_card_09", "photo_d0907_9": "photo_d0907_card_10", "photo_d0908_0": "photo_d0908_card_01", "photo_d0908_1": "photo_d0908_card_02", "photo_d0908_2": "photo_d0908_card_03", "photo_d0908_3": "photo_d0908_card_04", "photo_d0908_4": "photo_d0908_card_05", "photo_d0908_5": "photo_d0908_card_06", "photo_d0908_6": "photo_d0908_card_07", "photo_d0908_7": "photo_d0908_card_08", "photo_d0908_8": "photo_d0908_card_09", "photo_d0908_9": "photo_d0908_card_10", "photo_d0908_10": "photo_d0908_card_11", "photo_d0908_11": "photo_d0908_card_12"};
 const _EDIT_KEY_MAP = {"d0827_0": "d0827_card_01", "d0827_1": "d0827_card_02", "d0827_2": "d0827_card_03", "d0827_3": "d0827_card_04", "d0827_4": "d0827_card_05", "d0827_5": "d0827_card_06", "d0827_6": "d0827_card_07", "d0827_7": "d0827_card_08", "d0827_8": "d0827_card_09", "d0827_9": "d0827_card_10", "d0828_0": "d0828_card_01", "d0828_1": "d0828_card_02", "d0828_2": "d0828_card_03", "d0828_3": "d0828_card_04", "d0828_4": "d0828_card_05", "d0828_5": "d0828_card_06", "d0828_6": "d0828_card_07", "d0828_7": "d0828_card_08", "d0828_8": "d0828_card_09", "d0828_9": "d0828_card_10", "d0828_10": "d0828_card_11", "d0829_0": "d0829_card_01", "d0829_1": "d0829_card_02", "d0829_2": "d0829_card_03", "d0829_3": "d0829_card_04", "d0829_4": "d0829_card_05", "d0829_5": "d0829_card_06", "d0829_6": "d0829_card_07", "d0829_7": "d0829_card_08", "d0829_8": "d0829_card_09", "d0829_9": "d0829_card_10", "d0829_10": "d0829_card_11", "d0829_11": "d0829_card_12", "d0830_0": "d0830_card_01", "d0830_1": "d0830_card_02", "d0830_2": "d0830_card_03", "d0830_3": "d0830_card_04", "d0830_4": "d0830_card_05", "d0830_5": "d0830_card_06", "d0830_6": "d0830_card_07", "d0830_7": "d0830_card_08", "d0831_0": "d0831_card_01", "d0831_1": "d0831_card_02", "d0831_2": "d0831_card_03", "d0831_3": "d0831_card_04", "d0831_4": "d0831_card_05", "d0831_5": "d0831_card_06", "d0831_6": "d0831_card_07", "d0831_7": "d0831_card_08", "d0831_8": "d0831_card_09", "d0901_0": "d0901_card_01", "d0901_1": "d0901_card_02", "d0901_2": "d0901_card_03", "d0901_3": "d0901_card_04", "d0901_4": "d0901_card_05", "d0901_5": "d0901_card_06", "d0901_6": "d0901_card_07", "d0901_7": "d0901_card_08", "d0901_8": "d0901_card_09", "d0901_9": "d0901_card_10", "d0901_10": "d0901_card_11", "d0902_0": "d0902_card_01", "d0902_1": "d0902_card_02", "d0902_2": "d0902_card_03", "d0902_3": "d0902_card_04", "d0902_4": "d0902_card_05", "d0902_5": "d0902_card_06", "d0902_6": "d0902_card_07", "d0902_7": "d0902_card_08", "d0902_8": "d0902_card_09", "d0902_9": "d0902_card_10", "d0902_10": "d0902_card_11", "d0902_11": "d0902_card_12", "d0902_12": "d0902_card_13", "d0902_13": "d0902_card_14", "d0903_0": "d0903_card_01", "d0903_1": "d0903_card_02", "d0903_2": "d0903_card_03", "d0903_3": "d0903_card_04", "d0903_4": "d0903_card_05", "d0903_5": "d0903_card_06", "d0903_6": "d0903_card_07", "d0903_7": "d0903_card_08", "d0903_8": "d0903_card_09", "d0903_9": "d0903_card_10", "d0904_0": "d0904_card_01", "d0904_1": "d0904_card_02", "d0904_2": "d0904_card_03", "d0904_3": "d0904_card_04", "d0904_4": "d0904_card_05", "d0904_5": "d0904_card_06", "d0904_6": "d0904_card_07", "d0904_7": "d0904_card_08", "d0904_8": "d0904_card_09", "d0904_9": "d0904_card_10", "d0905_0": "d0905_card_01", "d0905_1": "d0905_card_02", "d0905_2": "d0905_card_03", "d0905_3": "d0905_card_04", "d0905_4": "d0905_card_05", "d0905_5": "d0905_card_06", "d0905_6": "d0905_card_07", "d0905_7": "d0905_card_08", "d0905_8": "d0905_card_09", "d0905_9": "d0905_card_10", "d0905_10": "d0905_card_11", "d0905_11": "d0905_card_12", "d0905_12": "d0905_card_13", "d0906_0": "d0906_card_01", "d0906_1": "d0906_card_02", "d0906_2": "d0906_card_03", "d0906_3": "d0906_card_04", "d0906_4": "d0906_card_05", "d0906_5": "d0906_card_06", "d0906_6": "d0906_card_07", "d0906_7": "d0906_card_08", "d0906_8": "d0906_card_09", "d0906_9": "d0906_card_10", "d0906_10": "d0906_card_11", "d0906_11": "d0906_card_12", "d0906_12": "d0906_card_13", "d0906_13": "d0906_card_14", "d0906_14": "d0906_card_15", "d0906_15": "d0906_card_16", "d0906_16": "d0906_card_17", "d0906_17": "d0906_card_18", "d0907_0": "d0907_card_01", "d0907_1": "d0907_card_02", "d0907_2": "d0907_card_03", "d0907_3": "d0907_card_04", "d0907_4": "d0907_card_05", "d0907_5": "d0907_card_06", "d0907_6": "d0907_card_07", "d0907_7": "d0907_card_08", "d0907_8": "d0907_card_09", "d0907_9": "d0907_card_10", "d0908_0": "d0908_card_01", "d0908_1": "d0908_card_02", "d0908_2": "d0908_card_03", "d0908_3": "d0908_card_04", "d0908_4": "d0908_card_05", "d0908_5": "d0908_card_06", "d0908_6": "d0908_card_07", "d0908_7": "d0908_card_08", "d0908_8": "d0908_card_09", "d0908_9": "d0908_card_10", "d0908_10": "d0908_card_11", "d0908_11": "d0908_card_12"};
 
