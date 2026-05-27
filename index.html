@@ -3313,9 +3313,55 @@ function switchDay(id) {
   const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
   const idx = ids.indexOf(id);
   const tabs = wrapper.querySelectorAll('.tab');
-  if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+  if (idx >= 0 && tabs[idx]) {
+    tabs[idx].classList.add('active');
+    tabs[idx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+  }
   window.scrollTo(0, 0);
+  window._currentDayIdx = idx;
 }
+
+// ── 滑動切換天數 ──
+(function () {
+  const IDS = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
+  let _tx = 0, _ty = 0, _locked = false;
+
+  function goNext() {
+    const i = window._currentDayIdx ?? 0;
+    if (i < IDS.length - 1) switchDay(IDS[i + 1]);
+  }
+  function goPrev() {
+    const i = window._currentDayIdx ?? 0;
+    if (i > 0) switchDay(IDS[i - 1]);
+  }
+
+  // Touch swipe
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('.expense-modal, .modal, .tab-bar, input, select, textarea, button')) return;
+    _tx = e.touches[0].clientX;
+    _ty = e.touches[0].clientY;
+    _locked = false;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (_locked) return;
+    if (e.target.closest('.expense-modal, .modal, .tab-bar, input, select, textarea, button')) return;
+    const dx = e.changedTouches[0].clientX - _tx;
+    const dy = e.changedTouches[0].clientY - _ty;
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+    _locked = true;
+    dx < 0 ? goNext() : goPrev();
+  }, { passive: true });
+
+  // 鍵盤左右鍵
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight') goNext();
+    if (e.key === 'ArrowLeft') goPrev();
+  });
+
+  window._currentDayIdx = 0;
+})();
 
 // Toggle from booking checklist
 function toggleBooking(el) {
