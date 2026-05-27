@@ -3449,15 +3449,22 @@ const IMAGEKIT_PUBLIC_KEY = 'public_zloJYgTazXW3dHVM51C6xyT5Zfw=';
 const IMAGEKIT_PRIVATE_KEY = 'private_k+Hatdblv7TT+SsdeFXPctW6tpQ=';
 
 async function uploadToCloudinary(file) {
-  // 1. 取得 auth token（用 private key 簽署）
   const token = Math.random().toString(36).substring(2) + Date.now();
-  const expire = Math.floor(Date.now() / 1000) + 600; // 10分鐘
+  const expire = Math.floor(Date.now() / 1000) + 600;
   const signature = await hmacSha1(IMAGEKIT_PRIVATE_KEY, token + expire);
 
-  // 2. 上傳
   const safeName = file.name.replace(/[^\w.\-]/g, '_');
   const fd = new FormData();
-  fd.append('file', file);
+
+  // PDF 需要明確指定 content-type，否則 ImageKit 可能拒絕
+  const isPdf = file.type === 'application/pdf' || safeName.toLowerCase().endsWith('.pdf');
+  if (isPdf) {
+    const blob = new Blob([file], { type: 'application/pdf' });
+    fd.append('file', blob, safeName);
+  } else {
+    fd.append('file', file);
+  }
+
   fd.append('fileName', safeName);
   fd.append('publicKey', IMAGEKIT_PUBLIC_KEY);
   fd.append('signature', signature);
@@ -3466,7 +3473,7 @@ async function uploadToCloudinary(file) {
   fd.append('folder', '/wandr');
   fd.append('useUniqueFileName', 'true');
 
-  console.log('[imagekit] uploading', safeName);
+  console.log('[imagekit] uploading', safeName, isPdf ? '(PDF)' : '');
   const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
     method: 'POST', body: fd
   });
@@ -4052,7 +4059,7 @@ function initPhotoSections() {
         menu.classList.remove('open');
         const type = item.dataset.type;
         if (type === 'photo' || type === 'pdf') {
-          addFileSlot(section, type === 'pdf' ? 'application/pdf,*' : 'image/*', type);
+          addFileSlot(section, type === 'pdf' ? 'application/pdf,.pdf' : 'image/*', type);
         } else if (type === 'gmail') {
           addGmailSlot(section);
         } else if (type === 'url') {
