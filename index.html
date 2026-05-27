@@ -4677,7 +4677,15 @@ function renderExpenseBreakdown() {
 }
 window.renderExpenseBreakdown = renderExpenseBreakdown;
 
-function saveCurPref() {
+// ── 診斷腳本 ──
+window._diagnose = function() {
+  const tl = document.querySelector('#d0831 .timeline');
+  if (!tl) return console.log('no timeline');
+  console.log('timeline children:', tl.children.length);
+  Array.from(tl.children).forEach((c, i) => {
+    console.log(`  [${i}] ${c.className} - time: ${c.querySelector('.item-time')?.textContent}`);
+  });
+};
   const from = document.getElementById('cur-from')?.value;
   const amount = document.getElementById('cur-amount')?.value;
   if (from) localStorage.setItem('cur_from', from);
