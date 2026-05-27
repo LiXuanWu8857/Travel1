@@ -3922,7 +3922,8 @@ function saveEdit() {
   // 同步到 Firebase
   if (window._fbDb && window._fbRef && window._fbSet) {
     const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
-    window._fbSet(editsRef, allData)
+    const dataToSave = Object.keys(allData).length ? allData : null;
+    window._fbSet(editsRef, dataToSave)
       .then(() => console.log('[saveEdit] ✅ Firebase saved'))
       .catch(e => console.error('[saveEdit] ❌ Firebase error:', e.message));
   } else {
@@ -3940,7 +3941,11 @@ function loadEditsFromFirebase() {
   const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
   window._fbOnValue(editsRef, (snap) => {
     const data = snap.val();
-    if (!data) return;
+    if (!data) {
+      // Firebase 是空的，清掉 localStorage
+      try { localStorage.removeItem('user_edits'); } catch(e) {}
+      return;
+    }
     try { localStorage.setItem('user_edits', JSON.stringify(data)); } catch(e) {}
     // Re-render all notes
     Object.keys(data).forEach(key => {
