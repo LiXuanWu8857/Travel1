@@ -4516,12 +4516,14 @@ waitForFirebase(() => {
       loadEditsFromFirebase();
       initChecklists();
       injectBadges();
+      loadCustomTripsFromFirebase();
     }, { onlyOnce: true });
   } else {
     initPhotoSections();
     loadEditsFromFirebase();
     initChecklists();
     injectBadges();
+    loadCustomTripsFromFirebase();
   }
 });
 
@@ -5301,6 +5303,28 @@ let _customTrips = JSON.parse(localStorage.getItem('wandr_custom_trips') || '[]'
 
 function saveCustomTrips() {
   localStorage.setItem('wandr_custom_trips', JSON.stringify(_customTrips));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    const ref = window._fbRef(window._fbDb, 'hokkaido2026/customTrips');
+    window._fbSet(ref, _customTrips.length ? _customTrips : null);
+  }
+}
+
+function loadCustomTripsFromFirebase() {
+  if (!window._fbDb || !window._fbRef || !window._fbOnValue) return;
+  const ref = window._fbRef(window._fbDb, 'hokkaido2026/customTrips');
+  window._fbOnValue(ref, (snap) => {
+    const data = snap.val();
+    if (data && Array.isArray(data)) {
+      _customTrips = data;
+      localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
+      // 重新渲染首頁卡片
+      document.querySelectorAll('.trip-card[data-custom]').forEach(c => c.remove());
+      _customTrips.forEach(trip => addTripCard(trip));
+    } else if (!data) {
+      _customTrips = [];
+      localStorage.removeItem('wandr_custom_trips');
+    }
+  }, { onlyOnce: false });
 }
 
 // ── 日期工具 ──
@@ -5369,6 +5393,7 @@ function addTripCard(trip) {
   const days = dateRange(trip.start, trip.end).length;
   const card = document.createElement('div');
   card.className = 'trip-card';
+  card.dataset.custom = '1';
   card.id = 'card-' + trip.id;
   const s = trip.start.replace(/-/g,'/').slice(5);
   const e = trip.end.replace(/-/g,'/').slice(5);
