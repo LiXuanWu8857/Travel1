@@ -3431,12 +3431,17 @@ const IMAGEKIT_PRIVATE_KEY = 'private_k+Hatdblv7TT+SsdeFXPctW6tpQ=';
 async function uploadToCloudinary(file) {
   const token = Math.random().toString(36).substring(2) + Date.now();
   const expire = Math.floor(Date.now() / 1000) + 600;
-  const signature = await hmacSha1(IMAGEKIT_PRIVATE_KEY, token + expire);
+
+  let signature;
+  try {
+    signature = await hmacSha1(IMAGEKIT_PRIVATE_KEY, token + expire);
+  } catch(e) {
+    throw new Error('簽名失敗：' + e.message);
+  }
 
   const safeName = file.name.replace(/[^\w.\-]/g, '_');
   const fd = new FormData();
 
-  // PDF 需要明確指定 content-type，否則 ImageKit 可能拒絕
   const isPdf = file.type === 'application/pdf' || safeName.toLowerCase().endsWith('.pdf');
   if (isPdf) {
     const blob = new Blob([file], { type: 'application/pdf' });
@@ -3453,14 +3458,21 @@ async function uploadToCloudinary(file) {
   fd.append('folder', '/wandr');
   fd.append('useUniqueFileName', 'true');
 
-  console.log('[imagekit] uploading', safeName, isPdf ? '(PDF)' : '');
-  const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-    method: 'POST', body: fd
-  });
+  console.log('[imagekit] uploading', safeName, isPdf ? '(PDF)' : '(image)', 'size:', file.size);
+
+  let res;
+  try {
+    res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+      method: 'POST', body: fd
+    });
+  } catch(e) {
+    throw new Error('網路錯誤：' + e.message);
+  }
+
   const data = await res.json();
   console.log('[imagekit] response:', JSON.stringify(data));
   if (data.url) return data.url;
-  throw new Error(data.message || JSON.stringify(data));
+  throw new Error(data.message || data.error || JSON.stringify(data));
 }
 
 async function hmacSha1(key, msg) {
