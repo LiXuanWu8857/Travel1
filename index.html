@@ -260,7 +260,16 @@ body {
 
 /* ── DAY SECTIONS ── */
 .day-section { display: none; }
-.day-section.active { display: block; }
+.day-section.active { display: block; animation: slideIn 0.22s ease-out; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.day-section.active.from-left { animation: slideInLeft 0.22s ease-out; }
 
 .day-header {
   padding: 18px 16px 16px;
@@ -3320,12 +3329,15 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-function switchDay(id) {
+function switchDay(id, dir) {
   const wrapper = document.getElementById('trip-hokkaido');
-  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active'));
+  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
   wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const el = document.getElementById(id);
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    if (dir === 'left') el.classList.add('from-left');
+  }
   const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
   const idx = ids.indexOf(id);
   const tabs = wrapper.querySelectorAll('.tab');
@@ -3344,11 +3356,11 @@ function switchDay(id) {
 
   function goNext() {
     const i = window._currentDayIdx ?? 0;
-    if (i < IDS.length - 1) switchDay(IDS[i + 1]);
+    if (i < IDS.length - 1) switchDay(IDS[i + 1], 'right');
   }
   function goPrev() {
     const i = window._currentDayIdx ?? 0;
-    if (i > 0) switchDay(IDS[i - 1]);
+    if (i > 0) switchDay(IDS[i - 1], 'left');
   }
 
   // Touch swipe
