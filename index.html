@@ -1270,17 +1270,8 @@ body {
       <button class="booking-modal-close" onclick="closePackingModal()">✕</button>
     </div>
     <div id="packing-list" style="padding:8px 16px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;background:var(--card);"></div>
-    <div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;gap:6px;align-items:center;">
-        <select id="packing-new-cat" class="currency-select" style="flex:1;font-size:13px;padding:7px 8px;"></select>
-        <button onclick="addCategory()" style="padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer;white-space:nowrap;">＋ 新分類</button>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input id="packing-new-input" type="text" placeholder="物品名稱..." class="currency-input" style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addPackingItem()">
-        <input id="packing-new-qty" type="number" min="1" value="1" class="currency-input" style="width:52px;font-size:14px;text-align:center;">
-        <span style="font-size:12px;color:var(--muted);">件</span>
-        <button onclick="addPackingItem()" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋</button>
-      </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--card);">
+      <button onclick="addCategory()" style="width:100%;padding:9px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;font-size:13px;color:var(--accent);font-weight:700;cursor:pointer;">＋ 新增分類</button>
     </div>
   </div>
 </div>
