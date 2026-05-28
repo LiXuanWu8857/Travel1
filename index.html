@@ -4880,6 +4880,7 @@ function closeTrip() {
   document.getElementById('home').classList.add('active');
   document.getElementById('booking-fab')?.classList.remove('visible');
   window.scrollTo(0, 0);
+  renderCustomTripCards();
 }
 
 function openBookingModal() {
@@ -5633,6 +5634,8 @@ window.updateCurrency = updateCurrency;
 let _addPlaceTripId = null;
 let _addPlaceDayId = null;
 let _customTrips = JSON.parse(localStorage.getItem('wandr_custom_trips') || '[]');
+// 頁面載入時先從 localStorage 渲染
+if (_customTrips.length) setTimeout(() => renderCustomTripCards(), 100);
 
 function saveCustomTrips() {
   localStorage.setItem('wandr_custom_trips', JSON.stringify(_customTrips));
@@ -5652,16 +5655,21 @@ function loadCustomTripsFromFirebase() {
       localStorage.removeItem('wandr_custom_trips');
       return;
     }
-    // Firebase 可能把 array 轉成 object，統一轉回 array
     const data = Array.isArray(raw) ? raw : Object.values(raw);
-    if (data.length) {
-      _customTrips = data;
-      localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
-      document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
-      _customTrips.forEach(trip => addTripCard(trip));
-    }
+    if (!data.length) return;
+    _customTrips = data;
+    localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
+    renderCustomTripCards();
   }, { onlyOnce: false });
 }
+
+function renderCustomTripCards() {
+  const sec = document.querySelector('.trips-section');
+  if (!sec) return; // 首頁還沒 active，等 openHome 時再呼叫
+  document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
+  _customTrips.forEach(trip => addTripCard(trip));
+}
+window.renderCustomTripCards = renderCustomTripCards;
 
 // ── 日期工具 ──
 function dateRange(startStr, endStr) {
