@@ -1270,11 +1270,17 @@ body {
       <button class="booking-modal-close" onclick="closePackingModal()">✕</button>
     </div>
     <div id="packing-list" style="padding:8px 16px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;background:var(--card);"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--card);">
-      <input id="packing-new-input" type="text" placeholder="新增物品名稱..." class="currency-input" style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addPackingItem()">
-      <input id="packing-new-qty" type="number" min="1" value="1" class="currency-input" style="width:58px;font-size:14px;text-align:center;">
-      <span style="font-size:12px;color:var(--muted);white-space:nowrap;">件</span>
-      <button onclick="addPackingItem()" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋</button>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <select id="packing-new-cat" class="currency-select" style="flex:1;font-size:13px;padding:7px 8px;"></select>
+        <button onclick="addCategory()" style="padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer;white-space:nowrap;">＋ 新分類</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="packing-new-input" type="text" placeholder="物品名稱..." class="currency-input" style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addPackingItem()">
+        <input id="packing-new-qty" type="number" min="1" value="1" class="currency-input" style="width:52px;font-size:14px;text-align:center;">
+        <span style="font-size:12px;color:var(--muted);">件</span>
+        <button onclick="addPackingItem()" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4078,134 +4084,168 @@ function waitForFirebase(cb, tries = 0) {
 
 // ── 攜帶清單 ──
 const DEFAULT_PACKING = [
-  { id:'p1',  name:'護照', qty:1, done:false },
-  { id:'p2',  name:'台灣駕照 + 國際駕照', qty:1, done:false },
-  { id:'p3',  name:'健保卡', qty:1, done:false },
-  { id:'p4',  name:'現金（日圓）', qty:1, done:false },
-  { id:'p5',  name:'信用卡 / 提款卡', qty:2, done:false },
-  { id:'p6',  name:'手機 + 充電線', qty:1, done:false },
-  { id:'p7',  name:'行動電源', qty:1, done:false },
-  { id:'p8',  name:'變壓器 / 轉接頭（A型）', qty:1, done:false },
-  { id:'p9',  name:'相機 + 充電器 + 記憶卡', qty:1, done:false },
-  { id:'p10', name:'短袖', qty:5, done:false },
-  { id:'p11', name:'薄外套 / 防風外套', qty:1, done:false },
-  { id:'p12', name:'長褲', qty:2, done:false },
-  { id:'p13', name:'內衣褲', qty:13, done:false },
-  { id:'p14', name:'襪子', qty:13, done:false },
-  { id:'p15', name:'舒適走路鞋', qty:1, done:false },
-  { id:'p16', name:'牙刷 + 牙膏', qty:1, done:false },
-  { id:'p17', name:'洗髮精 / 沐浴乳', qty:1, done:false },
-  { id:'p18', name:'常備藥（止痛、腸胃、感冒）', qty:1, done:false },
-  { id:'p19', name:'防曬乳', qty:1, done:false },
-  { id:'p20', name:'蚊蟲藥', qty:1, done:false },
-  { id:'p21', name:'環保袋', qty:2, done:false },
-  { id:'p22', name:'水壺', qty:1, done:false },
+  { id:'cat1', type:'cat', name:'📄 證件 & 金融', collapsed:false, items:[
+    { id:'p1',  name:'護照', qty:1, done:false },
+    { id:'p2',  name:'台灣駕照 + 國際駕照', qty:1, done:false },
+    { id:'p3',  name:'健保卡', qty:1, done:false },
+    { id:'p4',  name:'現金（日圓）', qty:1, done:false },
+    { id:'p5',  name:'信用卡 / 提款卡', qty:2, done:false },
+  ]},
+  { id:'cat2', type:'cat', name:'📱 電子設備', collapsed:false, items:[
+    { id:'p6',  name:'手機 + 充電線', qty:1, done:false },
+    { id:'p7',  name:'行動電源', qty:1, done:false },
+    { id:'p8',  name:'變壓器 / 轉接頭（A型）', qty:1, done:false },
+    { id:'p9',  name:'相機 + 充電器 + 記憶卡', qty:1, done:false },
+  ]},
+  { id:'cat3', type:'cat', name:'👕 衣物', collapsed:false, items:[
+    { id:'p10', name:'短袖', qty:5, done:false },
+    { id:'p11', name:'薄外套 / 防風外套', qty:1, done:false },
+    { id:'p12', name:'長褲', qty:2, done:false },
+    { id:'p13', name:'內衣褲', qty:13, done:false },
+    { id:'p14', name:'襪子', qty:13, done:false },
+    { id:'p15', name:'舒適走路鞋', qty:1, done:false },
+  ]},
+  { id:'cat4', type:'cat', name:'🧴 盥洗 & 健康', collapsed:false, items:[
+    { id:'p16', name:'牙刷 + 牙膏', qty:1, done:false },
+    { id:'p17', name:'洗髮精 / 沐浴乳', qty:1, done:false },
+    { id:'p18', name:'常備藥（止痛、腸胃、感冒）', qty:1, done:false },
+    { id:'p19', name:'防曬乳', qty:1, done:false },
+    { id:'p20', name:'蚊蟲藥', qty:1, done:false },
+  ]},
+  { id:'cat5', type:'cat', name:'🎒 其他', collapsed:false, items:[
+    { id:'p21', name:'環保袋', qty:2, done:false },
+    { id:'p22', name:'水壺', qty:1, done:false },
+  ]},
 ];
 
-let _packingItems = null;
+let _packingData = null;
 
-function getPackingItems() {
-  if (_packingItems) return _packingItems;
+function getPackingData() {
+  if (_packingData) return _packingData;
   try {
-    const saved = localStorage.getItem('packing_list');
-    _packingItems = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PACKING));
-  } catch(e) { _packingItems = JSON.parse(JSON.stringify(DEFAULT_PACKING)); }
-  return _packingItems;
+    const saved = localStorage.getItem('packing_list_v2');
+    _packingData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PACKING));
+  } catch(e) { _packingData = JSON.parse(JSON.stringify(DEFAULT_PACKING)); }
+  return _packingData;
 }
 
-function savePackingItems() {
-  localStorage.setItem('packing_list', JSON.stringify(_packingItems));
+function savePackingData() {
+  localStorage.setItem('packing_list_v2', JSON.stringify(_packingData));
   if (window._fbDb && window._fbRef && window._fbSet) {
-    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/packing'), _packingItems.length ? _packingItems : null);
+    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/packing'), _packingData.length ? _packingData : null);
   }
 }
 
 function renderPackingList() {
   const el = document.getElementById('packing-list');
   if (!el) return;
-  const items = getPackingItems();
-  el.innerHTML = items.map((item, i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-      <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePackingItem(${i})"
-        style="width:18px;height:18px;cursor:pointer;accent-color:#7c3aed;flex-shrink:0;">
-      <input type="text" value="${item.name.replace(/"/g,'&quot;')}"
-        onchange="updatePackingName(${i}, this.value)"
-        style="flex:1;font-size:14px;border:none;background:transparent;outline:none;cursor:text;
-          ${item.done ? 'text-decoration:line-through;color:var(--muted);' : 'color:var(--text);'}
-          padding:2px 4px;border-radius:4px;"
-        onfocus="this.style.background='var(--bg)';this.style.border='1px solid var(--accent)'"
-        onblur="this.style.background='transparent';this.style.border='none'">
-      <input type="number" min="1" value="${item.qty}" onchange="updatePackingQty(${i}, this.value)"
-        style="width:52px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:13px;background:var(--bg);">
-      <span style="font-size:12px;color:var(--muted);">件</span>
-      <button onclick="deletePackingItem(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;">✕</button>
+  const data = getPackingData();
+
+  el.innerHTML = data.map((cat, ci) => `
+    <div style="margin-bottom:4px;">
+      <!-- 分類標題 -->
+      <div style="display:flex;align-items:center;gap:6px;padding:8px 4px 6px;position:sticky;top:0;background:var(--card);z-index:1;">
+        <button onclick="togglePackingCat(${ci})" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);padding:0;width:18px;">${cat.collapsed ? '▶' : '▼'}</button>
+        <input type="text" value="${cat.name.replace(/"/g,'&quot;')}" onchange="updatePackingCatName(${ci}, this.value)"
+          style="flex:1;font-size:13px;font-weight:700;border:none;background:transparent;color:var(--accent);cursor:text;outline:none;padding:2px 4px;border-radius:4px;"
+          onfocus="this.style.background='var(--bg)';this.style.border='1px solid var(--accent)'"
+          onblur="this.style.background='transparent';this.style.border='none'">
+        <span style="font-size:11px;color:var(--muted);">${cat.items.filter(x=>x.done).length}/${cat.items.length}</span>
+        <button onclick="addPackingItemToCat(${ci})" style="background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer;">＋</button>
+        <button onclick="deletePackingCat(${ci})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;">🗑</button>
+      </div>
+      <!-- 細項 -->
+      ${cat.collapsed ? '' : cat.items.map((item, ii) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 4px 6px 28px;border-bottom:1px solid var(--border);">
+          <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePackingItem(${ci},${ii})"
+            style="width:16px;height:16px;cursor:pointer;accent-color:#7c3aed;flex-shrink:0;">
+          <input type="text" value="${item.name.replace(/"/g,'&quot;')}" onchange="updatePackingName(${ci},${ii},this.value)"
+            style="flex:1;font-size:14px;border:none;background:transparent;outline:none;
+              ${item.done ? 'text-decoration:line-through;color:var(--muted);' : 'color:var(--text);'}
+              padding:2px 4px;border-radius:4px;"
+            onfocus="this.style.background='var(--bg)';this.style.border='1px solid var(--accent)'"
+            onblur="this.style.background='transparent';this.style.border='none'">
+          <input type="number" min="1" value="${item.qty}" onchange="updatePackingQty(${ci},${ii},this.value)"
+            style="width:48px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:3px;font-size:13px;background:var(--bg);">
+          <span style="font-size:11px;color:var(--muted);">件</span>
+          <button onclick="deletePackingItem(${ci},${ii})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;">✕</button>
+        </div>
+      `).join('')}
     </div>
   `).join('');
+  // 更新分類選擇器
+  const catEl = document.getElementById('packing-new-cat');
+  if (catEl) {
+    catEl.innerHTML = data.map((cat,ci) => `<option value="${ci}">${cat.name}</option>`).join('');
+  }
 }
 
-function togglePackingItem(i) {
-  const items = getPackingItems();
-  items[i].done = !items[i].done;
-  savePackingItems();
-  renderPackingList();
+function togglePackingCat(ci) {
+  const d = getPackingData(); d[ci].collapsed = !d[ci].collapsed;
+  savePackingData(); renderPackingList();
 }
-
-function updatePackingName(i, val) {
-  const items = getPackingItems();
-  items[i].name = val.trim() || items[i].name;
-  savePackingItems();
+function updatePackingCatName(ci, val) {
+  const d = getPackingData(); d[ci].name = val.trim() || d[ci].name; savePackingData();
 }
-
-function updatePackingQty(i, val) {
-  const items = getPackingItems();
-  items[i].qty = parseInt(val) || 1;
-  savePackingItems();
+function deletePackingCat(ci) {
+  if (!confirm(`刪除「${getPackingData()[ci].name}」分類和所有細項？`)) return;
+  const d = getPackingData(); d.splice(ci, 1); savePackingData(); renderPackingList();
 }
-
-function deletePackingItem(i) {
-  const items = getPackingItems();
-  items.splice(i, 1);
-  savePackingItems();
-  renderPackingList();
+function addCategory() {
+  const d = getPackingData();
+  d.push({ id:'cat'+Date.now(), type:'cat', name:'🆕 新分類', collapsed:false, items:[] });
+  savePackingData(); renderPackingList();
+  // scroll to bottom
+  const el = document.getElementById('packing-list');
+  if (el) setTimeout(()=>{ el.scrollTop = el.scrollHeight; }, 50);
 }
-
+function addPackingItemToCat(ci) {
+  const d = getPackingData();
+  d[ci].items.push({ id:'p'+Date.now(), name:'新項目', qty:1, done:false });
+  savePackingData(); renderPackingList();
+}
+function togglePackingItem(ci, ii) {
+  const d = getPackingData(); d[ci].items[ii].done = !d[ci].items[ii].done;
+  savePackingData(); renderPackingList();
+}
+function updatePackingName(ci, ii, val) {
+  const d = getPackingData(); d[ci].items[ii].name = val.trim() || d[ci].items[ii].name; savePackingData();
+}
+function updatePackingQty(ci, ii, val) {
+  const d = getPackingData(); d[ci].items[ii].qty = parseInt(val)||1; savePackingData();
+}
+function deletePackingItem(ci, ii) {
+  const d = getPackingData(); d[ci].items.splice(ii,1); savePackingData(); renderPackingList();
+}
 function addPackingItem() {
   const nameEl = document.getElementById('packing-new-input');
   const qtyEl = document.getElementById('packing-new-qty');
-  const name = nameEl.value.trim();
-  if (!name) return;
-  const qty = parseInt(qtyEl.value) || 1;
-  const items = getPackingItems();
-  items.push({ id: 'p' + Date.now(), name, qty, done: false });
-  savePackingItems();
-  renderPackingList();
-  nameEl.value = '';
-  qtyEl.value = '1';
-  nameEl.focus();
-  // scroll to bottom
-  const el = document.getElementById('packing-list');
-  if (el) el.scrollTop = el.scrollHeight;
+  const catEl = document.getElementById('packing-new-cat');
+  const name = nameEl.value.trim(); if (!name) return;
+  const qty = parseInt(qtyEl.value)||1;
+  const d = getPackingData();
+  const ci = catEl ? parseInt(catEl.value) : d.length-1;
+  if (!d[ci]) return;
+  d[ci].items.push({ id:'p'+Date.now(), name, qty, done:false });
+  savePackingData(); renderPackingList();
+  nameEl.value=''; qtyEl.value='1'; nameEl.focus();
 }
 
 function openPackingModal() {
-  // sync from Firebase first
   if (window._fbDb && window._fbRef && window._fbOnValue) {
     const ref = window._fbRef(window._fbDb, 'hokkaido2026/packing');
     window._fbOnValue(ref, (snap) => {
       const data = snap.val();
-      if (data && Array.isArray(data)) {
-        _packingItems = data;
-        localStorage.setItem('packing_list', JSON.stringify(data));
+      if (data && Array.isArray(data) && data[0]?.type === 'cat') {
+        _packingData = data;
+        localStorage.setItem('packing_list_v2', JSON.stringify(data));
       }
       renderPackingList();
     }, { onlyOnce: true });
-  } else {
-    renderPackingList();
-  }
+  } else { renderPackingList(); }
   document.getElementById('packing-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
 function closePackingModal() {
   document.getElementById('packing-modal').classList.remove('open');
   document.body.style.overflow = '';
@@ -4213,10 +4253,15 @@ function closePackingModal() {
 window.openPackingModal = openPackingModal;
 window.closePackingModal = closePackingModal;
 window.addPackingItem = addPackingItem;
+window.addCategory = addCategory;
+window.addPackingItemToCat = addPackingItemToCat;
 window.togglePackingItem = togglePackingItem;
+window.togglePackingCat = togglePackingCat;
+window.updatePackingCatName = updatePackingCatName;
 window.updatePackingName = updatePackingName;
 window.updatePackingQty = updatePackingQty;
 window.deletePackingItem = deletePackingItem;
+window.deletePackingCat = deletePackingCat;
 
 // ── 版本偵測：有新版本時顯示更新通知 ──
 (function () {
