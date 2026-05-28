@@ -3364,20 +3364,24 @@ function switchDay(id, dir) {
   }
 
   // Touch swipe
+  let _touchMoved = false;
   document.addEventListener('touchstart', e => {
-    if (e.target.closest('.expense-modal, .modal, .tab-bar, input, select, textarea, button')) return;
+    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea, button')) return;
     _tx = e.touches[0].clientX;
     _ty = e.touches[0].clientY;
     _locked = false;
+    _touchMoved = false;
   }, { passive: true });
 
-  document.addEventListener('touchend', e => {
-    if (_locked) return;
-    if (e.target.closest('.expense-modal, .modal, .tab-bar, input, select, textarea, button')) return;
-    const dx = e.changedTouches[0].clientX - _tx;
-    const dy = e.changedTouches[0].clientY - _ty;
-    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+  document.addEventListener('touchmove', e => {
+    if (_locked || _touchMoved) return;
+    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea, button')) return;
+    const dx = e.touches[0].clientX - _tx;
+    const dy = e.touches[0].clientY - _ty;
+    if (Math.abs(dx) < 40) return;
+    if (Math.abs(dy) > Math.abs(dx) * 0.8) return;
     _locked = true;
+    _touchMoved = true;
     dx < 0 ? goNext() : goPrev();
   }, { passive: true });
 
@@ -3389,15 +3393,15 @@ function switchDay(id, dir) {
   });
 
   // Mac 兩指水平滑動（wheel event）
-  let _wheelTimer = null;
+  let _wheelLock = false;
   document.addEventListener('wheel', e => {
+    if (_wheelLock) return;
     if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea')) return;
-    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.5) return; // 主要是垂直滾動，忽略
-    if (Math.abs(e.deltaX) < 30) return; // 太小的滑動忽略
-    clearTimeout(_wheelTimer);
-    _wheelTimer = setTimeout(() => {
-      e.deltaX > 0 ? goNext() : goPrev();
-    }, 80);
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.8) return;
+    if (Math.abs(e.deltaX) < 20) return;
+    _wheelLock = true;
+    e.deltaX > 0 ? goNext() : goPrev();
+    setTimeout(() => { _wheelLock = false; }, 300);
   }, { passive: true });
 
   window._currentDayIdx = 0;
