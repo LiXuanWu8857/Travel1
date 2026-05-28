@@ -3376,6 +3376,18 @@ function switchDay(id) {
     if (e.key === 'ArrowLeft') goPrev();
   });
 
+  // Mac 兩指水平滑動（wheel event）
+  let _wheelTimer = null;
+  document.addEventListener('wheel', e => {
+    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea')) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.5) return; // 主要是垂直滾動，忽略
+    if (Math.abs(e.deltaX) < 30) return; // 太小的滑動忽略
+    clearTimeout(_wheelTimer);
+    _wheelTimer = setTimeout(() => {
+      e.deltaX > 0 ? goNext() : goPrev();
+    }, 80);
+  }, { passive: true });
+
   window._currentDayIdx = 0;
 })();
 
