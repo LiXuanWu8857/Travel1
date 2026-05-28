@@ -5646,16 +5646,19 @@ function loadCustomTripsFromFirebase() {
   if (!window._fbDb || !window._fbRef || !window._fbOnValue) return;
   const ref = window._fbRef(window._fbDb, 'hokkaido2026/customTrips');
   window._fbOnValue(ref, (snap) => {
-    const data = snap.val();
-    if (data && Array.isArray(data)) {
-      _customTrips = data;
-      localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
-      // 重新渲染首頁卡片
-      document.querySelectorAll('.trip-card[data-custom]').forEach(c => c.remove());
-      _customTrips.forEach(trip => addTripCard(trip));
-    } else if (!data) {
+    const raw = snap.val();
+    if (!raw) {
       _customTrips = [];
       localStorage.removeItem('wandr_custom_trips');
+      return;
+    }
+    // Firebase 可能把 array 轉成 object，統一轉回 array
+    const data = Array.isArray(raw) ? raw : Object.values(raw);
+    if (data.length) {
+      _customTrips = data;
+      localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
+      document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
+      _customTrips.forEach(trip => addTripCard(trip));
     }
   }, { onlyOnce: false });
 }
