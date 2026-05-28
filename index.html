@@ -4158,7 +4158,6 @@ function renderPackingList() {
             onblur="this.style.background='transparent';this.style.border='none'">
           <input type="number" min="1" value="${item.qty}" onchange="updatePackingQty(${ci},${ii},this.value)"
             style="width:48px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:3px;font-size:13px;background:var(--bg);">
-          <span style="font-size:11px;color:var(--muted);">件</span>
           <button onclick="deletePackingItem(${ci},${ii})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;">✕</button>
         </div>
       `).join('')}
