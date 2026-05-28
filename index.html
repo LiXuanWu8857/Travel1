@@ -1261,6 +1261,23 @@ body {
 <div id="custom-trips-container"></div>
 <div id="trip-hokkaido" class="trip-wrapper">
 
+<!-- ══ PACKING LIST MODAL ══ -->
+<div class="booking-modal-overlay" id="packing-modal" onclick="if(event.target===this)closePackingModal()">
+  <div class="booking-modal" style="max-width:480px;border-radius:16px;overflow:hidden;">
+    <div class="booking-modal-header">
+      <div class="booking-modal-title">🎒 攜帶清單</div>
+      <button class="booking-modal-close" onclick="closePackingModal()">✕</button>
+    </div>
+    <div id="packing-list" style="padding:8px 16px 12px;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto;"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
+      <input id="packing-new-input" type="text" placeholder="新增物品名稱..." class="currency-input" style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addPackingItem()">
+      <input id="packing-new-qty" type="number" min="1" value="1" class="currency-input" style="width:58px;font-size:14px;text-align:center;">
+      <span style="font-size:12px;color:var(--muted);white-space:nowrap;">件</span>
+      <button onclick="addPackingItem()" style="padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">＋</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ BOOKING MODAL ══ -->
 <div class="booking-modal-overlay" id="booking-modal" onclick="if(event.target===this)closeBookingModal()">
   <div class="booking-modal-sheet">
@@ -1277,6 +1294,9 @@ body {
     <div style="display:flex;gap:8px;">
       <button class="booking-fab" id="booking-fab" onclick="event.stopPropagation();openBookingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;">
         📋 預訂 <span class="fab-count" id="fab-count">0</span>
+      </button>
+      <button class="booking-fab" onclick="event.stopPropagation();openPackingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#7c3aed;">
+        🎒 攜帶清單
       </button>
       <button class="booking-fab" onclick="event.stopPropagation();openExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
         💴 花費
@@ -4054,6 +4074,135 @@ function waitForFirebase(cb, tries = 0) {
   else if (tries < 30) { setTimeout(() => waitForFirebase(cb, tries + 1), 100); }
   else { console.warn('Firebase timeout, running without sync'); cb(); }
 }
+
+// ── 攜帶清單 ──
+const DEFAULT_PACKING = [
+  { id:'p1',  name:'護照', qty:1, done:false },
+  { id:'p2',  name:'台灣駕照 + 國際駕照', qty:1, done:false },
+  { id:'p3',  name:'健保卡', qty:1, done:false },
+  { id:'p4',  name:'現金（日圓）', qty:1, done:false },
+  { id:'p5',  name:'信用卡 / 提款卡', qty:2, done:false },
+  { id:'p6',  name:'手機 + 充電線', qty:1, done:false },
+  { id:'p7',  name:'行動電源', qty:1, done:false },
+  { id:'p8',  name:'變壓器 / 轉接頭（A型）', qty:1, done:false },
+  { id:'p9',  name:'相機 + 充電器 + 記憶卡', qty:1, done:false },
+  { id:'p10', name:'短袖', qty:5, done:false },
+  { id:'p11', name:'薄外套 / 防風外套', qty:1, done:false },
+  { id:'p12', name:'長褲', qty:2, done:false },
+  { id:'p13', name:'內衣褲', qty:13, done:false },
+  { id:'p14', name:'襪子', qty:13, done:false },
+  { id:'p15', name:'舒適走路鞋', qty:1, done:false },
+  { id:'p16', name:'牙刷 + 牙膏', qty:1, done:false },
+  { id:'p17', name:'洗髮精 / 沐浴乳', qty:1, done:false },
+  { id:'p18', name:'常備藥（止痛、腸胃、感冒）', qty:1, done:false },
+  { id:'p19', name:'防曬乳', qty:1, done:false },
+  { id:'p20', name:'蚊蟲藥', qty:1, done:false },
+  { id:'p21', name:'環保袋', qty:2, done:false },
+  { id:'p22', name:'水壺', qty:1, done:false },
+];
+
+let _packingItems = null;
+
+function getPackingItems() {
+  if (_packingItems) return _packingItems;
+  try {
+    const saved = localStorage.getItem('packing_list');
+    _packingItems = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PACKING));
+  } catch(e) { _packingItems = JSON.parse(JSON.stringify(DEFAULT_PACKING)); }
+  return _packingItems;
+}
+
+function savePackingItems() {
+  localStorage.setItem('packing_list', JSON.stringify(_packingItems));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/packing'), _packingItems.length ? _packingItems : null);
+  }
+}
+
+function renderPackingList() {
+  const el = document.getElementById('packing-list');
+  if (!el) return;
+  const items = getPackingItems();
+  el.innerHTML = items.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePackingItem(${i})"
+        style="width:18px;height:18px;cursor:pointer;accent-color:#7c3aed;flex-shrink:0;">
+      <span style="flex:1;font-size:14px;${item.done ? 'text-decoration:line-through;color:var(--muted);' : ''}">${item.name}</span>
+      <input type="number" min="1" value="${item.qty}" onchange="updatePackingQty(${i}, this.value)"
+        style="width:52px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:13px;background:var(--bg);">
+      <span style="font-size:12px;color:var(--muted);">件</span>
+      <button onclick="deletePackingItem(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;">✕</button>
+    </div>
+  `).join('');
+}
+
+function togglePackingItem(i) {
+  const items = getPackingItems();
+  items[i].done = !items[i].done;
+  savePackingItems();
+  renderPackingList();
+}
+
+function updatePackingQty(i, val) {
+  const items = getPackingItems();
+  items[i].qty = parseInt(val) || 1;
+  savePackingItems();
+}
+
+function deletePackingItem(i) {
+  const items = getPackingItems();
+  items.splice(i, 1);
+  savePackingItems();
+  renderPackingList();
+}
+
+function addPackingItem() {
+  const nameEl = document.getElementById('packing-new-input');
+  const qtyEl = document.getElementById('packing-new-qty');
+  const name = nameEl.value.trim();
+  if (!name) return;
+  const qty = parseInt(qtyEl.value) || 1;
+  const items = getPackingItems();
+  items.push({ id: 'p' + Date.now(), name, qty, done: false });
+  savePackingItems();
+  renderPackingList();
+  nameEl.value = '';
+  qtyEl.value = '1';
+  nameEl.focus();
+  // scroll to bottom
+  const el = document.getElementById('packing-list');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function openPackingModal() {
+  // sync from Firebase first
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    const ref = window._fbRef(window._fbDb, 'hokkaido2026/packing');
+    window._fbOnValue(ref, (snap) => {
+      const data = snap.val();
+      if (data && Array.isArray(data)) {
+        _packingItems = data;
+        localStorage.setItem('packing_list', JSON.stringify(data));
+      }
+      renderPackingList();
+    }, { onlyOnce: true });
+  } else {
+    renderPackingList();
+  }
+  document.getElementById('packing-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePackingModal() {
+  document.getElementById('packing-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+window.openPackingModal = openPackingModal;
+window.closePackingModal = closePackingModal;
+window.addPackingItem = addPackingItem;
+window.togglePackingItem = togglePackingItem;
+window.updatePackingQty = updatePackingQty;
+window.deletePackingItem = deletePackingItem;
 
 // ── 版本偵測：有新版本時顯示更新通知 ──
 (function () {
