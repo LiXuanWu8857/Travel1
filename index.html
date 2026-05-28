@@ -812,6 +812,7 @@ body {
   background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
 }
 .booking-modal-overlay.open { display: flex; align-items: flex-end; }
+#packing-modal.open { display: flex; align-items: center; justify-content: center; }
 .booking-modal-sheet {
   background: var(--card); border-radius: 20px 20px 0 0;
   width: 100%; max-height: 85vh; overflow-y: auto;
@@ -1263,13 +1264,13 @@ body {
 
 <!-- ══ PACKING LIST MODAL ══ -->
 <div class="booking-modal-overlay" id="packing-modal" onclick="if(event.target===this)closePackingModal()">
-  <div class="booking-modal" style="max-width:480px;border-radius:16px;overflow:hidden;">
+  <div class="booking-modal" style="max-width:520px;width:92%;border-radius:16px;overflow:hidden;background:var(--card);max-height:85vh;display:flex;flex-direction:column;">
     <div class="booking-modal-header">
       <div class="booking-modal-title">🎒 攜帶清單</div>
       <button class="booking-modal-close" onclick="closePackingModal()">✕</button>
     </div>
-    <div id="packing-list" style="padding:8px 16px 12px;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto;"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
+    <div id="packing-list" style="padding:8px 16px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;background:var(--card);"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--card);">
       <input id="packing-new-input" type="text" placeholder="新增物品名稱..." class="currency-input" style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addPackingItem()">
       <input id="packing-new-qty" type="number" min="1" value="1" class="currency-input" style="width:58px;font-size:14px;text-align:center;">
       <span style="font-size:12px;color:var(--muted);white-space:nowrap;">件</span>
