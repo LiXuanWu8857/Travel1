@@ -4310,7 +4310,7 @@ function loadGoogleMapsScript() {
   _gmapLoaded = true;
   const s = document.createElement('script');
   s.id = 'gmap-script';
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=_gmapReady&language=ja`;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=_gmapReady&libraries=places&language=ja`;
   s.async = true; s.defer = true;
   document.head.appendChild(s);
 }
@@ -4356,11 +4356,9 @@ async function openDayMap() {
 }
 
 function loadGMapMarkers(dayEl) {
-  // 清除舊標記
   _gmapMarkers.forEach(m => m.setMap(null));
   _gmapMarkers = [];
 
-  // 每個 card 只取第一個 nav-btn
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
   const seen = new Set();
@@ -4381,64 +4379,57 @@ function loadGMapMarkers(dayEl) {
     return;
   }
 
-  // Google Maps 開啟路線連結
   const openLink = document.getElementById('map-open-link');
   const encoded = places.map(p => encodeURIComponent(p.q));
   openLink.href = encoded.length > 1
     ? `https://www.google.com/maps/dir/${encoded.join('/')}`
     : `https://maps.google.com/?q=${encoded[0]}`;
 
-  // 用 Geocoding API 一次查一個（但比 Nominatim 快很多）
   const statusEl = document.getElementById('map-status');
   const bounds = new google.maps.LatLngBounds();
+  const colors = ['#0F6E56','#1a6baa','#c0392b','#8e44ad','#d35400','#16a085','#2c3e50'];
+  const service = new google.maps.places.PlacesService(_gmap);
   let done = 0;
 
-  const geocoder = new google.maps.Geocoder();
-  const colors = ['#0F6E56','#1a6baa','#c0392b','#8e44ad','#d35400','#16a085','#2c3e50'];
-
-  function geocodeNext(i) {
+  function searchNext(i) {
     if (i >= places.length) {
       statusEl.textContent = `共 ${done} 個景點`;
       if (done > 0) _gmap.fitBounds(bounds, 40);
       return;
     }
     const p = places[i];
-    geocoder.geocode({ address: p.q + ' 北海道 日本' }, (results, status) => {
-      if (status === 'OK' && results[0]) {
+    service.findPlaceFromQuery({
+      query: p.q,
+      fields: ['geometry','name'],
+      locationBias: { center: { lat: 43.5, lng: 143.0 }, radius: 500000 }
+    }, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results[0]) {
         const pos = results[0].geometry.location;
         bounds.extend(pos);
         done++;
-
-        // 自定義數字標記
         const marker = new google.maps.Marker({
-          position: pos,
-          map: _gmap,
-          title: p.label,
-          label: { text: String(i + 1), color: '#fff', fontWeight: '700', fontSize: '12px' },
+          position: pos, map: _gmap, title: p.label,
+          label: { text: String(i+1), color:'#fff', fontWeight:'700', fontSize:'12px' },
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             fillColor: colors[i % colors.length],
             fillOpacity: 1,
-            strokeColor: '#fff',
-            strokeWeight: 2,
-            scale: 14,
+            strokeColor: '#fff', strokeWeight: 2, scale: 14,
           },
           zIndex: 100 - i,
         });
-
-        const infoWindow = new google.maps.InfoWindow({
+        const iw = new google.maps.InfoWindow({
           content: `<div style="font-size:13px;font-weight:600;">${i+1}. ${p.label}</div>`
         });
-        marker.addListener('click', () => infoWindow.open(_gmap, marker));
+        marker.addListener('click', () => iw.open(_gmap, marker));
         _gmapMarkers.push(marker);
-
         if (done === 1) _gmap.setCenter(pos);
         statusEl.textContent = `載入中 ${done} / ${places.length}`;
       }
-      geocodeNext(i + 1);
+      searchNext(i + 1);
     });
   }
-  geocodeNext(0);
+  searchNext(0);
 }
 
 function closeMapModal() {
