@@ -1620,6 +1620,8 @@ body {
           ⚠️ 班機 17:55 落地，通關＋行李約 45 分，預估 <strong>18:40–19:00</strong> 抵達 OTS 櫃台<br>
           ⚠️ 詳細接駁說明：<a href="https://www.otsinternational.jp/otsrentacar/cn/hokkaido/pickup/shinchitose-airport-international/" target="_blank" style="color:#92400E;text-decoration:underline;">OTS 官網</a>
         </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=新千歲空港国際線ターミナル" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>新千歲空港</a>
+        <a class="nav-btn" href="https://maps.google.com/?q=小樽市色内+STAY+OTARU" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽住宿</a>
       </div></div>
     </div>
     <div class="item">
@@ -4310,7 +4312,7 @@ function loadGoogleMapsScript() {
   _gmapLoaded = true;
   const s = document.createElement('script');
   s.id = 'gmap-script';
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=_gmapReady&libraries=places&language=ja`;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=_gmapReady&libraries=places,directions&language=ja`;
   s.async = true; s.defer = true;
   document.head.appendChild(s);
 }
@@ -4390,11 +4392,15 @@ function loadGMapMarkers(dayEl) {
   const colors = ['#0F6E56','#1a6baa','#c0392b','#8e44ad','#d35400','#16a085','#2c3e50'];
   const service = new google.maps.places.PlacesService(_gmap);
   let done = 0;
+  const resolvedPoints = [];
 
   function searchNext(i) {
     if (i >= places.length) {
       statusEl.textContent = `共 ${done} 個景點`;
-      if (done > 0) _gmap.fitBounds(bounds, 40);
+      if (done > 0) {
+        _gmap.fitBounds(bounds, 40);
+        if (resolvedPoints.length >= 2) drawRoute(resolvedPoints);
+      }
       return;
     }
     const p = places[i];
@@ -4408,6 +4414,7 @@ function loadGMapMarkers(dayEl) {
         const pos = results[0].geometry.location;
         bounds.extend(pos);
         done++;
+        resolvedPoints.push(pos);
         const marker = new google.maps.Marker({
           position: pos, map: _gmap, title: p.label,
           label: { text: String(i+1), color:'#fff', fontWeight:'700', fontSize:'12px' },
@@ -4430,6 +4437,39 @@ function loadGMapMarkers(dayEl) {
         statusEl.textContent = `⚠️ ${p.label}: ${status}`;
       }
       searchNext(i + 1);
+    });
+  }
+
+  function drawRoute(points) {
+    if (points.length < 2) return;
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+      map: _gmap,
+      suppressMarkers: true,
+      polylineOptions: { strokeColor: '#1a73e8', strokeWeight: 4, strokeOpacity: 0.8 }
+    });
+    _gmapMarkers.push({ setMap: (m) => directionsRenderer.setMap(m) });
+
+    const origin = points[0];
+    const destination = points[points.length - 1];
+    const waypoints = points.slice(1, -1).map(p => ({ location: p, stopover: false }));
+
+    directionsService.route({
+      origin, destination, waypoints,
+      travelMode: google.maps.TravelMode.DRIVING,
+      optimizeWaypoints: false,
+    }, (result, status) => {
+      if (status === 'OK') {
+        directionsRenderer.setDirections(result);
+      } else {
+        // fallback: draw straight polyline
+        const line = new google.maps.Polyline({
+          path: points, map: _gmap,
+          strokeColor: '#1a73e8', strokeWeight: 3, strokeOpacity: 0.6,
+          geodesic: true,
+        });
+        _gmapMarkers.push(line);
+      }
     });
   }
   searchNext(0);
