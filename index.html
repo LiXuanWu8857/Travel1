@@ -6425,7 +6425,7 @@ function insertPlaceCard(tripId, did, placeData, animate) {
   });
 }
 
-// ── 導航按鈕強制開 Google Maps App ──
+// ── 導航按鈕 ──
 document.addEventListener('click', e => {
   const btn = e.target.closest('.nav-btn');
   if (!btn) return;
@@ -6441,12 +6441,7 @@ document.addEventListener('click', e => {
     window.location.href = `geo:0,0?q=${encodeURIComponent(q)}`;
     setTimeout(() => { window.location.href = url; }, 1200);
   } else {
-    const isPWA = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-    if (isPWA) {
-      window.open(url, '_blank'); // 在瀏覽器開，不在 PWA 視窗
-    } else {
-      window.open(url, 'wandr_maps');
-    }
+    window.open(url, 'wandr_maps');
   }
 });
 
