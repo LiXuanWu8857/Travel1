@@ -4509,12 +4509,13 @@ window.closeMapModal = closeMapModal;
 
 // 動態計算 trip-wrapper padding-top（back-btn + top-nav 實際高度）
 function adjustTripPadding() {
-  const backBtn = document.querySelector('.trip-wrapper.active .back-btn');
-  const topNav = document.querySelector('.trip-wrapper.active .top-nav') || document.querySelector('.top-nav');
-  if (!backBtn || !topNav) return;
-  const h = backBtn.offsetHeight + topNav.offsetHeight;
+  const topNav = document.querySelector('.top-nav');
+  if (!topNav) return;
+  const backH = 44; // back-btn 固定高度
+  const navH = topNav.offsetHeight;
+  const total = backH + navH;
   document.querySelectorAll('.trip-wrapper.active').forEach(w => {
-    w.style.paddingTop = h + 'px';
+    w.style.paddingTop = total + 'px';
   });
 }
 window.adjustTripPadding = adjustTripPadding;
