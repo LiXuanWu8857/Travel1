@@ -1620,8 +1620,6 @@ body {
           ⚠️ 班機 17:55 落地，通關＋行李約 45 分，預估 <strong>18:40–19:00</strong> 抵達 OTS 櫃台<br>
           ⚠️ 詳細接駁說明：<a href="https://www.otsinternational.jp/otsrentacar/cn/hokkaido/pickup/shinchitose-airport-international/" target="_blank" style="color:#92400E;text-decoration:underline;">OTS 官網</a>
         </div>
-        <a class="nav-btn" href="https://maps.google.com/?q=新千歲空港国際線ターミナル" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>新千歲空港</a>
-        <a class="nav-btn" href="https://maps.google.com/?q=小樽市色内+STAY+OTARU" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>小樽住宿</a>
       </div></div>
     </div>
     <div class="item">
@@ -4361,9 +4359,19 @@ function loadGMapMarkers(dayEl) {
   _gmapMarkers.forEach(m => m.setMap(null));
   _gmapMarkers = [];
 
+  // 先移除剛才加的機場和小樽導航（地圖不需要，只需原本景點順序）
+  const dayId2 = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'][window._currentDayIdx ?? 0];
+
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
   const seen = new Set();
+
+  // 8/27 特別處理：先加機場作為起點
+  if (dayId2 === 'd0827') {
+    places.push({ q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港' });
+    seen.add('新千歲空港 国際線ターミナル');
+  }
+
   cards.forEach(card => {
     const btn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
     if (!btn) return;
