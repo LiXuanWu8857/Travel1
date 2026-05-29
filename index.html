@@ -4467,6 +4467,7 @@ function loadGMapMarkers(dayEl) {
       travelMode: google.maps.TravelMode.DRIVING,
       optimizeWaypoints: false,
     }, (result, status) => {
+      console.log('[directions] status:', status, result);
       if (status === 'OK') {
         directionsRenderer.setDirections(result);
       } else {
