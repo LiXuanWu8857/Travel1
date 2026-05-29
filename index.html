@@ -6178,11 +6178,14 @@ window.closeAddPlace = function() {
 
 function initAddPlaceMap() {
   if (!window.google?.maps) {
+    console.log('[addPlace] google.maps not ready, retrying...');
     setTimeout(initAddPlaceMap, 300);
     return;
   }
+  console.log('[addPlace] initializing map');
   const center = { lat: 43.2, lng: 142.8 };
   const mapEl = document.getElementById('add-place-map');
+  console.log('[addPlace] mapEl:', mapEl, 'size:', mapEl?.offsetWidth, 'x', mapEl?.offsetHeight);
   if (!_addPlaceMap) {
     _addPlaceMap = new google.maps.Map(mapEl, {
       center, zoom: 8,
