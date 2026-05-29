@@ -1260,8 +1260,13 @@ body {
       <button class="new-trip-close" onclick="closeAddPlace()">✕</button>
     </div>
     <div class="add-place-input-wrap">
-      <input class="add-place-input" id="add-place-input" type="text" placeholder="輸入地點名稱，例：淺草寺、黑門市場…" onkeydown="if(event.key==='Enter')doAddPlace()">
-      <button class="add-place-go" id="add-place-go" onclick="doAddPlace()">搜尋</button>
+      <input class="add-place-input" id="add-place-input" type="text" placeholder="搜尋地點，例：淺草寺、黑門市場…" autocomplete="off">
+      <button class="add-place-go" id="add-place-go" onclick="doAddPlace()">新增</button>
+    </div>
+    <div id="add-place-suggestions" style="max-height:200px;overflow-y:auto;border-top:1px solid var(--border);display:none;"></div>
+    <div id="add-place-selected" style="display:none;margin:0 20px 8px;padding:8px 12px;background:rgba(15,110,86,0.08);border-radius:8px;font-size:13px;color:var(--success);border:1px solid rgba(15,110,86,0.2);">
+      <span id="add-place-selected-name"></span>
+      <button onclick="clearPlaceSelection()" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);">✕</button>
     </div>
     <div style="padding:0 20px 16px;font-size:12px;color:var(--muted);">AI 將自動查詢營業時間、注意事項、交通方式與推薦體驗</div>
   </div>
@@ -4357,22 +4362,33 @@ async function openDayMap() {
 }
 
 function loadGMapMarkers(dayEl) {
-  _gmapMarkers.forEach(m => m.setMap(null));
+  _gmapMarkers.forEach(m => { try { m.setMap ? m.setMap(null) : m.setMap?.(null); } catch(e){} });
   _gmapMarkers = [];
 
-  // 先移除剛才加的機場和小樽導航（地圖不需要，只需原本景點順序）
   const dayId2 = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'][window._currentDayIdx ?? 0];
 
+  // 自訂行程：從 placeData 讀座標（有座標直接標，沒有再用Places搜）
+  const customWrapper = dayEl.closest('[id^="trip-ct_"]');
+  if (customWrapper) {
+    const customTripId = customWrapper.id.replace('trip-','');
+    const trip = _customTrips.find(t => t.id === customTripId);
+    const placesForDay = trip?.places?.[dayEl.id] || [];
+    const places = placesForDay.map((p,i) => ({
+      q: p.name, label: p.name.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').slice(0,25),
+      lat: p.lat, lng: p.lng, hasCoords: !!(p.lat && p.lng),
+    }));
+    renderMapMarkers(places);
+    return;
+  }
+
+  // 北海道靜態行程：從 nav-btn 解析
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
   const seen = new Set();
-
-  // 8/27 特別處理：先加機場作為起點
   if (dayId2 === 'd0827') {
-    places.push({ q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港' });
+    places.push({ q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港', hasCoords: false });
     seen.add('新千歲空港 国際線ターミナル');
   }
-
   cards.forEach(card => {
     const btn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
     if (!btn) return;
@@ -4382,14 +4398,16 @@ function loadGMapMarkers(dayEl) {
     if (seen.has(q)) return;
     seen.add(q);
     const label = card.querySelector('.card-title')?.textContent.trim().replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').slice(0,25) || q.slice(0,25);
-    places.push({ q, label });
+    places.push({ q, label, hasCoords: false });
   });
+  renderMapMarkers(places);
+}
 
+function renderMapMarkers(places) {
   if (!places.length) {
     document.getElementById('map-status').textContent = '此天無景點資料';
     return;
   }
-
   const openLink = document.getElementById('map-open-link');
   const encoded = places.map(p => encodeURIComponent(p.q));
   openLink.href = encoded.length > 1
@@ -4403,86 +4421,80 @@ function loadGMapMarkers(dayEl) {
   let done = 0;
   const resolvedPoints = [];
 
+  function placeMarker(i, pos) {
+    const p = places[i];
+    bounds.extend(pos);
+    done++;
+    resolvedPoints.push({ i, pos });
+    const marker = new google.maps.Marker({
+      position: pos, map: _gmap, title: p.label,
+      label: { text: String(i+1), color:'#fff', fontWeight:'700', fontSize:'12px' },
+      icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: colors[i % colors.length],
+        fillOpacity:1, strokeColor:'#fff', strokeWeight:2, scale:14 },
+      zIndex: 100-i,
+    });
+    const iw = new google.maps.InfoWindow({ content: `<div style="font-size:13px;font-weight:600;">${i+1}. ${p.label}</div>` });
+    marker.addListener('click', () => iw.open(_gmap, marker));
+    _gmapMarkers.push(marker);
+    if (done === 1) _gmap.setCenter(pos);
+    statusEl.textContent = `載入中 ${done} / ${places.length}`;
+  }
+
   function searchNext(i) {
     if (i >= places.length) {
       statusEl.textContent = `共 ${done} 個景點`;
       if (done > 0) {
         _gmap.fitBounds(bounds, 40);
-        if (resolvedPoints.length >= 2) drawRoute(resolvedPoints);
+        const sorted = resolvedPoints.sort((a,b)=>a.i-b.i).map(r=>r.pos);
+        if (sorted.length >= 2) drawRoute(sorted);
       }
       return;
     }
     const p = places[i];
+    if (p.hasCoords) {
+      placeMarker(i, new google.maps.LatLng(p.lat, p.lng));
+      searchNext(i+1);
+      return;
+    }
     service.findPlaceFromQuery({
-      query: p.q,
-      fields: ['geometry','name'],
-      locationBias: { center: { lat: 43.5, lng: 143.0 }, radius: 500000 }
+      query: p.q, fields: ['geometry','name'],
+      locationBias: { center: { lat:43.5, lng:143.0 }, radius:500000 }
     }, (results, status) => {
-      console.log(`[map] ${p.q} → status:${status}`, results);
+      console.log(`[map] ${p.q} → ${status}`);
       if (status === google.maps.places.PlacesServiceStatus.OK && results[0]) {
-        const pos = results[0].geometry.location;
-        bounds.extend(pos);
-        done++;
-        resolvedPoints.push(pos);
-        const marker = new google.maps.Marker({
-          position: pos, map: _gmap, title: p.label,
-          label: { text: String(i+1), color:'#fff', fontWeight:'700', fontSize:'12px' },
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: colors[i % colors.length],
-            fillOpacity: 1,
-            strokeColor: '#fff', strokeWeight: 2, scale: 14,
-          },
-          zIndex: 100 - i,
-        });
-        const iw = new google.maps.InfoWindow({
-          content: `<div style="font-size:13px;font-weight:600;">${i+1}. ${p.label}</div>`
-        });
-        marker.addListener('click', () => iw.open(_gmap, marker));
-        _gmapMarkers.push(marker);
-        if (done === 1) _gmap.setCenter(pos);
-        statusEl.textContent = `載入中 ${done} / ${places.length}`;
+        placeMarker(i, results[0].geometry.location);
       } else {
         statusEl.textContent = `⚠️ ${p.label}: ${status}`;
       }
-      searchNext(i + 1);
-    });
-  }
-
-  function drawRoute(points) {
-    if (points.length < 2) return;
-    const directionsService = new google.maps.DirectionsService();
-    const directionsRenderer = new google.maps.DirectionsRenderer({
-      map: _gmap,
-      suppressMarkers: true,
-      polylineOptions: { strokeColor: '#1a73e8', strokeWeight: 4, strokeOpacity: 0.8 }
-    });
-    _gmapMarkers.push({ setMap: (m) => directionsRenderer.setMap(m) });
-
-    const origin = points[0];
-    const destination = points[points.length - 1];
-    const waypoints = points.slice(1, -1).map(p => ({ location: p, stopover: false }));
-
-    directionsService.route({
-      origin, destination, waypoints,
-      travelMode: google.maps.TravelMode.DRIVING,
-      optimizeWaypoints: false,
-    }, (result, status) => {
-      console.log('[directions] status:', status, result);
-      if (status === 'OK') {
-        directionsRenderer.setDirections(result);
-      } else {
-        // fallback: draw straight polyline
-        const line = new google.maps.Polyline({
-          path: points, map: _gmap,
-          strokeColor: '#1a73e8', strokeWeight: 3, strokeOpacity: 0.6,
-          geodesic: true,
-        });
-        _gmapMarkers.push(line);
-      }
+      searchNext(i+1);
     });
   }
   searchNext(0);
+}
+
+function drawRoute(points) {
+  if (points.length < 2) return;
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({
+    map: _gmap, suppressMarkers: true,
+    polylineOptions: { strokeColor:'#1a73e8', strokeWeight:4, strokeOpacity:0.8 }
+  });
+  _gmapMarkers.push({ setMap: (m) => directionsRenderer.setMap(m) });
+  directionsService.route({
+    origin: points[0], destination: points[points.length-1],
+    waypoints: points.slice(1,-1).map(p => ({ location:p, stopover:false })),
+    travelMode: google.maps.TravelMode.DRIVING,
+  }, (result, status) => {
+    console.log('[directions] status:', status);
+    if (status === 'OK') { directionsRenderer.setDirections(result); }
+    else {
+      const line = new google.maps.Polyline({
+        path: points, map: _gmap,
+        strokeColor:'#1a73e8', strokeWeight:3, strokeOpacity:0.6, geodesic:true,
+      });
+      _gmapMarkers.push(line);
+    }
+  });
 }
 
 function closeMapModal() {
@@ -6083,29 +6095,113 @@ window.closeCustomTrip = function(tripId) {
 };
 
 // ── Add Place Modal ──
+let _selectedPlace = null; // { name, lat, lng, placeId, address }
+
 window.openAddPlace = function(tripId, did) {
   _addPlaceTripId = tripId;
   _addPlaceDayId = did;
+  _selectedPlace = null;
   const inp = document.getElementById('add-place-input');
   inp.value = '';
+  document.getElementById('add-place-selected').style.display = 'none';
+  document.getElementById('add-place-suggestions').style.display = 'none';
+  document.getElementById('add-place-suggestions').innerHTML = '';
   document.getElementById('add-place-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => inp.focus(), 300);
+  setTimeout(() => { inp.focus(); initPlaceAutocomplete(inp); }, 300);
 };
+
 window.closeAddPlace = function() {
   document.getElementById('add-place-overlay').classList.remove('open');
   document.body.style.overflow = '';
 };
 
+window.clearPlaceSelection = function() {
+  _selectedPlace = null;
+  document.getElementById('add-place-selected').style.display = 'none';
+  document.getElementById('add-place-input').value = '';
+  document.getElementById('add-place-input').focus();
+};
+
+function initPlaceAutocomplete(inp) {
+  if (!window.google?.maps?.places) return;
+  inp.addEventListener('input', debounceAutocomplete);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); doAddPlace(); }
+  });
+}
+
+let _acTimer = null;
+function debounceAutocomplete() {
+  clearTimeout(_acTimer);
+  const val = document.getElementById('add-place-input').value.trim();
+  if (val.length < 2) {
+    document.getElementById('add-place-suggestions').style.display = 'none';
+    return;
+  }
+  _acTimer = setTimeout(() => fetchSuggestions(val), 300);
+}
+
+function fetchSuggestions(query) {
+  if (!window.google?.maps?.places) return;
+  const svc = new google.maps.places.AutocompleteService();
+  const trip = _customTrips.find(t => t.id === _addPlaceTripId);
+  const bias = trip?.dest || '';
+  svc.getPlacePredictions({
+    input: query + (bias ? ' ' + bias : ''),
+    language: 'zh-TW',
+  }, (predictions, status) => {
+    const box = document.getElementById('add-place-suggestions');
+    if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions?.length) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    box.innerHTML = predictions.slice(0,5).map(p => `
+      <div onclick="selectSuggestion('${p.place_id}','${p.description.replace(/'/g,"\\'")}','${p.structured_formatting?.main_text?.replace(/'/g,"\\'")||''}')"
+        style="padding:10px 20px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">📍</span>
+        <div>
+          <div style="font-weight:600;">${p.structured_formatting?.main_text || p.description}</div>
+          <div style="font-size:11px;color:var(--muted);">${p.structured_formatting?.secondary_text || ''}</div>
+        </div>
+      </div>
+    `).join('');
+  });
+}
+
+window.selectSuggestion = function(placeId, desc, mainText) {
+  document.getElementById('add-place-suggestions').style.display = 'none';
+  document.getElementById('add-place-input').value = mainText || desc;
+
+  // Get place details (lat/lng)
+  const mapDiv = document.createElement('div');
+  const tempMap = new google.maps.Map(mapDiv);
+  const svc = new google.maps.places.PlacesService(tempMap);
+  svc.getDetails({ placeId, fields: ['geometry','name','formatted_address'] }, (place, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+      _selectedPlace = {
+        name: place.name || mainText,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+        placeId,
+        address: place.formatted_address || desc,
+      };
+      document.getElementById('add-place-selected-name').textContent = `✅ ${place.name} · ${place.formatted_address?.split(',').slice(-2).join(',').trim() || ''}`;
+      document.getElementById('add-place-selected').style.display = 'block';
+    }
+  });
+};
+
 window.doAddPlace = async function() {
-  const place = document.getElementById('add-place-input').value.trim();
+  const inp = document.getElementById('add-place-input');
+  const place = (_selectedPlace?.name || inp.value).trim();
   if (!place) return;
   const trip = _customTrips.find(t => t.id === _addPlaceTripId);
   if (!trip) return;
 
   closeAddPlace();
 
-  // 先插入 loading card
   const tl = document.getElementById('tl_' + _addPlaceDayId);
   const loadingEl = document.createElement('div');
   loadingEl.className = 'ai-loading-card';
@@ -6152,11 +6248,21 @@ window.doAddPlace = async function() {
 
     loadingEl.remove();
 
-    const placeData = { id: Date.now(), name: info.name || place, raw: info };
+    const placeData = {
+      id: Date.now(),
+      name: info.name || place,
+      raw: info,
+      // 存座標（來自 Places Autocomplete）
+      lat: _selectedPlace?.lat ?? null,
+      lng: _selectedPlace?.lng ?? null,
+      placeId: _selectedPlace?.placeId ?? null,
+      address: _selectedPlace?.address ?? null,
+    };
+    _selectedPlace = null;
+
     if (!trip.places[dayId_]) trip.places[dayId_] = [];
     trip.places[dayId_].push(placeData);
     saveCustomTrips();
-
     insertPlaceCard(tripId, dayId_, placeData, true);
 
   } catch(err) {
