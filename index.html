@@ -159,6 +159,7 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 0;
+  margin-bottom: 0;
 }
 .tab-scroll::-webkit-scrollbar { display: none; }
 .tab {
@@ -641,7 +642,7 @@ body {
 
 /* ── TRIP WRAPPER ── */
 .trip-wrapper { display: none; }
-.trip-wrapper.active { display: block; padding-top: 116px; overflow-x: hidden; }
+.trip-wrapper.active { display: block; overflow-x: hidden; }
 .back-btn {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
   background: var(--card); border-bottom: 1px solid var(--border);
@@ -3371,6 +3372,7 @@ function switchDay(id, dir) {
   }
   window.scrollTo(0, 0);
   window._currentDayIdx = idx;
+  setTimeout(adjustTripPadding, 50);
   // 如果地圖開著，更新地圖內容
   if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
 }
@@ -4505,7 +4507,17 @@ function closeMapModal() {
 window.openDayMap = openDayMap;
 window.closeMapModal = closeMapModal;
 
-// ── 版本偵測：有新版本時顯示更新通知 ──
+// 動態計算 trip-wrapper padding-top（back-btn + top-nav 實際高度）
+function adjustTripPadding() {
+  const backBtn = document.querySelector('.trip-wrapper.active .back-btn');
+  const topNav = document.querySelector('.trip-wrapper.active .top-nav') || document.querySelector('.top-nav');
+  if (!backBtn || !topNav) return;
+  const h = backBtn.offsetHeight + topNav.offsetHeight;
+  document.querySelectorAll('.trip-wrapper.active').forEach(w => {
+    w.style.paddingTop = h + 'px';
+  });
+}
+window.adjustTripPadding = adjustTripPadding;
 (function () {
   let _knownSig = null;
   async function _checkVersion() {
@@ -5122,6 +5134,7 @@ function openTrip(id) {
   // 顯示 FAB
   const fab = document.getElementById('booking-fab');
   if (fab) { fab.classList.add('visible'); syncFabCount(); }
+  setTimeout(adjustTripPadding, 100);
   // 預設顯示 8/27
   switchDay('d0827');
 }
@@ -6096,6 +6109,7 @@ window.openCustomTrip = function(tripId) {
   document.querySelectorAll('.trip-wrapper').forEach(w => w.classList.remove('active'));
   document.getElementById('trip-' + tripId).classList.add('active');
   window.scrollTo(0,0);
+  setTimeout(adjustTripPadding, 100);
 };
 window.closeCustomTrip = function(tripId) {
   document.getElementById('trip-' + tripId)?.classList.remove('active');
