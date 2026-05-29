@@ -6441,7 +6441,12 @@ document.addEventListener('click', e => {
     window.location.href = `geo:0,0?q=${encodeURIComponent(q)}`;
     setTimeout(() => { window.location.href = url; }, 1200);
   } else {
-    window.open(url, 'wandr_maps');
+    const isPWA = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    if (isPWA) {
+      window.open(url, '_blank'); // 在瀏覽器開，不在 PWA 視窗
+    } else {
+      window.open(url, 'wandr_maps');
+    }
   }
 });
 
