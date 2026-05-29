@@ -758,29 +758,44 @@ body {
 /* ── ADD PLACE MODAL ── */
 .add-place-overlay {
   display: none; position: fixed; inset: 0; z-index: 900;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
-  align-items: flex-end;
+  flex-direction: column;
 }
 .add-place-overlay.open { display: flex; }
 .add-place-sheet {
-  background: var(--card); border-radius: 24px 24px 0 0;
-  width: 100%; padding-bottom: env(safe-area-inset-bottom, 20px);
-  animation: slideUp 0.28s ease;
+  background: var(--card);
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
 }
-.add-place-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.add-place-input-wrap { padding: 16px 20px; display: flex; gap: 10px; }
+.add-place-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.add-place-input-wrap { padding: 10px 12px; display: flex; gap: 8px; flex-shrink: 0; }
 .add-place-input {
   flex: 1; border: 1.5px solid var(--border); border-radius: 10px;
-  padding: 12px 14px; font-size: 15px; font-family: inherit;
+  padding: 11px 14px; font-size: 15px; font-family: inherit;
   background: var(--bg); color: var(--text);
 }
 .add-place-input:focus { outline: none; border-color: var(--accent); }
 .add-place-go {
   border: none; border-radius: 10px; background: var(--accent);
-  color: white; padding: 12px 18px; font-size: 14px; font-weight: 700;
+  color: white; padding: 11px 16px; font-size: 14px; font-weight: 700;
   font-family: inherit; cursor: pointer; white-space: nowrap;
 }
 .add-place-go:disabled { opacity: 0.45; cursor: not-allowed; }
+#add-place-map { flex: 1; min-height: 0; }
+.add-place-confirm {
+  flex-shrink: 0; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border); background: var(--card);
+  display: none;
+}
+.add-place-confirm.visible { display: block; }
+.add-place-confirm-info { font-size: 13px; color: var(--text); margin-bottom: 10px; display: flex; align-items: flex-start; gap: 8px; }
+.add-place-confirm-info > span { font-size: 18px; }
+.add-place-confirm-name { font-weight: 700; font-size: 14px; }
+.add-place-confirm-addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.add-place-confirm-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: var(--accent); color: white; font-size: 15px; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+}
 
 /* ── AI LOADING ── */
 .ai-loading-card {
@@ -1254,22 +1269,26 @@ body {
 </div>
 
 <!-- ══ ADD PLACE MODAL ══ -->
-<div class="add-place-overlay" id="add-place-overlay" onclick="if(event.target===this)closeAddPlace()">
+<div class="add-place-overlay" id="add-place-overlay">
   <div class="add-place-sheet">
     <div class="add-place-header">
-      <div style="font-size:15px;font-weight:700;">📍 新增地點</div>
+      <div style="font-size:15px;font-weight:700;">📍 選擇地點</div>
       <button class="new-trip-close" onclick="closeAddPlace()">✕</button>
     </div>
     <div class="add-place-input-wrap">
-      <input class="add-place-input" id="add-place-input" type="text" placeholder="搜尋地點，例：淺草寺、黑門市場…" autocomplete="off">
-      <button class="add-place-go" id="add-place-go" onclick="doAddPlace()">新增</button>
+      <input class="add-place-input" id="add-place-input" type="text" placeholder="搜尋地點名稱…" autocomplete="off">
     </div>
-    <div id="add-place-suggestions" style="max-height:200px;overflow-y:auto;border-top:1px solid var(--border);display:none;"></div>
-    <div id="add-place-selected" style="display:none;margin:0 20px 8px;padding:8px 12px;background:rgba(15,110,86,0.08);border-radius:8px;font-size:13px;color:var(--success);border:1px solid rgba(15,110,86,0.2);">
-      <span id="add-place-selected-name"></span>
-      <button onclick="clearPlaceSelection()" style="float:right;background:none;border:none;cursor:pointer;color:var(--muted);">✕</button>
+    <div id="add-place-map"></div>
+    <div class="add-place-confirm" id="add-place-confirm">
+      <div class="add-place-confirm-info">
+        <span>📍</span>
+        <div>
+          <div class="add-place-confirm-name" id="add-place-confirm-name">—</div>
+          <div class="add-place-confirm-addr" id="add-place-confirm-addr"></div>
+        </div>
+      </div>
+      <button class="add-place-confirm-btn" onclick="doAddPlace()">＋ 加入行程</button>
     </div>
-    <div style="padding:0 20px 16px;font-size:12px;color:var(--muted);">AI 將自動查詢營業時間、注意事項、交通方式與推薦體驗</div>
   </div>
 </div>
 
@@ -6134,21 +6153,22 @@ window.closeCustomTrip = function(tripId) {
   window.scrollTo(0,0);
 };
 
-// ── Add Place Modal ──
-let _selectedPlace = null; // { name, lat, lng, placeId, address }
+
+// ── Add Place Modal (Map) ──
+let _selectedPlace = null;
+let _addPlaceMap = null;
+let _addPlaceMarker = null;
+let _addPlaceAC = null;
 
 window.openAddPlace = function(tripId, did) {
   _addPlaceTripId = tripId;
   _addPlaceDayId = did;
   _selectedPlace = null;
-  const inp = document.getElementById('add-place-input');
-  inp.value = '';
-  document.getElementById('add-place-selected').style.display = 'none';
-  document.getElementById('add-place-suggestions').style.display = 'none';
-  document.getElementById('add-place-suggestions').innerHTML = '';
+  document.getElementById('add-place-input').value = '';
+  document.getElementById('add-place-confirm').classList.remove('visible');
   document.getElementById('add-place-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => { inp.focus(); initPlaceAutocomplete(inp); }, 300);
+  setTimeout(() => initAddPlaceMap(), 100);
 };
 
 window.closeAddPlace = function() {
@@ -6156,82 +6176,60 @@ window.closeAddPlace = function() {
   document.body.style.overflow = '';
 };
 
-window.clearPlaceSelection = function() {
-  _selectedPlace = null;
-  document.getElementById('add-place-selected').style.display = 'none';
-  document.getElementById('add-place-input').value = '';
-  document.getElementById('add-place-input').focus();
-};
-
-function initPlaceAutocomplete(inp) {
-  if (!window.google?.maps?.places) return;
-  inp.addEventListener('input', debounceAutocomplete);
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); doAddPlace(); }
-  });
-}
-
-let _acTimer = null;
-function debounceAutocomplete() {
-  clearTimeout(_acTimer);
-  const val = document.getElementById('add-place-input').value.trim();
-  if (val.length < 2) {
-    document.getElementById('add-place-suggestions').style.display = 'none';
-    return;
+function initAddPlaceMap() {
+  if (!window.google?.maps) return;
+  const center = { lat: 43.2, lng: 142.8 };
+  const mapEl = document.getElementById('add-place-map');
+  if (!_addPlaceMap) {
+    _addPlaceMap = new google.maps.Map(mapEl, {
+      center, zoom: 8,
+      disableDefaultUI: true,
+      zoomControl: true,
+      gestureHandling: 'greedy',
+    });
+    _addPlaceMap.addListener('click', e => {
+      reverseGeocode(e.latLng.lat(), e.latLng.lng());
+    });
+  } else {
+    _addPlaceMap.setCenter(center);
+    _addPlaceMap.setZoom(8);
+    google.maps.event.trigger(_addPlaceMap, 'resize');
   }
-  _acTimer = setTimeout(() => fetchSuggestions(val), 300);
+  const inp = document.getElementById('add-place-input');
+  if (_addPlaceAC) google.maps.event.clearInstanceListeners(_addPlaceAC);
+  _addPlaceAC = new google.maps.places.Autocomplete(inp, { language: 'zh-TW' });
+  _addPlaceAC.bindTo('bounds', _addPlaceMap);
+  _addPlaceAC.addListener('place_changed', () => {
+    const place = _addPlaceAC.getPlace();
+    if (!place.geometry) return;
+    const loc = place.geometry.location;
+    _addPlaceMap.panTo(loc);
+    _addPlaceMap.setZoom(16);
+    setMapSelection(loc.lat(), loc.lng(), place.name, place.formatted_address || '');
+  });
+  inp.focus();
 }
 
-function fetchSuggestions(query) {
-  if (!window.google?.maps?.places) return;
-  const svc = new google.maps.places.AutocompleteService();
-  const trip = _customTrips.find(t => t.id === _addPlaceTripId);
-  const bias = trip?.dest || '';
-  svc.getPlacePredictions({
-    input: query + (bias ? ' ' + bias : ''),
-    language: 'zh-TW',
-  }, (predictions, status) => {
-    const box = document.getElementById('add-place-suggestions');
-    if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions?.length) {
-      box.style.display = 'none';
-      return;
-    }
-    box.style.display = 'block';
-    box.innerHTML = predictions.slice(0,5).map(p => `
-      <div onclick="selectSuggestion('${p.place_id}','${p.description.replace(/'/g,"\\'")}','${p.structured_formatting?.main_text?.replace(/'/g,"\\'")||''}')"
-        style="padding:10px 20px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
-        <span style="font-size:16px;">📍</span>
-        <div>
-          <div style="font-weight:600;">${p.structured_formatting?.main_text || p.description}</div>
-          <div style="font-size:11px;color:var(--muted);">${p.structured_formatting?.secondary_text || ''}</div>
-        </div>
-      </div>
-    `).join('');
+function reverseGeocode(lat, lng) {
+  const gc = new google.maps.Geocoder();
+  gc.geocode({ location: { lat, lng }, language: 'zh-TW' }, (results) => {
+    const name = results?.[0]?.address_components?.[0]?.long_name || '選取地點';
+    const addr = results?.[0]?.formatted_address || '';
+    setMapSelection(lat, lng, name, addr);
   });
 }
 
-window.selectSuggestion = function(placeId, desc, mainText) {
-  document.getElementById('add-place-suggestions').style.display = 'none';
-  document.getElementById('add-place-input').value = mainText || desc;
-
-  // Get place details (lat/lng)
-  const mapDiv = document.createElement('div');
-  const tempMap = new google.maps.Map(mapDiv);
-  const svc = new google.maps.places.PlacesService(tempMap);
-  svc.getDetails({ placeId, fields: ['geometry','name','formatted_address'] }, (place, status) => {
-    if (status === google.maps.places.PlacesServiceStatus.OK && place.geometry) {
-      _selectedPlace = {
-        name: place.name || mainText,
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
-        placeId,
-        address: place.formatted_address || desc,
-      };
-      document.getElementById('add-place-selected-name').textContent = `✅ ${place.name} · ${place.formatted_address?.split(',').slice(-2).join(',').trim() || ''}`;
-      document.getElementById('add-place-selected').style.display = 'block';
-    }
+function setMapSelection(lat, lng, name, addr) {
+  if (_addPlaceMarker) _addPlaceMarker.setMap(null);
+  _addPlaceMarker = new google.maps.Marker({
+    position: { lat, lng }, map: _addPlaceMap,
+    animation: google.maps.Animation.DROP,
   });
-};
+  _selectedPlace = { name, lat, lng, address: addr };
+  document.getElementById('add-place-confirm-name').textContent = name;
+  document.getElementById('add-place-confirm-addr').textContent = addr;
+  document.getElementById('add-place-confirm').classList.add('visible');
+}
 
 window.doAddPlace = async function() {
   const inp = document.getElementById('add-place-input');
