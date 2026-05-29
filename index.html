@@ -6168,7 +6168,8 @@ window.openAddPlace = function(tripId, did) {
   document.getElementById('add-place-confirm').classList.remove('visible');
   document.getElementById('add-place-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => initAddPlaceMap(), 100);
+  loadGoogleMapsScript();
+  setTimeout(() => initAddPlaceMap(), 300);
 };
 
 window.closeAddPlace = function() {
@@ -6177,12 +6178,12 @@ window.closeAddPlace = function() {
 };
 
 function initAddPlaceMap() {
-  if (!window.google?.maps) {
-    console.log('[addPlace] google.maps not ready, retrying...');
-    setTimeout(initAddPlaceMap, 300);
+  if (!window.google?.maps?.places) {
+    console.log('[addPlace] waiting for Maps...');
+    setTimeout(initAddPlaceMap, 500);
     return;
   }
-  console.log('[addPlace] initializing map');
+  console.log('[addPlace] Maps ready, init map');
   const center = { lat: 43.2, lng: 142.8 };
   const mapEl = document.getElementById('add-place-map');
   console.log('[addPlace] mapEl:', mapEl, 'size:', mapEl?.offsetWidth, 'x', mapEl?.offsetHeight);
