@@ -780,7 +780,7 @@ body {
   font-family: inherit; cursor: pointer; white-space: nowrap;
 }
 .add-place-go:disabled { opacity: 0.45; cursor: not-allowed; }
-#add-place-map { flex: 1; min-height: 0; height: 100%; }
+#add-place-map { flex: 1; min-height: 200px; }
 .add-place-confirm {
   flex-shrink: 0; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--border); background: var(--card);
@@ -3566,7 +3566,7 @@ function loadProgress() {
 }
 
 // Inject booking badges into day cards
-function injectBadges() {
+window.injectBadges = function() {
   document.querySelectorAll('[data-sync]').forEach(card => {
     const bid = card.dataset.sync;
     if (card.querySelector('.booking-badge')) return;
