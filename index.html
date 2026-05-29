@@ -6441,7 +6441,8 @@ document.addEventListener('click', e => {
     window.location.href = `geo:0,0?q=${encodeURIComponent(q)}`;
     setTimeout(() => { window.location.href = url; }, 1200);
   } else {
-    window.open(url, '_blank');
+    // 桌面：用固定名稱視窗，重複點會在同一個分頁開
+    window.open(url, 'wandr_maps');
   }
 });
 
