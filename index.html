@@ -262,11 +262,11 @@ body {
 .day-section { display: none; }
 .day-section.active { display: block; animation: slideIn 0.22s ease-out; }
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(40px); }
+  from { opacity: 0.3; transform: translateX(30px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-40px); }
+  from { opacity: 0.3; transform: translateX(-30px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 .day-section.active.from-left { animation: slideInLeft 0.22s ease-out; }
@@ -640,7 +640,7 @@ body {
 
 /* ── TRIP WRAPPER ── */
 .trip-wrapper { display: none; }
-.trip-wrapper.active { display: block; padding-top: 116px; }
+.trip-wrapper.active { display: block; padding-top: 116px; overflow-x: hidden; }
 .back-btn {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
   background: var(--card); border-bottom: 1px solid var(--border);
