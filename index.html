@@ -6212,7 +6212,12 @@ function initAddPlaceMap() {
     const loc = place.geometry.location;
     _addPlaceMap.panTo(loc);
     _addPlaceMap.setZoom(16);
-    setMapSelection(loc.lat(), loc.lng(), place.name, place.formatted_address || '');
+    // Fetch full details including opening_hours
+    const svc = new google.maps.places.PlacesService(_addPlaceMap);
+    svc.getDetails({ placeId: place.place_id, fields: ['name','formatted_address','geometry','opening_hours','website','international_phone_number'], language: 'zh-TW' }, (detail, status) => {
+      const hours = detail?.opening_hours?.weekday_text?.join('｜') || '';
+      setMapSelection(loc.lat(), loc.lng(), detail?.name || place.name, detail?.formatted_address || place.formatted_address || '', hours, detail?.website || '');
+    });
   });
   inp.focus();
 }
@@ -6226,15 +6231,15 @@ function reverseGeocode(lat, lng) {
   });
 }
 
-function setMapSelection(lat, lng, name, addr) {
+function setMapSelection(lat, lng, name, addr, hours, website) {
   if (_addPlaceMarker) _addPlaceMarker.setMap(null);
   _addPlaceMarker = new google.maps.Marker({
     position: { lat, lng }, map: _addPlaceMap,
     animation: google.maps.Animation.DROP,
   });
-  _selectedPlace = { name, lat, lng, address: addr };
+  _selectedPlace = { name, lat, lng, address: addr, hours: hours || '', website: website || '' };
   document.getElementById('add-place-confirm-name').textContent = name;
-  document.getElementById('add-place-confirm-addr').textContent = addr;
+  document.getElementById('add-place-confirm-addr').textContent = hours ? addr + '\n' + hours.split('｜')[0] : addr;
   document.getElementById('add-place-confirm').classList.add('visible');
 }
 
@@ -6245,6 +6250,7 @@ window.doAddPlace = async function() {
   const trip = _customTrips.find(t => t.id === _addPlaceTripId);
   if (!trip) return;
 
+  const savedPlace = _selectedPlace ? { ..._selectedPlace } : null;
   closeAddPlace();
 
   const tl = document.getElementById('tl_' + _addPlaceDayId);
@@ -6293,17 +6299,19 @@ window.doAddPlace = async function() {
 
     loadingEl.remove();
 
+    // Google Places 的營業時間優先
+    if (savedPlace?.hours) info.hours = savedPlace.hours;
+    if (savedPlace?.website) info.website = savedPlace.website;
+
     const placeData = {
       id: Date.now(),
       name: info.name || place,
       raw: info,
-      // 存座標（來自 Places Autocomplete）
-      lat: _selectedPlace?.lat ?? null,
-      lng: _selectedPlace?.lng ?? null,
-      placeId: _selectedPlace?.placeId ?? null,
-      address: _selectedPlace?.address ?? null,
+      lat: savedPlace?.lat ?? null,
+      lng: savedPlace?.lng ?? null,
+      placeId: savedPlace?.placeId ?? null,
+      address: savedPlace?.address ?? null,
     };
-    _selectedPlace = null;
 
     if (!trip.places[dayId_]) trip.places[dayId_] = [];
     trip.places[dayId_].push(placeData);
