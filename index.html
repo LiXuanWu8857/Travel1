@@ -4396,12 +4396,30 @@ function loadGMapMarkers(dayEl) {
   }
 
   // 北海道靜態行程：從 nav-btn 解析
+  // 每天起點 = 昨天住宿
+  const DAY_START = {
+    d0827: '新千歲空港 国際線ターミナル',
+    d0828: "STAY's OTARU 小樽市色内",
+    d0829: "STAY's OTARU 小樽市色内",
+    d0830: 'ARC City ASAHIKAWA 旭川市豊岡',
+    d0831: 'TojiStay 東椎名 富良野市麓郷',
+    d0901: '旅番屋 Tabi Banya 利尻島',
+    d0902: 'ドーミーイン網走',
+    d0903: '知床第一ホテル ウトロ',
+    d0904: 'ドーミーイン釧路',
+    d0905: '川湯温泉 弟子屈町川湯温泉',
+    d0906: 'ANAホリデイイン札幌すすきの',
+    d0907: 'ANAホリデイイン札幌すすきの',
+    d0908: 'ANAホリデイイン札幌すすきの',
+  };
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
   const seen = new Set();
-  if (dayId2 === 'd0827') {
-    places.push({ q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港', hasCoords: false });
-    seen.add('新千歲空港 国際線ターミナル');
+  const startPlace = DAY_START[dayId2];
+  if (startPlace) {
+    const startLabel = dayId2 === 'd0827' ? '✈️ 新千歲空港' : '🏠 昨日住宿';
+    places.push({ q: startPlace, label: startLabel, hasCoords: false });
+    seen.add(startPlace);
   }
   cards.forEach(card => {
     const btn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
