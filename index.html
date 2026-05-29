@@ -91,8 +91,7 @@
   document.getElementById('apple-touch-icon').href = c.toDataURL('image/png');
 })();
 </script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1297,7 +1296,7 @@ body {
       </div>
     </div>
     <div style="font-size:11px;color:var(--muted);padding:6px 14px;background:var(--bg);flex-shrink:0;" id="map-status">載入中...</div>
-    <div id="map-leaflet" style="flex:1;width:100%;"></div>
+    <div id="map-gmap" style="flex:1;width:100%;"></div>
   </div>
 </div>
 
@@ -4300,41 +4299,34 @@ window.updatePackingQty = updatePackingQty;
 window.deletePackingItem = deletePackingItem;
 window.deletePackingCat = deletePackingCat;
 
-// ── 地圖 Modal (Leaflet + OpenStreetMap) ──
-let _leafletMap = null;
-let _mapMarkers = [];
+// ── 地圖 Modal (Google Maps API) ──
+const GMAP_KEY = 'AIzaSyAnJ66TMk48YXC6d7ygp6w8lzvjc6gTl5w';
+let _gmap = null;
+let _gmapMarkers = [];
+let _gmapLoaded = false;
 
-function initLeafletMap() {
-  if (_leafletMap) return;
-  _leafletMap = L.map('map-leaflet').setView([43.5, 142.5], 8);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }).addTo(_leafletMap);
+function loadGoogleMapsScript() {
+  if (_gmapLoaded || document.getElementById('gmap-script')) return;
+  _gmapLoaded = true;
+  const s = document.createElement('script');
+  s.id = 'gmap-script';
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GMAP_KEY}&callback=_gmapReady&language=ja`;
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
 }
 
-async function geocodePlace(name) {
-  // 先嘗試從 Google Maps URL 抓座標（部分連結有 ll 參數）
-  // 否則用 Nominatim geocoding
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name + ' 北海道')}&format=json&limit=1&accept-language=ja`,
-      { headers: { 'User-Agent': 'WandrHokkaido/1.0' } }
-    );
-    const data = await res.json();
-    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
-  } catch(e) {}
-  // 嘗試不加北海道
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1&accept-language=ja`,
-      { headers: { 'User-Agent': 'WandrHokkaido/1.0' } }
-    );
-    const data = await res.json();
-    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
-  } catch(e) {}
-  return null;
-}
+window._gmapReady = function() {
+  const el = document.getElementById('map-gmap');
+  if (!el) return;
+  _gmap = new google.maps.Map(el, {
+    center: { lat: 43.5, lng: 142.5 },
+    zoom: 8,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+  });
+  if (window._pendingMapLoad) { window._pendingMapLoad(); window._pendingMapLoad = null; }
+};
 
 async function openDayMap() {
   const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
@@ -4342,97 +4334,111 @@ async function openDayMap() {
   const dayEl = document.getElementById(dayId);
   if (!dayEl) return;
 
-  // 取日期標題
   const title = dayEl.querySelector('.day-title')?.textContent || dayId;
   document.getElementById('map-modal-title').textContent = `🗺️ ${title}`;
+  document.getElementById('map-status').textContent = '載入中...';
   document.getElementById('map-modal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 
-  // 先把地圖初始化（需要 DOM 可見後才能初始化）
-  setTimeout(() => {
-    initLeafletMap();
-    _leafletMap.invalidateSize();
-    loadMapMarkers(dayEl, dayId);
-  }, 100);
+  loadGoogleMapsScript();
+
+  const doLoad = () => {
+    if (!_gmap) {
+      window._pendingMapLoad = doLoad;
+      return;
+    }
+    setTimeout(() => {
+      google.maps.event.trigger(_gmap, 'resize');
+      loadGMapMarkers(dayEl);
+    }, 150);
+  };
+  doLoad();
 }
 
-async function loadMapMarkers(dayEl, dayId) {
-  const statusEl = document.getElementById('map-status');
-  statusEl.textContent = '載入景點中...';
+function loadGMapMarkers(dayEl) {
+  // 清除舊標記
+  _gmapMarkers.forEach(m => m.setMap(null));
+  _gmapMarkers = [];
 
-  // 清除舊 markers
-  _mapMarkers.forEach(m => m.remove());
-  _mapMarkers = [];
-
-  // 抓當天所有 nav-btn，每個 card 只取第一個
+  // 每個 card 只取第一個 nav-btn
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
-  const seenNames = new Set();
-
-  cards.forEach((card, ci) => {
-    const firstNavBtn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
-    if (!firstNavBtn) return;
-    const m = firstNavBtn.href.match(/\?q=([^&]+)/);
+  const seen = new Set();
+  cards.forEach(card => {
+    const btn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
+    if (!btn) return;
+    const m = btn.href.match(/\?q=([^&]+)/);
     if (!m) return;
-    const rawName = decodeURIComponent(m[1].replace(/\+/g, ' ')).trim();
-    if (seenNames.has(rawName)) return;
-    seenNames.add(rawName);
-    const titleEl = card.querySelector('.card-title');
-    const label = titleEl ? titleEl.textContent.trim().replace(/^[^\w\u4e00-\u9fff]+/, '').slice(0, 20) : rawName.slice(0, 20);
-    places.push({ query: rawName, label, index: ci + 1 });
+    const q = decodeURIComponent(m[1].replace(/\+/g,' ')).trim();
+    if (seen.has(q)) return;
+    seen.add(q);
+    const label = card.querySelector('.card-title')?.textContent.trim().replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').slice(0,25) || q.slice(0,25);
+    places.push({ q, label });
   });
 
-  if (places.length === 0) {
-    statusEl.textContent = '此天無景點資料';
-    _leafletMap.setView([43.5, 142.5], 8);
+  if (!places.length) {
+    document.getElementById('map-status').textContent = '此天無景點資料';
     return;
   }
 
-  // Google Maps 開啟全天路線
+  // Google Maps 開啟路線連結
   const openLink = document.getElementById('map-open-link');
-  const allNames = places.map(p => encodeURIComponent(p.query));
-  openLink.href = allNames.length > 1
-    ? `https://www.google.com/maps/dir/${allNames.join('/')}`
-    : `https://maps.google.com/?q=${allNames[0]}`;
+  const encoded = places.map(p => encodeURIComponent(p.q));
+  openLink.href = encoded.length > 1
+    ? `https://www.google.com/maps/dir/${encoded.join('/')}`
+    : `https://maps.google.com/?q=${encoded[0]}`;
 
-  // Geocode 每個景點（有速率限制，一次一個）
-  const bounds = [];
-  let loaded = 0;
+  // 用 Geocoding API 一次查一個（但比 Nominatim 快很多）
+  const statusEl = document.getElementById('map-status');
+  const bounds = new google.maps.LatLngBounds();
+  let done = 0;
 
-  // 自定義編號 icon
-  function numIcon(n, color='#0F6E56') {
-    return L.divIcon({
-      className: '',
-      html: `<div style="background:${color};color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.35);border:2px solid #fff;">${n}</div>`,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
-      popupAnchor: [0, -16],
+  const geocoder = new google.maps.Geocoder();
+  const colors = ['#0F6E56','#1a6baa','#c0392b','#8e44ad','#d35400','#16a085','#2c3e50'];
+
+  function geocodeNext(i) {
+    if (i >= places.length) {
+      statusEl.textContent = `共 ${done} 個景點`;
+      if (done > 0) _gmap.fitBounds(bounds, 40);
+      return;
+    }
+    const p = places[i];
+    geocoder.geocode({ address: p.q + ' 北海道 日本' }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const pos = results[0].geometry.location;
+        bounds.extend(pos);
+        done++;
+
+        // 自定義數字標記
+        const marker = new google.maps.Marker({
+          position: pos,
+          map: _gmap,
+          title: p.label,
+          label: { text: String(i + 1), color: '#fff', fontWeight: '700', fontSize: '12px' },
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: colors[i % colors.length],
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2,
+            scale: 14,
+          },
+          zIndex: 100 - i,
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div style="font-size:13px;font-weight:600;">${i+1}. ${p.label}</div>`
+        });
+        marker.addListener('click', () => infoWindow.open(_gmap, marker));
+        _gmapMarkers.push(marker);
+
+        if (done === 1) _gmap.setCenter(pos);
+        statusEl.textContent = `載入中 ${done} / ${places.length}`;
+      }
+      geocodeNext(i + 1);
     });
   }
-
-  statusEl.textContent = `解析景點 0 / ${places.length}...`;
-
-  for (let i = 0; i < places.length; i++) {
-    const p = places[i];
-    const coords = await geocodePlace(p.query);
-    if (coords) {
-      const marker = L.marker([coords.lat, coords.lng], { icon: numIcon(i + 1) })
-        .bindPopup(`<b>${i+1}. ${p.label}</b><br><small>${p.query}</small>`)
-        .addTo(_leafletMap);
-      _mapMarkers.push(marker);
-      bounds.push([coords.lat, coords.lng]);
-      loaded++;
-      statusEl.textContent = `解析景點 ${loaded} / ${places.length}...`;
-
-      // 第一個點先定位
-      if (bounds.length === 1) _leafletMap.setView([coords.lat, coords.lng], 12);
-      else _leafletMap.fitBounds(bounds, { padding: [30, 30] });
-    }
-    // Nominatim 速率限制 1 req/s
-    if (i < places.length - 1) await new Promise(r => setTimeout(r, 1100));
-  }
-
-  statusEl.textContent = loaded > 0 ? `共 ${loaded} 個景點` : '找不到座標，請點上方 Google Maps ↗';
+  geocodeNext(0);
 }
 
 function closeMapModal() {
