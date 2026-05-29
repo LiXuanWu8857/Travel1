@@ -4559,18 +4559,6 @@ window.closeMapModal = closeMapModal;
 
 // ── 版本偵測：有新版本時顯示更新通知 ──
 (function () {
-  // PWA 模式：每次開啟先強制檢查一次，有更新直接 reload
-  const isPWA = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  if (isPWA) {
-    fetch(location.href, { cache: 'no-store' })
-      .then(r => r.text())
-      .then(html => {
-        const m = html.match(/data-ver="202605291658"]+)"/);
-        const cur = document.documentElement.getAttribute('data-ver');
-        if (m && cur && m[1] !== cur) location.reload(true);
-      }).catch(() => {});
-    return;
-  }
   let _knownSig = null;
   async function _checkVersion() {
     try {
