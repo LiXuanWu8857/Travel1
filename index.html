@@ -3375,10 +3375,9 @@ function switchDay(id, dir) {
   if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
 }
 
-// ── 滑動切換天數 ──
+// ── 滑動切換天數（跟手動畫版）──
 (function () {
   const IDS = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
-  let _tx = 0, _ty = 0, _locked = false;
 
   function goNext() {
     const i = window._currentDayIdx ?? 0;
@@ -3389,51 +3388,65 @@ function switchDay(id, dir) {
     if (i > 0) switchDay(IDS[i - 1], 'left');
   }
 
-  // Touch swipe
-  let _touchMoved = false;
+  // Touch：跟手移動，放開才決定換頁
+  let _tx = 0, _ty = 0, _locked = false, _dragging = false, _curEl = null;
+
   document.addEventListener('touchstart', e => {
-    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea, button')) return;
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal,#booking-modal')) return;
     _tx = e.touches[0].clientX;
     _ty = e.touches[0].clientY;
-    _locked = false;
-    _touchMoved = false;
+    _locked = false; _dragging = false;
+    _curEl = document.querySelector('.day-section.active');
   }, { passive: true });
 
   document.addEventListener('touchmove', e => {
-    if (_locked || _touchMoved) return;
+    if (_locked) return;
     if (document.getElementById('map-modal')?.style.display === 'block') return;
-    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea, button, #map-modal')) return;
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal')) return;
     const dx = e.touches[0].clientX - _tx;
     const dy = e.touches[0].clientY - _ty;
-    if (Math.abs(dx) < 40) return;
-    if (Math.abs(dy) > Math.abs(dx) * 0.8) return;
-    _locked = true;
-    _touchMoved = true;
-    dx < 0 ? goNext() : goPrev();
+    if (!_dragging && Math.abs(dy) > Math.abs(dx)) { _locked = true; return; }
+    if (!_dragging && Math.abs(dx) < 8) return;
+    _dragging = true;
+    if (_curEl) { _curEl.style.transition = 'none'; _curEl.style.transform = `translateX(${dx * 0.4}px)`; }
   }, { passive: true });
 
-  // 鍵盤左右鍵
+  document.addEventListener('touchend', e => {
+    if (!_dragging || _locked) {
+      if (_curEl) { _curEl.style.transform = ''; _curEl.style.transition = ''; }
+      return;
+    }
+    const dx = e.changedTouches[0].clientX - _tx;
+    if (_curEl) {
+      _curEl.style.transition = 'transform 0.2s ease-out';
+      _curEl.style.transform = '';
+      setTimeout(() => { if (_curEl) { _curEl.style.transition = ''; _curEl.style.transform = ''; } }, 220);
+    }
+    _locked = true;
+    if (Math.abs(dx) >= 40) dx < 0 ? goNext() : goPrev();
+  }, { passive: true });
+
+  // Mac trackpad wheel
+  let _wheelLock = false;
+  document.addEventListener('wheel', e => {
+    if (_wheelLock) return;
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,#map-modal')) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.8) return;
+    if (Math.abs(e.deltaX) < 20) return;
+    _wheelLock = true;
+    e.deltaX > 0 ? goNext() : goPrev();
+    setTimeout(() => { _wheelLock = false; }, 350);
+  }, { passive: true });
+
+  // 鍵盤
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === 'ArrowRight') goNext();
     if (e.key === 'ArrowLeft') goPrev();
   });
 
-  // Mac 兩指水平滑動（wheel event）
-  let _wheelLock = false;
-  document.addEventListener('wheel', e => {
-    if (_wheelLock) return;
-    if (e.target.closest('.expense-modal, .modal, .tab-scroll, input, select, textarea')) return;
-    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.8) return;
-    if (Math.abs(e.deltaX) < 20) return;
-    _wheelLock = true;
-    e.deltaX > 0 ? goNext() : goPrev();
-    setTimeout(() => { _wheelLock = false; }, 300);
-  }, { passive: true });
-
   window._currentDayIdx = 0;
 })();
-
 // Toggle from booking checklist
 function toggleBooking(el) {
   el.classList.toggle('done');
