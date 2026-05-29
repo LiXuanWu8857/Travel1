@@ -6215,7 +6215,8 @@ function initAddPlaceMap() {
     // Fetch full details including opening_hours
     const svc = new google.maps.places.PlacesService(_addPlaceMap);
     svc.getDetails({ placeId: place.place_id, fields: ['name','formatted_address','geometry','opening_hours','website','international_phone_number'], language: 'zh-TW' }, (detail, status) => {
-      const hours = detail?.opening_hours?.weekday_text?.join('｜') || '';
+      const wt = detail?.opening_hours?.weekday_text || [];
+      const hours = compressHours(wt);
       setMapSelection(loc.lat(), loc.lng(), detail?.name || place.name, detail?.formatted_address || place.formatted_address || '', hours, detail?.website || '');
     });
   });
@@ -6229,6 +6230,32 @@ function reverseGeocode(lat, lng) {
     const addr = results?.[0]?.formatted_address || '';
     setMapSelection(lat, lng, name, addr);
   });
+}
+
+function compressHours(weekdayText) {
+  if (!weekdayText?.length) return '';
+  // Extract time part from each day, e.g. "Monday: 9:00 AM – 5:00 PM" → "09:00–17:00"
+  const dayNames = ['日','一','二','三','四','五','六'];
+  const parsed = weekdayText.map(s => {
+    const m = s.match(/:\s*(.+)$/);
+    return m ? m[1].trim() : s;
+  });
+  // Group consecutive days with same hours
+  const groups = [];
+  let start = 0;
+  for (let i = 1; i <= parsed.length; i++) {
+    if (i === parsed.length || parsed[i] !== parsed[start]) {
+      const days = i - start === 1 ? dayNames[(start+1)%7]
+        : dayNames[(start+1)%7] + '～' + dayNames[(start+i-1+1)%7 < 7 ? (start+i-1+1)%7 : 0];
+      // Reorder: weekday_text starts Monday(0)=一, so index 0→一,1→二...6→日
+      const dStart = dayNames[(start+1)%7];
+      const dEnd = dayNames[(start+i-1+1)%7];
+      const label = (i - start === 1) ? dStart : dStart + '～' + dEnd;
+      groups.push(label + ' ' + parsed[start]);
+      start = i;
+    }
+  }
+  return groups.join('、');
 }
 
 function setMapSelection(lat, lng, name, addr, hours, website) {
