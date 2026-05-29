@@ -6266,7 +6266,7 @@ window.doAddPlace = async function() {
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true', 'x-api-key': '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' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
