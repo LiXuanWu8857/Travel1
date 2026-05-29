@@ -4403,6 +4403,7 @@ function loadGMapMarkers(dayEl) {
       fields: ['geometry','name'],
       locationBias: { center: { lat: 43.5, lng: 143.0 }, radius: 500000 }
     }, (results, status) => {
+      console.log(`[map] ${p.q} → status:${status}`, results);
       if (status === google.maps.places.PlacesServiceStatus.OK && results[0]) {
         const pos = results[0].geometry.location;
         bounds.extend(pos);
@@ -4425,6 +4426,8 @@ function loadGMapMarkers(dayEl) {
         _gmapMarkers.push(marker);
         if (done === 1) _gmap.setCenter(pos);
         statusEl.textContent = `載入中 ${done} / ${places.length}`;
+      } else {
+        statusEl.textContent = `⚠️ ${p.label}: ${status}`;
       }
       searchNext(i + 1);
     });
