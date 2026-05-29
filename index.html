@@ -6423,7 +6423,27 @@ function insertPlaceCard(tripId, did, placeData, animate) {
   });
 }
 
-// ── 頁面載入時還原已有旅程 ──
+// ── 導航按鈕強制開 Google Maps App ──
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.nav-btn');
+  if (!btn) return;
+  e.preventDefault();
+  const url = btn.href;
+  const q = new URL(url).searchParams.get('q') || '';
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  if (isIOS) {
+    window.location.href = `comgooglemaps://?q=${encodeURIComponent(q)}`;
+    setTimeout(() => { window.location.href = url; }, 1200);
+  } else if (isAndroid) {
+    window.location.href = `geo:0,0?q=${encodeURIComponent(q)}`;
+    setTimeout(() => { window.location.href = url; }, 1200);
+  } else {
+    window.open(url, '_blank');
+  }
+});
+
+
 (function restoreCustomTrips() {
   _customTrips.forEach(trip => {
     addTripCard(trip);
