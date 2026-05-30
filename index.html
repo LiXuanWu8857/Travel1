@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301129">
+<html lang="zh-TW" data-ver="202605301130">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4446,11 +4446,12 @@ function loadGMapMarkers(dayEl) {
   const places = [];
   const DAY_START_COORDS = {
     d0831: { lat: 43.3506, lng: 142.2889 },
-    d0908: { lat: 43.0544, lng: 141.3543 }, // ANAホリデイイン札幌すすきの
+    d0908: { lat: 43.0544, lng: 141.3543 },
   };
-  const DAY_END_EXTRA = {
+  const DAY_SECOND_STOP = {
     d0908: { q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港', lat: 42.7752, lng: 141.6922 },
   };
+  const DAY_END_EXTRA = {};
   const seen = new Set();
   const startPlace = DAY_START[dayId2];
   if (startPlace) {
@@ -4458,6 +4459,8 @@ function loadGMapMarkers(dayEl) {
     const coords = DAY_START_COORDS[dayId2];
     places.push({ q: startPlace, label: startLabel, hasCoords: !!coords, lat: coords?.lat, lng: coords?.lng });
     seen.add(startPlace);
+    const second = DAY_SECOND_STOP[dayId2];
+    if (second) { places.push({ q: second.q, label: second.label, hasCoords: true, lat: second.lat, lng: second.lng }); seen.add(second.q); }
   }
   cards.forEach(card => {
     const btn = card.querySelector('a.nav-btn[href*="maps.google.com"]');
