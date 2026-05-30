@@ -1235,6 +1235,15 @@ body {
     </div>
     <div class="new-trip-body">
       <div class="new-trip-field">
+        <label>✈️ 抵達航班</label>
+        <input id="nt-arr" type="text" placeholder="例：BR108" oninput="autoFillFromFlight()" style="text-transform:uppercase;">
+      </div>
+      <div class="new-trip-field">
+        <label>✈️ 離開航班</label>
+        <input id="nt-dep" type="text" placeholder="例：BR109" oninput="autoFillFromFlight()" style="text-transform:uppercase;">
+      </div>
+      <div id="nt-flight-status" style="font-size:12px;color:var(--muted);margin:-8px 0 4px;min-height:16px;"></div>
+      <div class="new-trip-field">
         <label>旅程名稱</label>
         <input id="nt-name" type="text" placeholder="例：沖繩 2026、首爾春遊…">
       </div>
@@ -6002,12 +6011,69 @@ function dayId(tripId, d) {
 window.openNewTripModal = function() {
   document.getElementById('new-trip-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // 預設日期：今天開始 + 3天
   const t = new Date();
   const today = t.toISOString().slice(0,10);
+  document.getElementById('nt-arr').value = '';
+  document.getElementById('nt-dep').value = '';
+  document.getElementById('nt-name').value = '';
+  document.getElementById('nt-dest').value = '';
   document.getElementById('nt-start').value = today;
   document.getElementById('nt-end').value = today;
+  document.getElementById('nt-flight-status').textContent = '';
 };
+
+let _flightTimer = null;
+window.autoFillFromFlight = function() {
+  clearTimeout(_flightTimer);
+  _flightTimer = setTimeout(async () => {
+    const arr = document.getElementById('nt-arr').value.trim().toUpperCase();
+    const dep = document.getElementById('nt-dep').value.trim().toUpperCase();
+    if (!arr && !dep) return;
+    const status = document.getElementById('nt-flight-status');
+    status.textContent = '🔍 查詢航班中…';
+    try {
+      const results = await Promise.all([
+        arr ? fetchFlight(arr) : null,
+        dep ? fetchFlight(dep) : null,
+      ]);
+      const arrData = results[0];
+      const depData = results[1];
+      const dest = arrData?.arrival?.iata
+        ? iataToCity(arrData.arrival.iata)
+        : depData?.departure?.iata ? iataToCity(depData.departure.iata) : '';
+      const startDate = arrData?.departure?.scheduled?.slice(0,10) || '';
+      const endDate = depData?.departure?.scheduled?.slice(0,10) || '';
+      if (dest) document.getElementById('nt-dest').value = dest;
+      if (startDate) document.getElementById('nt-start').value = startDate;
+      if (endDate) document.getElementById('nt-end').value = endDate;
+      if (dest && startDate) {
+        const year = startDate.slice(0,4);
+        document.getElementById('nt-name').value = `${dest} ${year}`;
+      }
+      status.textContent = (arrData || depData) ? '✅ 航班資訊帶入完成' : '⚠️ 查無此航班，請手動填寫';
+    } catch(e) {
+      status.textContent = '⚠️ 查詢失敗，請手動填寫';
+    }
+  }, 800);
+};
+
+async function fetchFlight(flightNum) {
+  const r = await fetch(`https://api.aviationstack.com/v1/flights?access_key=demo&flight_iata=${flightNum}`);
+  const d = await r.json();
+  return d?.data?.[0] || null;
+}
+
+const _iataMap = {
+  'CTS':'北海道','HKD':'函館','OKD':'旭川','AKJ':'旭川',
+  'TPE':'台北','TSA':'台北','KHH':'高雄','RMQ':'台中',
+  'NRT':'東京','HND':'東京','KIX':'大阪','ITM':'大阪',
+  'FUK':'福岡','OKA':'沖繩','NGO':'名古屋','HIJ':'廣島',
+  'ICN':'首爾','GMP':'首爾','HKG':'香港','BKK':'曼谷',
+  'SIN':'新加坡','KUL':'吉隆坡','TYO':'東京',
+};
+function iataToCity(iata) {
+  return _iataMap[iata] || iata;
+}
 window.closeNewTripModal = function() {
   document.getElementById('new-trip-overlay').classList.remove('open');
   document.body.style.overflow = '';
