@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605291658">
+<html lang="zh-TW" data-ver="202605301122">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6058,7 +6058,7 @@ window.autoFillFromFlight = function() {
 };
 
 async function fetchFlight(flightNum) {
-  const r = await fetch(`https://api.aviationstack.com/v1/flights?access_key=demo&flight_iata=${flightNum}`);
+  const r = await fetch(`https://api.aviationstack.com/v1/flights?access_key=a206b2944a497cdbb4b4a405a5116d37&flight_iata=${flightNum}`);
   const d = await r.json();
   return d?.data?.[0] || null;
 }
@@ -6135,6 +6135,7 @@ window.deleteCustomTrip = function(tripId) {
   saveCustomTrips();
   document.getElementById('card-' + tripId)?.remove();
   document.getElementById('trip-' + tripId)?.remove();
+  openHome();
 };
 
 // ── 渲染旅程頁面 ──
@@ -6303,31 +6304,32 @@ function initAddPlaceMap() {
 function reverseGeocode(lat, lng) {
   const gc = new google.maps.Geocoder();
   gc.geocode({ location: { lat, lng }, language: 'zh-TW' }, (results) => {
-    const name = results?.[0]?.address_components?.[0]?.long_name || '選取地點';
-    const addr = results?.[0]?.formatted_address || '';
+    const r = results?.[0];
+    const comps = r?.address_components || [];
+    const name = (comps.find(c => c.types.includes('point_of_interest') || c.types.includes('premise') || c.types.includes('sublocality_level_2'))
+      || comps.find(c => c.types.includes('locality') || c.types.includes('sublocality'))
+      || comps[0])?.long_name || '選取地點';
+    const addr = r?.formatted_address || '';
     setMapSelection(lat, lng, name, addr);
   });
 }
 
 function compressHours(weekdayText) {
   if (!weekdayText?.length) return '';
-  // Extract time part from each day, e.g. "Monday: 9:00 AM – 5:00 PM" → "09:00–17:00"
-  const dayNames = ['日','一','二','三','四','五','六'];
+  // weekday_text: index 0=Monday...6=Sunday
+  // Map to 一二三四五六日
+  const dayNames = ['一','二','三','四','五','六','日'];
   const parsed = weekdayText.map(s => {
     const m = s.match(/:\s*(.+)$/);
     return m ? m[1].trim() : s;
   });
-  // Group consecutive days with same hours
   const groups = [];
   let start = 0;
   for (let i = 1; i <= parsed.length; i++) {
     if (i === parsed.length || parsed[i] !== parsed[start]) {
-      const days = i - start === 1 ? dayNames[(start+1)%7]
-        : dayNames[(start+1)%7] + '～' + dayNames[(start+i-1+1)%7 < 7 ? (start+i-1+1)%7 : 0];
-      // Reorder: weekday_text starts Monday(0)=一, so index 0→一,1→二...6→日
-      const dStart = dayNames[(start+1)%7];
-      const dEnd = dayNames[(start+i-1+1)%7];
-      const label = (i - start === 1) ? dStart : dStart + '～' + dEnd;
+      const label = (i - start === 1)
+        ? dayNames[start]
+        : dayNames[start] + '～' + dayNames[i - 1];
       groups.push(label + ' ' + parsed[start]);
       start = i;
     }
@@ -6343,6 +6345,7 @@ function setMapSelection(lat, lng, name, addr, hours, website) {
   });
   _selectedPlace = { name, lat, lng, address: addr, hours: hours || '', website: website || '' };
   document.getElementById('add-place-confirm-name').textContent = name;
+  document.getElementById('add-place-confirm-addr').style.whiteSpace = 'pre-line';
   document.getElementById('add-place-confirm-addr').textContent = hours ? addr + '\n' + hours.split('｜')[0] : addr;
   document.getElementById('add-place-confirm').classList.add('visible');
 }
