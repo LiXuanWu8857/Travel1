@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301213">
+<html lang="zh-TW" data-ver="202605301214">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1254,7 +1254,7 @@ body {
       <div class="new-trip-dates">
         <div class="new-trip-field">
           <label>出發日期</label>
-          <input id="nt-start" type="date" onchange="const e=document.getElementById('nt-end');if(!e.value||e.value<this.value)e.value=this.value;">
+          <input id="nt-start" type="date" onchange="const e=document.getElementById('nt-end');if(!e.value||e.value<this.value)e.value=this.value;autoUpdateTripNameYear(this.value);">
         </div>
         <div class="new-trip-field">
           <label>返回日期</label>
@@ -6039,6 +6039,14 @@ window.openNewTripModal = function() {
   document.getElementById('nt-start').value = today;
   document.getElementById('nt-end').value = today;
   document.getElementById('nt-flight-status').textContent = '';
+};
+
+window.autoUpdateTripNameYear = function(dateVal) {
+  if (!dateVal) return;
+  const year = dateVal.slice(0,4);
+  const nameEl = document.getElementById('nt-name');
+  if (!nameEl.value) return;
+  nameEl.value = nameEl.value.replace(/\d{4}$/, year);
 };
 
 let _flightTimer = null;
