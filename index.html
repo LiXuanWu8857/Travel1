@@ -5968,7 +5968,7 @@ function loadCustomTripsFromFirebase() {
 
 function renderCustomTripCards() {
   const sec = document.querySelector('.trips-section');
-  if (!sec) return; // 首頁還沒 active，等 openHome 時再呼叫
+  if (!sec) { setTimeout(renderCustomTripCards, 300); return; }
   document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
   _customTrips.forEach(trip => addTripCard(trip));
 }
