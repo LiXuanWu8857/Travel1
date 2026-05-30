@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301128">
+<html lang="zh-TW" data-ver="202605301129">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4446,6 +4446,10 @@ function loadGMapMarkers(dayEl) {
   const places = [];
   const DAY_START_COORDS = {
     d0831: { lat: 43.3506, lng: 142.2889 },
+    d0908: { lat: 43.0544, lng: 141.3543 }, // ANAホリデイイン札幌すすきの
+  };
+  const DAY_END_EXTRA = {
+    d0908: { q: '新千歲空港 国際線ターミナル', label: '✈️ 新千歲空港', lat: 42.7752, lng: 141.6922 },
   };
   const seen = new Set();
   const startPlace = DAY_START[dayId2];
@@ -4466,6 +4470,8 @@ function loadGMapMarkers(dayEl) {
     const label = card.querySelector('.card-title')?.textContent.trim().replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').slice(0,25) || q.slice(0,25);
     places.push({ q, label, hasCoords: false });
   });
+  const extra = DAY_END_EXTRA[dayId2];
+  if (extra && !seen.has(extra.q)) places.push({ q: extra.q, label: extra.label, hasCoords: true, lat: extra.lat, lng: extra.lng });
   renderMapMarkers(places);
 }
 
