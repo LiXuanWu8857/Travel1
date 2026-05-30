@@ -6123,10 +6123,19 @@ function addTripCard(trip) {
         ${trip.dest ? `<span class="trip-card-tag">📍 ${trip.dest}</span>` : ''}
         <span class="trip-card-tag">✏️ 編輯中</span>
       </div>
-      <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div><button onclick="deleteCustomTrip('${trip.id}')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);padding:4px 8px;">🗑 刪除</button></div>
     </div>`;
   sec.insertBefore(card, addBtn);
 }
+
+// ── 刪除自訂旅程 ──
+window.deleteCustomTrip = function(tripId) {
+  if (!confirm('確定要刪除這個旅程嗎？')) return;
+  _customTrips = _customTrips.filter(t => t.id !== tripId);
+  saveCustomTrips();
+  document.getElementById('card-' + tripId)?.remove();
+  document.getElementById('trip-' + tripId)?.remove();
+};
 
 // ── 渲染旅程頁面 ──
 function renderCustomTrip(trip) {
