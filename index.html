@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301122">
+<html lang="zh-TW" data-ver="202605301128">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4444,11 +4444,15 @@ function loadGMapMarkers(dayEl) {
   };
   const cards = dayEl.querySelectorAll('.item-content .card:not(.card-drive)');
   const places = [];
+  const DAY_START_COORDS = {
+    d0831: { lat: 43.3506, lng: 142.2889 },
+  };
   const seen = new Set();
   const startPlace = DAY_START[dayId2];
   if (startPlace) {
     const startLabel = dayId2 === 'd0827' ? '✈️ 新千歲空港' : '🏠 昨日住宿';
-    places.push({ q: startPlace, label: startLabel, hasCoords: false });
+    const coords = DAY_START_COORDS[dayId2];
+    places.push({ q: startPlace, label: startLabel, hasCoords: !!coords, lat: coords?.lat, lng: coords?.lng });
     seen.add(startPlace);
   }
   cards.forEach(card => {
