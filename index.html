@@ -4571,7 +4571,7 @@ window.closeMapModal = closeMapModal;
   let _knownSig = null;
   async function _checkVersion() {
     try {
-      const r = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
+      const r = await fetch(location.href + '?_=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
       const sig = r.headers.get('etag') || r.headers.get('last-modified');
       if (!sig) return;
       if (_knownSig && sig !== _knownSig) {
