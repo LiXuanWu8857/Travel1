@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301133">
+<html lang="zh-TW" data-ver="202605301213">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -5979,6 +5979,7 @@ function loadCustomTripsFromFirebase() {
     if (!raw) {
       _customTrips = [];
       localStorage.removeItem('wandr_custom_trips');
+      renderCustomTripCards();
       return;
     }
     const data = Array.isArray(raw) ? raw : Object.values(raw);
@@ -5989,11 +5990,15 @@ function loadCustomTripsFromFirebase() {
   }, { onlyOnce: false });
 }
 
+let _renderTripsTimer = null;
 function renderCustomTripCards() {
-  const sec = document.querySelector('.trips-section');
-  if (!sec) { setTimeout(renderCustomTripCards, 300); return; }
-  document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
-  _customTrips.forEach(trip => addTripCard(trip));
+  clearTimeout(_renderTripsTimer);
+  _renderTripsTimer = setTimeout(() => {
+    const sec = document.querySelector('.trips-section');
+    if (!sec) { setTimeout(renderCustomTripCards, 300); return; }
+    document.querySelectorAll('.trip-card[data-custom="1"]').forEach(c => c.remove());
+    _customTrips.forEach(trip => addTripCard(trip));
+  }, 50);
 }
 window.renderCustomTripCards = renderCustomTripCards;
 
@@ -6110,7 +6115,7 @@ window.createNewTrip = function() {
   closeNewTripModal();
   renderCustomTrip(trip);
   openCustomTrip(id);
-  addTripCard(trip);
+  addTripCard(trip); // 先加一張，Firebase回來時renderCustomTripCards會清空重建
 };
 
 // ── 加首頁卡片 ──
