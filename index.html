@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202606011258">
+<html lang="zh-TW" data-ver="202606011333">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3475,6 +3475,7 @@ function switchDay(id, dir) {
   let _tx = 0, _ty = 0, _locked = false, _dragging = false, _curEl = null;
 
   document.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) { _locked = true; return; }
     if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal,#booking-modal')) return;
     _tx = e.touches[0].clientX;
     _ty = e.touches[0].clientY;
@@ -3483,6 +3484,7 @@ function switchDay(id, dir) {
   }, { passive: true });
 
   document.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) { _locked = true; return; }
     if (_locked) return;
     if (document.getElementById('map-modal')?.style.display === 'block') return;
     if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal')) return;
@@ -4263,16 +4265,16 @@ let _packingData = null;
 function getPackingData() {
   if (_packingData) return _packingData;
   try {
-    const saved = localStorage.getItem('packing_list_v2');
+    const saved = localStorage.getItem('packing_list_v2_' + (window._activeTrip||'hokkaido'));
     _packingData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PACKING));
   } catch(e) { _packingData = JSON.parse(JSON.stringify(DEFAULT_PACKING)); }
   return _packingData;
 }
 
 function savePackingData() {
-  localStorage.setItem('packing_list_v2', JSON.stringify(_packingData));
+  localStorage.setItem('packing_list_v2_' + (window._activeTrip||'hokkaido'), JSON.stringify(_packingData));
   if (window._fbDb && window._fbRef && window._fbSet) {
-    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/packing'), _packingData.length ? _packingData : null);
+    window._fbSet(window._fbRef(window._fbDb, (window._activeTrip||'hokkaido') === 'hokkaido' ? 'hokkaido2026/packing' : 'bangkok2026/packing'), _packingData.length ? _packingData : null);
   }
 }
 
@@ -4372,7 +4374,7 @@ function addPackingItem() {
 
 function openPackingModal() {
   if (window._fbDb && window._fbRef && window._fbOnValue) {
-    const ref = window._fbRef(window._fbDb, 'hokkaido2026/packing');
+    const ref = window._fbRef(window._fbDb, (window._activeTrip||'hokkaido') === 'hokkaido' ? 'hokkaido2026/packing' : 'bangkok2026/packing');
     window._fbOnValue(ref, (snap) => {
       const data = snap.val();
       if (data && Array.isArray(data) && data[0]?.type === 'cat') {
@@ -5245,6 +5247,7 @@ waitForFirebase(() => {
 function openTrip(id) {
   window._activeTrip = id;
   window._currentDayIdx = 0;
+  _packingData = null; // reset so next trip loads its own data
   document.getElementById('home').classList.remove('active');
   document.querySelectorAll('.trip-wrapper').forEach(t => t.classList.remove('active'));
   document.getElementById('trip-' + id)?.classList.add('active');
