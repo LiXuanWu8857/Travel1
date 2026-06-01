@@ -4962,7 +4962,18 @@ document.addEventListener('click', e => {
 window.openNewTripModal = window.openNewTripModal;
 
 // 曼谷頁面預設直接進入行程
-setTimeout(() => openTrip('bangkok'), 200);
+setTimeout(() => {
+  // 清除所有自訂行程 wrapper 避免蓋住靜態行程
+  document.querySelectorAll('.custom-trip-wrapper').forEach(w => {
+    w.classList.remove('active');
+    w.style.display = 'none';
+  });
+  document.getElementById('home')?.classList.remove('active');
+  document.getElementById('trip-bangkok')?.classList.add('active');
+  switchDay('d1103');
+  const fab = document.getElementById('booking-fab');
+  if (fab) { fab.classList.add('visible'); syncFabCount(); }
+}, 500);
 </script>
 
 </div><!-- end trip-bangkok wrapper -->
