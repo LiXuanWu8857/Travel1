@@ -3382,7 +3382,8 @@ function closeTrip() {
 
 function switchDay(id, dir) {
   const wrapper = document.getElementById('trip-bangkok');
-  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
+  // 只操作靜態行程的 day-section，不動自訂行程
+  wrapper.querySelectorAll(':scope > .day-section, :scope > .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
   wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) {
@@ -4354,12 +4355,12 @@ window.updateCurrency = updateCurrency;
 
 let _addPlaceTripId = null;
 let _addPlaceDayId = null;
-let _customTrips = JSON.parse(localStorage.getItem('wandr_custom_trips') || '[]');
+let _customTrips = JSON.parse(localStorage.getItem('wandr_custom_trips_bkk') || '[]');
 // 頁面載入時先從 localStorage 渲染
 if (_customTrips.length) setTimeout(() => renderCustomTripCards(), 100);
 
 function saveCustomTrips() {
-  localStorage.setItem('wandr_custom_trips', JSON.stringify(_customTrips));
+  localStorage.setItem('wandr_custom_trips_bkk', JSON.stringify(_customTrips));
   if (window._fbDb && window._fbRef && window._fbSet) {
     const ref = window._fbRef(window._fbDb, 'bangkok2026/customTrips');
     window._fbSet(ref, _customTrips.length ? _customTrips : null);
@@ -4373,14 +4374,14 @@ function loadCustomTripsFromFirebase() {
     const raw = snap.val();
     if (!raw) {
       _customTrips = [];
-      localStorage.removeItem('wandr_custom_trips');
+      localStorage.removeItem('wandr_custom_trips_bkk');
       renderCustomTripCards();
       return;
     }
     const data = Array.isArray(raw) ? raw : Object.values(raw);
     if (!data.length) return;
     _customTrips = data;
-    localStorage.setItem('wandr_custom_trips', JSON.stringify(data));
+    localStorage.setItem('wandr_custom_trips_bkk', JSON.stringify(data));
     renderCustomTripCards();
   }, { onlyOnce: false });
 }
