@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202605301214">
+<html lang="zh-TW" data-ver="202606011130">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -941,6 +941,32 @@ body {
           <span class="trip-card-tag">✈️ TR892</span>
           <span class="trip-card-tag">🚗 自駕</span>
           <span class="trip-card-tag">🇯🇵 日本</span>
+        </div>
+        <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
+      </div>
+    </div>
+
+    <!-- 曼谷 2026 -->
+    <div class="trip-card" id="card-bangkok">
+      <div class="trip-card-cover" id="cover-bangkok" onclick="openTrip('bangkok')" style="background:linear-gradient(135deg,#C0392B,#E74C3C);">
+        <img class="trip-card-cover-img" id="cover-img-bangkok" src="" style="display:none;">
+        <div class="trip-card-cover-dots"></div>
+        <div class="trip-card-cover-overlay"></div>
+        <div class="trip-card-cover-badge">16 天</div>
+        <label class="trip-card-cover-edit" onclick="event.stopPropagation()">
+          📷 封面
+          <input type="file" accept="image/*" style="display:none" onchange="setCoverImage('bangkok', this)">
+        </label>
+        <div class="trip-card-cover-info">
+          <div class="trip-card-cover-name">曼谷 2026</div>
+          <div class="trip-card-cover-dates">11 / 3 – 11 / 18</div>
+        </div>
+      </div>
+      <div class="trip-card-info">
+        <div class="trip-card-tags">
+          <span class="trip-card-tag">✈️ VZ569</span>
+          <span class="trip-card-tag">🤿 潛水</span>
+          <span class="trip-card-tag">🇹🇭 泰國</span>
         </div>
         <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
       </div>
@@ -6572,9 +6598,665 @@ document.addEventListener('click', e => {
 })();
 
 window.openNewTripModal = window.openNewTripModal;
+
+// ── 曼谷行程 switchDay ──
+const _BKK_IDS = ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'];
+window.switchDayBkk = function(id) {
+  const wrapper = document.getElementById('trip-bangkok');
+  wrapper.querySelectorAll('.day-section').forEach(s => s.classList.remove('active','from-left'));
+  wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  const idx = _BKK_IDS.indexOf(id);
+  const tabs = wrapper.querySelectorAll('.tab');
+  if (idx >= 0 && tabs[idx]) {
+    tabs[idx].classList.add('active');
+    tabs[idx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+  }
+  window.scrollTo(0, 0);
+};
+
+// openTrip 支援 bangkok
+const _origOpenTrip = window.openTrip || openTrip;
+window.openTrip = function(id) {
+  if (id === 'bangkok') {
+    document.getElementById('home')?.classList.remove('active');
+    document.querySelectorAll('.trip-wrapper').forEach(w => w.classList.remove('active'));
+    document.getElementById('trip-bangkok').classList.add('active');
+    window.scrollTo(0, 0);
+    switchDayBkk('d1103');
+    return;
+  }
+  _origOpenTrip(id);
+};
+
+// setCoverImage 支援 bangkok
+const _origSetCover = window.setCoverImage;
+window.setCoverImage = function(tripId, input) {
+  if (typeof _origSetCover === 'function') _origSetCover(tripId, input);
+};
 </script>
 
 </div><!-- end trip-hokkaido wrapper -->
+
+<!-- ══════════════════ TRIP: 曼谷 2026 ══════════════════ -->
+<div id="trip-bangkok" class="trip-wrapper">
+
+<div class="top-nav">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
+    <div class="nav-title" style="margin:0;padding:0;">✈️ 旅圖 · 曼谷 2026</div>
+    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button>
+  </div>
+  <div class="tab-scroll">
+    <div class="tab active" onclick="switchDayBkk('d1103')">11/3</div>
+    <div class="tab" onclick="switchDayBkk('d1104')">11/4</div>
+    <div class="tab" onclick="switchDayBkk('d1105')">11/5</div>
+    <div class="tab" onclick="switchDayBkk('d1106')">11/6</div>
+    <div class="tab" onclick="switchDayBkk('d1107')">11/7</div>
+    <div class="tab" onclick="switchDayBkk('d1108')">11/8</div>
+    <div class="tab" onclick="switchDayBkk('d1109')">11/9</div>
+    <div class="tab" onclick="switchDayBkk('d1110')">11/10</div>
+    <div class="tab" onclick="switchDayBkk('d1111')">11/11</div>
+    <div class="tab" onclick="switchDayBkk('d1112')">11/12</div>
+    <div class="tab" onclick="switchDayBkk('d1113')">11/13</div>
+    <div class="tab" onclick="switchDayBkk('d1114')">11/14</div>
+    <div class="tab" onclick="switchDayBkk('d1115')">11/15</div>
+    <div class="tab" onclick="switchDayBkk('d1116')">11/16</div>
+    <div class="tab" onclick="switchDayBkk('d1117')">11/17</div>
+    <div class="tab" onclick="switchDayBkk('d1118')">11/18</div>
+  </div>
+</div>
+
+<div id="d1103" class="day-section active">
+  <div class="day-header" style="background:linear-gradient(135deg,#C0392B,#E74C3C);">
+    <div class="day-badge">Day 1</div>
+    <div class="day-title">11/3 日・深夜抵達曼谷</div>
+    <div class="day-sub">VZ569 · 19:50 TPE → 22:50 BKK · 機場附近入住</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:50</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1103_card_01">
+        <div class="card-header"><div class="card-title">✈️ 出發 — VZ569 台北→曼谷</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">桃園 T1 · 19:50 起飛 · 座位 5A/5B · 訂位代號 SY8BG3</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">22:50</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1103_card_02">
+        <div class="card-header"><div class="card-title">🛬 抵達 — 素萬那普機場 BKK</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">入境 · 換泰銖 · 買 SIM 卡 · 機場快線或計程車前往飯店</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.6900,100.7501" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>素萬那普機場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">23:45</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1103_card_03" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 機場附近飯店</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Novotel BKK Airport 或 Ibis BKK Airport · 早起輕鬆出發</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/3 · Day 1 · 曼谷 2026</div>
+</div>
+
+<div id="d1104" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#8E44AD,#9B59B6);">
+    <div class="day-badge">Day 2</div>
+    <div class="day-title">11/4 一・曼谷古蹟 + 河畔</div>
+    <div class="day-sub">玉佛寺・臥佛寺・大皇宮 → 昭披耶河遊船 → Asiatique</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_01">
+        <div class="card-header"><div class="card-title">🍳 早餐 — 飯店內</div><span class="tag tag-food">早餐</span></div>
+        <div class="card-desc">早起準備，古蹟區上午涼爽、人少，建議早到</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">09:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_02">
+        <div class="card-header"><div class="card-title">🏛️ 大皇宮 + 玉佛寺</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">泰國最重要景點 · 需著長褲/長裙 · 建議停留 2hr · 入場費 ฿500/人</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7500,100.4913" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>大皇宮導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_03">
+        <div class="card-header"><div class="card-title">🛕 臥佛寺 Wat Pho</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">46m 金臥佛 · 步行可達 · 入場費 ฿200/人 · 停留約 1hr</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7465,100.4927" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>臥佛寺導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_04">
+        <div class="card-header"><div class="card-title">🍜 午餐 — 河畔餐廳</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">Tha Tien 碼頭附近 · 推薦 Sala Rattanakosin 河景餐廳</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_05">
+        <div class="card-header"><div class="card-title">⛵ 昭披耶河遊船下午茶</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">Chao Phraya Express Boat 或 Wonderful Pearl Cruise · 邊遊河邊欣賞廟宇群</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7400,100.5028" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>中央碼頭 Sathorn</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_06" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 市中心精品飯店</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 SO Bangkok / The Standard Bangkok · 換住市中心</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1104_card_07">
+        <div class="card-header"><div class="card-title">🌃 Asiatique 河濱夜市</div><span class="tag tag-spot">夜市</span></div>
+        <div class="card-desc">河畔倉庫改建夜市 · 摩天輪 · 表演秀 · 餐廳林立 · 約 20:00 開始熱鬧</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7196,100.5138" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Asiatique 導航</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/4 · Day 2 · 曼谷 2026</div>
+</div>
+
+<div id="d1105" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#16A085,#1ABC9C);">
+    <div class="day-badge">Day 3</div>
+    <div class="day-title">11/5 二・曼谷文青 + 購物</div>
+    <div class="day-sub">阿里區早午餐 → ICONSIAM → Mahanakhon 觀景台</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">09:30</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1105_card_01">
+        <div class="card-header"><div class="card-title">☕ 阿里區咖啡廳早午餐</div><span class="tag tag-food">早午餐</span></div>
+        <div class="card-desc">Ari 文青區 · 推薦 Roast Coffee & Eatery 或 Grilled 早午餐</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7765,100.5466" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Ari 區導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1105_card_02">
+        <div class="card-header"><div class="card-title">🛍️ ICONSIAM + SookSiam</div><span class="tag tag-spot">購物</span></div>
+        <div class="card-desc">河畔超大商場 · 地下室 SookSiam 室內水上市場 · 泰國各府特色小吃集結</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7269,100.5128" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ICONSIAM 導航</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚖 Grab 前往 Pak Chong · 約 2.5 小時 · 今晚住考艾山腳</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">18:30</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1105_card_03" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — Pak Chong 飯店</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Greenery Resort Khao Yai · 早睡早起準備進公園</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/5 · Day 3 · 曼谷 2026</div>
+</div>
+
+<div id="d1106" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#27AE60,#2ECC71);">
+    <div class="day-badge">Day 4</div>
+    <div class="day-title">11/6 三・考艾國家公園 🐘</div>
+    <div class="day-sub">UNESCO 世遺 · 瀑布健行 · 象群觀察 · 夜間 Safari</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">07:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1106_card_01">
+        <div class="card-header"><div class="card-title">🌿 進入考艾國家公園</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">早入園人少 · 入場費 ฿400/人 · 11月涼爽乾燥，大象出沒率最高</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=14.4289,101.3686" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>考艾公園入口</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1106_card_02">
+        <div class="card-header"><div class="card-title">💦 Haew Narok 瀑布健行</div><span class="tag tag-spot">健行</span></div>
+        <div class="card-desc">全泰最壯觀瀑布 · 落差 150m · 健行步道約 1.5hr 來回 · 涼爽清晨最佳</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=14.3667,101.3875" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Haew Narok 瀑布</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">12:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1106_card_03">
+        <div class="card-header"><div class="card-title">🍱 午餐 — 公園內或 Pak Chong 小鎮</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">公園遊客中心附近有簡餐 · 或開車回 Pak Chong 吃飽再回來</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1106_card_04">
+        <div class="card-header"><div class="card-title">🐘 Nong Phak Chi 象群觀察台</div><span class="tag tag-spot">野生動物</span></div>
+        <div class="card-desc">17:00–18:00 是象群出沒黃金時間 · 長臂猿、犀鳥、鹿也常出現 · 保持安靜</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=14.4054,101.3784" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Nong Phak Chi 觀察台</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:30</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1106_card_05">
+        <div class="card-header"><div class="card-title">🔦 夜間野生動物 Night Safari</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">探照燈搜尋夜行動物 · 需提前向公園預約 · ⚠️ 旺季必訂 · 約 2hr</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/6 · Day 4 · 曼谷 2026</div>
+</div>
+
+<div id="d1107" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#2980B9,#3498DB);">
+    <div class="day-badge">Day 5</div>
+    <div class="day-title">11/7 四・曼谷 → 蘇美島</div>
+    <div class="day-sub">Pak Chong 回曼谷 → Bangkok Airways → 查汶海灘</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:00</div><div class="item-dot dot-drive"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card card-drive">
+        <div class="card-desc">🚗 Pak Chong → 曼谷市區 · 約 2.5hr · 前往 Suvarnabhumi 機場</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1107_card_01">
+        <div class="card-header"><div class="card-title">✈️ 曼谷 → 蘇美島</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">Bangkok Airways 待訂 · 下午班次 · 飛行約 1.5hr · 抵達 USM</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.5479,100.0626" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>蘇美島機場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1107_card_02" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 蘇美島度假村</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Samui Buri / Banyan Tree Samui</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1107_card_03">
+        <div class="card-header"><div class="card-title">🏖️ 查汶海灘放鬆</div><span class="tag tag-spot">海灘</span></div>
+        <div class="card-desc">Chaweng Beach 晚餐 · 海鮮燒烤 · 感受蘇美島夜晚氛圍</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.5350,100.0604" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>查汶海灘</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/7 · Day 5 · 曼谷 2026</div>
+</div>
+
+<div id="d1108" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#1A5276,#2471A3);">
+    <div class="day-badge">Day 6</div>
+    <div class="day-title">11/8 五・蘇美島 → 龜島</div>
+    <div class="day-sub">高速船 2hr → 龜島・Sairee Beach 小鎮</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1108_card_01">
+        <div class="card-header"><div class="card-title">⛵ 蘇美島 → 龜島 高速船</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">Lomprayah 或 Seatran Ferry · 約 2hr · 建議提前訂位</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=10.1040,99.8408" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>龜島 Koh Tao</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:30</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1108_card_02" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 龜島潛水度假村</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Sairee Cottage / Koh Tao Cabana · 與潛水店確認隔天行程</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1108_card_03">
+        <div class="card-header"><div class="card-title">🏖️ Sairee Beach 小鎮探索</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">逛潛水店 · 確認隔天 Fun Dive 行程 · 晚餐海鮮</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=10.1040,99.8408" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Sairee Beach</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/8 · Day 6 · 曼谷 2026</div>
+</div>
+
+<div id="d1109" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#0D6EFD,#0A58CA);">
+    <div class="day-badge">Day 7</div>
+    <div class="day-title">11/9 六・Fun Dive Day 1 🤿</div>
+    <div class="day-sub">Chumphon Pinnacle + Sail Rock · AOW 深潛</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">07:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1109_card_01">
+        <div class="card-header"><div class="card-title">🤿 Chumphon Pinnacle — 早潛</div><span class="tag tag-spot">潛水</span></div>
+        <div class="card-desc">鯨鯊出沒熱點 · 水深 14–40m · AOW 認證 · 能見度佳 · 第一支氣瓶</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=10.1040,99.8408" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>龜島潛水出發點</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1109_card_02">
+        <div class="card-header"><div class="card-title">🤿 Sail Rock — 下午潛</div><span class="tag tag-spot">潛水</span></div>
+        <div class="card-desc">巨石礁柱 · 魚群超密集 · 水深 5–35m · 第二支氣瓶 · 龜島最佳潛點之一</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/9 · Day 7 · 曼谷 2026</div>
+</div>
+
+<div id="d1110" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#0D6EFD,#6610F2);">
+    <div class="day-badge">Day 8</div>
+    <div class="day-title">11/10 日・Fun Dive Day 2 + 螢光夜遊 ✨</div>
+    <div class="day-sub">Southwest Pinnacle / White Rock · 螢光浮游生物夜間皮划艇</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">07:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1110_card_01">
+        <div class="card-header"><div class="card-title">🤿 Southwest Pinnacle / White Rock</div><span class="tag tag-spot">潛水</span></div>
+        <div class="card-desc">龜島西南潛點 · 珊瑚豐富 · 常見護士鯊 · 2支氣瓶</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1110_card_02">
+        <div class="card-header"><div class="card-title">✨ 螢光浮游生物夜間皮划艇</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">推薦 Unseen Tours Koh Tao（評分 5.0⭐）· 11/10 接近新月，效果最佳 · ⚠️ 勿擦防曬乳入水</div>
+        <div style="margin-top:8px;padding:10px 12px;background:#EDE9FE;border-radius:8px;font-size:12px;color:#4C1D95;line-height:1.9;">
+          <strong>✨ 螢光皮划艇注意事項</strong><br>
+          · 月光越少效果越好，11/10 接近新月 🌑<br>
+          · 不要擦防曬乳、驅蟲劑（傷害浮游生物）<br>
+          · 行前確認天氣，風浪大會取消<br>
+          · 推薦業者：Unseen Tours Koh Tao
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/10 · Day 8 · 曼谷 2026</div>
+</div>
+
+<div id="d1111" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#0F766E,#14B8A6);">
+    <div class="day-badge">Day 9</div>
+    <div class="day-title">11/11 一・南緣島浮潛 → 帕岸島</div>
+    <div class="day-sub">日本花園浮潛 · 雙連沙洲 → 搭船帕岸島</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1111_card_01">
+        <div class="card-header"><div class="card-title">🤿 南緣島「日本花園」浮潛</div><span class="tag tag-spot">浮潛</span></div>
+        <div class="card-desc">Koh Nang Yuan 日本花園 · 珊瑚覆蓋率高 · 熱帶魚群密集 · 含島費 ฿100</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=10.1139,99.8267" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Koh Nang Yuan 南緣島</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1111_card_02">
+        <div class="card-header"><div class="card-title">⛰️ 爬山頂 · 雙連沙洲觀景台</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">爬約 20 分鐘 · 俯瞰兩條沙洲連接三座山丘 · 龜島最美地標照</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1111_card_03">
+        <div class="card-header"><div class="card-title">⛵ 龜島 → 帕岸島</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">Lomprayah 高速船 · 約 1.5hr · 抵達帕岸島 Big Buddha Pier</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.7288,100.0145" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>帕岸島</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">16:00</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1111_card_04" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 帕岸島</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Anantara Rasananda / Santhiya Koh Phangan</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/11 · Day 9 · 曼谷 2026</div>
+</div>
+
+<div id="d1112" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#B45309,#D97706);">
+    <div class="day-badge">Day 10</div>
+    <div class="day-title">11/12 四・帕岸島環島探索</div>
+    <div class="day-sub">騎車環島 · 隱密海灣 · 瀑布 · Spa 備戰滿月派對</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">09:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1112_card_01">
+        <div class="card-header"><div class="card-title">🛵 騎車環島 · Haad Yao 隱密海灣</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">租機車 ฿200/天 · 帕岸島西北 Haad Yao 海灣清澈少人 · 拍照聖地</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.8028,99.9892" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Haad Yao 海灣</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1112_card_02">
+        <div class="card-header"><div class="card-title">💦 Than Sadet 瀑布國家公園</div><span class="tag tag-spot">景點</span></div>
+        <div class="card-desc">泰皇曾多次造訪的聖地 · 岩石刻有皇室名字 · 天然游泳池 · 清涼消暑</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.7647,100.0570" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Than Sadet 瀑布</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">15:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1112_card_03">
+        <div class="card-header"><div class="card-title">💆 Spa 放鬆 · 備戰滿月派對</div><span class="tag tag-spot">Spa</span></div>
+        <div class="card-desc">下午 Spa 補充體力 · 晚餐吃飽 · 備好包頭鞋、哨子、螢光衣</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/12 · Day 10 · 曼谷 2026</div>
+</div>
+
+<div id="d1113" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#7C3AED,#A855F7);">
+    <div class="day-badge">Day 11</div>
+    <div class="day-title">11/13 五・🌕 滿月派對夜</div>
+    <div class="day-sub">Haad Rin 海灘 · 滿月派對通宵 · 隔天補眠</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1113_card_01">
+        <div class="card-header"><div class="card-title">🍽️ 晚餐 — 出發前吃飽</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">Haad Rin 附近餐廳 · 準備好包頭鞋保護腳趾 · 注意隨身財物安全</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1113_card_02">
+        <div class="card-header"><div class="card-title">🌕 滿月派對 — Haad Rin</div><span class="tag tag-spot">派對</span></div>
+        <div class="card-desc">2026/11 滿月約 11/12–13 · 通宵狂歡至天亮 · ⚠️ 包頭鞋必穿 · 注意財物</div>
+        <div style="margin-top:8px;padding:10px 12px;background:#FAF5FF;border-radius:8px;font-size:12px;color:#6B21A8;line-height:1.9;">
+          <strong>🌕 滿月派對注意事項</strong><br>
+          · 穿包頭鞋（海灘易踩到玻璃）<br>
+          · 只帶少量現金，貴重物品鎖飯店<br>
+          · 入場前可在飯店小酌熱身<br>
+          · 出發前確認精確滿月日期
+        </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.6842,100.0588" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Haad Rin 海灘</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1113_card_03">
+        <div class="card-header"><div class="card-title">😴 隔天下午補眠</div><span class="tag tag-spot">休息</span></div>
+        <div class="card-desc">睡到自然醒 · 飯店泳池耍廢 · 輕食補充體力</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/13 · Day 11 · 曼谷 2026</div>
+</div>
+
+<div id="d1114" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#0369A1,#0EA5E9);">
+    <div class="day-badge">Day 12</div>
+    <div class="day-title">11/14 六・帕岸島 → 蘇美島收尾</div>
+    <div class="day-sub">快船 30min · 無邊際泳池耍廢 · Fisherman's Village 夜市</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1114_card_01">
+        <div class="card-header"><div class="card-title">⛵ 帕岸島 → 蘇美島</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">快船約 30min · 換住蘇美島無邊際泳池海景度假村</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1114_card_02" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 蘇美島海景度假村</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Four Seasons Samui / Vana Belle · 無邊際泳池看海</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:00</div><div class="item-dot dot-spot"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1114_card_03">
+        <div class="card-header"><div class="card-title">🐟 Fisherman's Village 夜市海鮮</div><span class="tag tag-spot">夜市</span></div>
+        <div class="card-desc">Bo Phut 漁村夜市 · 週五 Walking Street 最熱鬧 · 新鮮海鮮現烤</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=9.5543,99.9817" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Fisherman's Village</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/14 · Day 12 · 曼谷 2026</div>
+</div>
+
+<div id="d1115" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#0891B2,#06B6D4);">
+    <div class="day-badge">Day 13</div>
+    <div class="day-title">11/15 日・蘇美島水活 + Spa → 飛回曼谷</div>
+    <div class="day-sub">海底漫步 / 帆船 · Banyan Tree Spa · 傍晚飛回曼谷</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">09:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1115_card_01">
+        <div class="card-header"><div class="card-title">🌊 水上活動 — 海底漫步或帆船</div><span class="tag tag-spot">體驗</span></div>
+        <div class="card-desc">Sea Walker 海底漫步（不需裝備）或租帆船出海</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1115_card_02">
+        <div class="card-header"><div class="card-title">💆 Banyan Tree Spa</div><span class="tag tag-spot">Spa</span></div>
+        <div class="card-desc">蘇美島頂級 Spa · 建議提前預訂 · 泰式按摩 + 香薰療程</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">17:30</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1115_card_03">
+        <div class="card-header"><div class="card-title">✈️ 蘇美島 → 曼谷</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">Bangkok Airways 待訂 · 傍晚班次 · 抵達 Suvarnabhumi</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:00</div><div class="item-dot dot-hotel"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1115_card_04" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏨 Check-in — 曼谷機場附近飯店</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">待訂 · 建議 Novotel BKK Airport · 明天輕鬆出門購物</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/15 · Day 13 · 曼谷 2026</div>
+</div>
+
+<div id="d1116" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#B91C1C,#DC2626);">
+    <div class="day-badge">Day 14</div>
+    <div class="day-title">11/16 一・曼谷最終掃貨 + 米其林晚餐</div>
+    <div class="day-sub">Or Tor Kor 市場 · 伴手禮 · 頂級泰式創意料理</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1116_card_01">
+        <div class="card-header"><div class="card-title">🥬 Or Tor Kor 有機市場</div><span class="tag tag-spot">市場</span></div>
+        <div class="card-desc">曼谷最高品質生鮮市場 · 熱帶水果、調味料、手工藝品伴手禮</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7992,100.5501" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Or Tor Kor 市場</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:00</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1116_card_02">
+        <div class="card-header"><div class="card-title">🛍️ 最後掃貨 — MBK / Terminal 21</div><span class="tag tag-spot">購物</span></div>
+        <div class="card-desc">⚠️ 11/16 週一席娜卡琳夜市不開 · 改 Terminal 21 或 MBK Center</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.7468,100.5353" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Terminal 21</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1116_card_03">
+        <div class="card-header"><div class="card-title">🌟 米其林晚餐 — Le Du 或 Gaggan</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">Le Du（泰式創意料理，世界50最佳）/ Gaggan Anand（印泰融合）· ⚠️ 現在就訂位！旺季 2–3 個月前售罄</div>
+        <div style="margin-top:8px;padding:10px 12px;background:#FEF2F2;border-radius:8px;font-size:12px;color:#991B1B;line-height:1.9;">
+          <strong>⚠️ 訂位提醒</strong><br>
+          · Gaggan Anand：需提前 2–3 個月，現在就訂<br>
+          · Le Du：約 1 個月前，相對容易<br>
+          · 兩家都在 BTS Chong Nonsi 附近
+        </div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/16 · Day 14 · 曼谷 2026</div>
+</div>
+
+<div id="d1117" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#374151,#6B7280);">
+    <div class="day-badge">Day 15</div>
+    <div class="day-title">11/17 二・白天自由 → 深夜 VZ566 返台</div>
+    <div class="day-sub">輕鬆咖啡廳 · 按摩 · 23:00 前到機場 · 01:50 起飛</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1117_card_01">
+        <div class="card-header"><div class="card-title">☕ 輕鬆早午餐 + 按摩</div><span class="tag tag-food">早午餐</span></div>
+        <div class="card-desc">最後一天輕鬆安排 · 曼谷按摩 ฿300–500/hr · 下午打包行李</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">23:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1117_card_02">
+        <div class="card-header"><div class="card-title">✈️ 前往素萬那普機場</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">建議 23:00 前抵達 · VZ566 01:50 起飛 · 座位 4B/4A · 訂位代號 SY8BG3</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=13.6900,100.7501" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>素萬那普機場</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/17 · Day 15 · 曼谷 2026</div>
+</div>
+
+<div id="d1118" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#1E3A5F,#2C5282);">
+    <div class="day-badge">Day 16</div>
+    <div class="day-title">11/18 三・抵達台灣</div>
+    <div class="day-sub">VZ566 · 06:30 桃園 T1 落地</div>
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">06:30</div><div class="item-dot dot-ferry"></div></div>
+      <div class="item-content"><div class="card" data-card-id="d1118_card_01">
+        <div class="card-header"><div class="card-title">🛬 抵達台灣 — 桃園 T1</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">落地 · 出關約 30min · 回家！</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">11/18 · Day 16 · 曼谷 2026</div>
+</div>
+
+</div><!-- end trip-bangkok wrapper -->
 
 </body>
 </html>
