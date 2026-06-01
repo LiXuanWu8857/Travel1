@@ -3367,11 +3367,10 @@ function openTrip(id) {
   document.getElementById('home').classList.remove('active');
   document.getElementById('trip-' + id).classList.add('active');
   window.scrollTo(0, 0);
-  // 顯示 FAB
   const fab = document.getElementById('booking-fab');
   if (fab) { fab.classList.add('visible'); syncFabCount(); }
-  // 預設顯示 8/27
-  switchDay('d0827');
+  const firstDay = id === 'bangkok' ? 'd1103' : 'd0827';
+  switchDay(firstDay);
 }
 
 function closeTrip() {
@@ -4737,6 +4736,9 @@ document.addEventListener('click', e => {
 })();
 
 window.openNewTripModal = window.openNewTripModal;
+
+// 曼谷頁面預設直接進入行程
+setTimeout(() => openTrip('bangkok'), 100);
 </script>
 
 </div><!-- end trip-bangkok wrapper -->
