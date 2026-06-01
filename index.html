@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202606011130">
+<html lang="zh-TW" data-ver="202606011134">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6599,6 +6599,77 @@ document.addEventListener('click', e => {
 
 window.openNewTripModal = window.openNewTripModal;
 
+// ── 曼谷 openAddPlace 支援 ──
+// 'bkk' 作為 tripId，重用現有 add-place modal
+window._bkkPlaces = JSON.parse(localStorage.getItem('wandr_bkk_places') || '{}');
+function saveBkkPlaces() {
+  localStorage.setItem('wandr_bkk_places', JSON.stringify(window._bkkPlaces));
+}
+// 確保 openAddPlace('bkk', dayId) 能正確呼叫
+// _customTrips 裡加一個 dummy bkk trip 讓 modal 能找到
+if (!_customTrips.find(t => t.id === 'bkk')) {
+  _customTrips.push({ id: 'bkk', name: '曼谷 2026', dest: '曼谷', places: window._bkkPlaces });
+}
+
+// ── 曼谷花費試算 ──
+window.openBkkExpenseModal = function() {
+  const days = 16, people = 2;
+  const items = [
+    { label: '機票 VZ569 + VZ566 × 2人', thb: 0, twd: 5640 },
+    { label: '國內航班（曼谷⇄蘇美島）× 2人', thb: 0, twd: 6000 },
+    { label: '高速船（蘇美/龜島/帕岸）× 2人', thb: 3200, twd: 0 },
+    { label: '住宿（16晚，平均）', thb: 40000, twd: 0 },
+    { label: '餐食（฿800/人/天 × 2 × 16）', thb: 25600, twd: 0 },
+    { label: '景點門票（大皇宮/考艾等）', thb: 4000, twd: 0 },
+    { label: '潛水 Fun Dive × 2人 × 2天', thb: 8000, twd: 0 },
+    { label: '螢光皮划艇 × 2人', thb: 2000, twd: 0 },
+    { label: '按摩/Spa × 2人', thb: 3000, twd: 0 },
+    { label: '交通（Grab/嘟嘟車）', thb: 4000, twd: 0 },
+    { label: '考艾包車 × 1日', thb: 4500, twd: 0 },
+    { label: '購物/伴手禮', thb: 6000, twd: 0 },
+    { label: '雜費/緊急備用', thb: 3000, twd: 0 },
+  ];
+  const thbToTwd = 0.85;
+  let totalTwd = 0;
+  let rows = items.map(i => {
+    const twd = i.twd || Math.round(i.thb * thbToTwd);
+    totalTwd += twd;
+    const thbStr = i.thb ? `฿${i.thb.toLocaleString()}` : '—';
+    return `<tr><td style="padding:7px 0;font-size:13px;">${i.label}</td><td style="text-align:right;font-size:13px;color:var(--muted);">${thbStr}</td><td style="text-align:right;font-size:13px;font-weight:600;">NT$${twd.toLocaleString()}</td></tr>`;
+  }).join('');
+  const html = `
+    <div style="padding:16px;max-height:70vh;overflow-y:auto;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">匯率：฿1 ≈ NT$0.85 · 2人同行估算</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;font-size:12px;color:var(--muted);padding-bottom:6px;">項目</th>
+          <th style="text-align:right;font-size:12px;color:var(--muted);padding-bottom:6px;">泰銖</th>
+          <th style="text-align:right;font-size:12px;color:var(--muted);padding-bottom:6px;">台幣</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="border-top:2px solid var(--accent);">
+          <td colspan="2" style="padding-top:10px;font-weight:700;font-size:14px;">總計（2人）</td>
+          <td style="text-align:right;padding-top:10px;font-weight:700;font-size:16px;color:var(--accent);">NT$${totalTwd.toLocaleString()}</td>
+        </tr>
+        <tr><td colspan="2" style="font-size:12px;color:var(--muted);">每人約</td>
+          <td style="text-align:right;font-size:13px;color:var(--muted);">NT$${Math.round(totalTwd/2).toLocaleString()}</td>
+        </tr></tfoot>
+      </table>
+    </div>`;
+  // Reuse expense modal
+  const modal = document.getElementById('expense-modal');
+  if (modal) {
+    modal.querySelector('.booking-modal-title').textContent = '💴 曼谷 2026 花費試算';
+    modal.querySelector('.booking-modal-sheet').innerHTML = `
+      <div class="booking-modal-header">
+        <div class="booking-modal-title">💴 曼谷 2026 花費試算</div>
+        <button class="booking-modal-close" onclick="closeExpenseModal()">✕</button>
+      </div>${html}`;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+};
+
 // ── 曼谷行程 switchDay ──
 const _BKK_IDS = ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'];
 window.switchDayBkk = function(id) {
@@ -6641,6 +6712,18 @@ window.setCoverImage = function(tripId, input) {
 
 <!-- ══════════════════ TRIP: 曼谷 2026 ══════════════════ -->
 <div id="trip-bangkok" class="trip-wrapper">
+
+<div class="back-btn" onclick="closeTrip()" style="justify-content:space-between;">
+  <span>‹ 旅圖首頁</span>
+  <div style="display:flex;gap:8px;">
+    <button class="booking-fab" onclick="event.stopPropagation();openPackingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#7c3aed;">
+      🎒 攜帶清單
+    </button>
+    <button class="booking-fab" onclick="event.stopPropagation();openBkkExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
+      💴 花費
+    </button>
+  </div>
+</div>
 
 <div class="top-nav">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
@@ -6696,6 +6779,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">待訂 · 建議 Novotel BKK Airport 或 Ibis BKK Airport · 早起輕鬆出發</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1103" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1103')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/3 · Day 1 · 曼谷 2026</div>
 </div>
@@ -6761,6 +6848,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1104" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1104')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/4 · Day 2 · 曼谷 2026</div>
 </div>
 
@@ -6800,6 +6891,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">待訂 · 建議 Greenery Resort Khao Yai · 早睡早起準備進公園</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1105" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1105')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/5 · Day 3 · 曼谷 2026</div>
 </div>
@@ -6850,6 +6945,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1106" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1106')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/6 · Day 4 · 曼谷 2026</div>
 </div>
 
@@ -6890,6 +6989,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1107" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1107')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/7 · Day 5 · 曼谷 2026</div>
 </div>
 
@@ -6924,6 +7027,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1108" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1108')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/8 · Day 6 · 曼谷 2026</div>
 </div>
 
@@ -6949,6 +7056,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">巨石礁柱 · 魚群超密集 · 水深 5–35m · 第二支氣瓶 · 龜島最佳潛點之一</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1109" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1109')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/9 · Day 7 · 曼谷 2026</div>
 </div>
@@ -6981,6 +7092,10 @@ window.setCoverImage = function(tripId, input) {
         </div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1110" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1110')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/10 · Day 8 · 曼谷 2026</div>
 </div>
@@ -7023,6 +7138,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1111" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1111')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/11 · Day 9 · 曼谷 2026</div>
 </div>
 
@@ -7056,6 +7175,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">下午 Spa 補充體力 · 晚餐吃飽 · 備好包頭鞋、哨子、螢光衣</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1112" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1112')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/12 · Day 10 · 曼谷 2026</div>
 </div>
@@ -7097,6 +7220,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1113" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1113')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/13 · Day 11 · 曼谷 2026</div>
 </div>
 
@@ -7129,6 +7256,10 @@ window.setCoverImage = function(tripId, input) {
         <a class="nav-btn" href="https://maps.google.com/?q=9.5543,99.9817" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Fisherman's Village</a>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1114" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1114')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/14 · Day 12 · 曼谷 2026</div>
 </div>
@@ -7168,6 +7299,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">待訂 · 建議 Novotel BKK Airport · 明天輕鬆出門購物</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1115" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1115')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/15 · Day 13 · 曼谷 2026</div>
 </div>
@@ -7209,6 +7344,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1116" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1116')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/16 · Day 14 · 曼谷 2026</div>
 </div>
 
@@ -7235,6 +7374,10 @@ window.setCoverImage = function(tripId, input) {
       </div></div>
     </div>
   </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1117" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1117')">＋ 新增地點</button></div>
+  </div>
   <div class="footer">11/17 · Day 15 · 曼谷 2026</div>
 </div>
 
@@ -7252,6 +7395,10 @@ window.setCoverImage = function(tripId, input) {
         <div class="card-desc">落地 · 出關約 30min · 回家！</div>
       </div></div>
     </div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <div class="timeline"><div id="tl_d1118" class="timeline-list"></div>
+    <button class="add-place-btn" onclick="openAddPlace('bkk','d1118')">＋ 新增地點</button></div>
   </div>
   <div class="footer">11/18 · Day 16 · 曼谷 2026</div>
 </div>
