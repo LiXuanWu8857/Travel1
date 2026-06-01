@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202606011203">
+<html lang="zh-TW" data-ver="202606011258">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3418,17 +3418,32 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// ── 行程設定（新增行程在此加入）──
+window._TRIP_CONFIG = {
+  hokkaido: {
+    ids: ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'],
+    firstDay: 'd0827',
+  },
+  bangkok: {
+    ids: ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'],
+    firstDay: 'd1103',
+  },
+};
+window._activeTrip = 'hokkaido';
+
 function switchDay(id, dir) {
-  const wrapper = document.getElementById('trip-hokkaido');
-  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
+  const tripId = window._activeTrip || 'hokkaido';
+  const wrapper = document.getElementById('trip-' + tripId);
+  if (!wrapper) return;
+  wrapper.querySelectorAll(':scope > .day-section, :scope > .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
   wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) {
     el.classList.add('active');
     if (dir === 'left') el.classList.add('from-left');
   }
-  const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
-  const idx = ids.indexOf(id);
+  const cfg = window._TRIP_CONFIG[tripId] || { ids: [] };
+  const idx = cfg.ids.indexOf(id);
   const tabs = wrapper.querySelectorAll('.tab');
   if (idx >= 0 && tabs[idx]) {
     tabs[idx].classList.add('active');
@@ -3436,19 +3451,22 @@ function switchDay(id, dir) {
   }
   window.scrollTo(0, 0);
   window._currentDayIdx = idx;
-  // 如果地圖開著，更新地圖內容
   if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
 }
 
 // ── 滑動切換天數（跟手動畫版）──
 (function () {
-  const IDS = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
+  function getIDS() {
+    return (window._TRIP_CONFIG?.[window._activeTrip || 'hokkaido']?.ids) || ['d0827'];
+  }
 
   function goNext() {
+    const IDS = getIDS();
     const i = window._currentDayIdx ?? 0;
     if (i < IDS.length - 1) switchDay(IDS[i + 1], 'right');
   }
   function goPrev() {
+    const IDS = getIDS();
     const i = window._currentDayIdx ?? 0;
     if (i > 0) switchDay(IDS[i - 1], 'left');
   }
@@ -4414,7 +4432,7 @@ window._gmapReady = function() {
 };
 
 async function openDayMap() {
-  const ids = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'];
+  const ids = (window._TRIP_CONFIG?.[window._activeTrip||'hokkaido']?.ids) || ['d0827'];
   const dayId = ids[window._currentDayIdx ?? 0];
   const dayEl = document.getElementById(dayId);
   if (!dayEl) return;
@@ -4444,7 +4462,7 @@ function loadGMapMarkers(dayEl) {
   _gmapMarkers.forEach(m => { try { m.setMap ? m.setMap(null) : m.setMap?.(null); } catch(e){} });
   _gmapMarkers = [];
 
-  const dayId2 = ['d0827','d0828','d0829','d0830','d0831','d0901','d0902','d0903','d0904','d0905','d0906','d0907','d0908'][window._currentDayIdx ?? 0];
+  const dayId2 = ((window._TRIP_CONFIG?.[window._activeTrip||'hokkaido']?.ids) || ['d0827'])[window._currentDayIdx ?? 0];
 
   // 自訂行程：從 placeData 讀座標（有座標直接標，沒有再用Places搜）
   const customWrapper = dayEl.closest('[id^="trip-ct_"]');
@@ -5225,14 +5243,16 @@ waitForFirebase(() => {
 <script>
 // ── HOME / TRIP NAVIGATION ──
 function openTrip(id) {
+  window._activeTrip = id;
+  window._currentDayIdx = 0;
   document.getElementById('home').classList.remove('active');
-  document.getElementById('trip-' + id).classList.add('active');
+  document.querySelectorAll('.trip-wrapper').forEach(t => t.classList.remove('active'));
+  document.getElementById('trip-' + id)?.classList.add('active');
   window.scrollTo(0, 0);
-  // 顯示 FAB
   const fab = document.getElementById('booking-fab');
   if (fab) { fab.classList.add('visible'); syncFabCount(); }
-  // 預設顯示 8/27
-  switchDay('d0827');
+  const firstDay = window._TRIP_CONFIG?.[id]?.firstDay || 'd0827';
+  switchDay(firstDay);
 }
 
 function closeTrip() {
@@ -5300,7 +5320,7 @@ function setCoverImage(tripId, input) {
 }
 
 function loadCoverImages() {
-  ['hokkaido'].forEach(id => {
+  ['hokkaido', 'bangkok'].forEach(id => {
     const saved = localStorage.getItem('cover_' + id);
     if (saved) {
       const img = document.getElementById('cover-img-' + id);
@@ -6671,41 +6691,8 @@ window.openBkkExpenseModal = function() {
 };
 
 // ── 曼谷行程 switchDay ──
-const _BKK_IDS = ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'];
-window.switchDayBkk = function(id) {
-  const wrapper = document.getElementById('trip-bangkok');
-  wrapper.querySelectorAll('.day-section').forEach(s => s.classList.remove('active','from-left'));
-  wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-  const idx = _BKK_IDS.indexOf(id);
-  const tabs = wrapper.querySelectorAll('.tab');
-  if (idx >= 0 && tabs[idx]) {
-    tabs[idx].classList.add('active');
-    tabs[idx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
-  }
-  window.scrollTo(0, 0);
-};
-
-// openTrip 支援 bangkok
-const _origOpenTrip = window.openTrip || openTrip;
-window.openTrip = function(id) {
-  if (id === 'bangkok') {
-    document.getElementById('home')?.classList.remove('active');
-    document.querySelectorAll('.trip-wrapper').forEach(w => w.classList.remove('active'));
-    document.getElementById('trip-bangkok').classList.add('active');
-    window.scrollTo(0, 0);
-    switchDayBkk('d1103');
-    return;
-  }
-  _origOpenTrip(id);
-};
-
-// setCoverImage 支援 bangkok
-const _origSetCover = window.setCoverImage;
-window.setCoverImage = function(tripId, input) {
-  if (typeof _origSetCover === 'function') _origSetCover(tripId, input);
-};
+// switchDayBkk → 統一用 switchDay
+window.switchDayBkk = function(id) { switchDay(id); };
 </script>
 
 </div><!-- end trip-hokkaido wrapper -->
