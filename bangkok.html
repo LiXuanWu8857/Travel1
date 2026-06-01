@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✈️ Wandr 旅圖 · 曼谷</title>
+<title>✈️ Wandr 旅圖</title>
 <link id="apple-touch-icon" rel="apple-touch-icon">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="旅圖 曼谷">
+<meta name="apple-mobile-web-app-title" content="旅圖">
 <script>
 (function(){
   const c = document.createElement('canvas');
@@ -922,7 +922,7 @@ body {
 
     <!-- 北海道 2026 -->
     <div class="trip-card" id="card-hokkaido">
-      <div class="trip-card-cover" id="cover-hokkaido" onclick="openTrip('hokkaido')">
+      <div class="trip-card-cover" id="cover-hokkaido" onclick="openTrip('bangkok')">
         <img class="trip-card-cover-img" id="cover-img-hokkaido" src="" style="display:none;">
         <div class="trip-card-cover-dots"></div>
         <div class="trip-card-cover-overlay"></div>
@@ -1383,7 +1383,6 @@ body {
     <div class="tab" onclick="switchDay('d1117')">11/17</div>
     <div class="tab" onclick="switchDay('d1118')">11/18</div>
   </div>
-
 </div>
 <!-- ══════════════════ BOOKING CHECKLIST ══════════════════ -->
 <div id="booking" class="booking-page">
@@ -1581,6 +1580,10 @@ body {
       <span class="booking-tag tag-ticket">票券</span>
     </div>
   </div>
+  <div class="footer">點擊項目即可打勾確認 · 北海道 2026</div>
+</div>
+
+<!-- ══════════════════ 8/27 ══════════════════ -->
 <div id="d1103" class="day-section active">
   <div class="day-header" style="background:linear-gradient(135deg,#C0392B,#E74C3C);">
     <div class="day-badge">Day 1</div>
@@ -2169,11 +2172,6 @@ body {
   </div>
   <div class="footer">11/18 · Day 16 · 曼谷 2026</div>
 </div>
-      </div></div>
-    </div>
-  </div>
-  <div class="footer">9/8 · Day 13 · 北海道 2026</div>
-</div>
 
 
 <!-- ── EDIT MODAL ── -->
@@ -2601,13 +2599,13 @@ function loadGMapMarkers(dayEl) {
   const DAY_START = {
     d1103: '素萬那普機場 BKK',
     d1104: '機場附近飯店 曼谷',
-    d1105: '市中心精品飯店 曼谷',
+    d1105: 'SO Bangkok 曼谷市中心',
     d1106: 'Pak Chong 飯店',
     d1107: '考艾國家公園',
     d1108: '蘇美島度假村',
-    d1109: '龜島潛水度假村',
-    d1110: '龜島潛水度假村',
-    d1111: '龜島潛水度假村',
+    d1109: '龜島 Sairee Beach',
+    d1110: '龜島 Sairee Beach',
+    d1111: '龜島 Sairee Beach',
     d1112: '帕岸島飯店',
     d1113: '帕岸島飯店',
     d1114: '帕岸島飯店',
@@ -3367,10 +3365,11 @@ function openTrip(id) {
   document.getElementById('home').classList.remove('active');
   document.getElementById('trip-' + id).classList.add('active');
   window.scrollTo(0, 0);
+  // 顯示 FAB
   const fab = document.getElementById('booking-fab');
   if (fab) { fab.classList.add('visible'); syncFabCount(); }
-  const firstDay = id === 'bangkok' ? 'd1103' : 'd0827';
-  switchDay(firstDay);
+  // 預設顯示 8/27
+  switchDay('d1103');
 }
 
 function closeTrip() {
@@ -3381,6 +3380,230 @@ function closeTrip() {
   renderCustomTripCards();
 }
 
+function switchDay(id, dir) {
+  const wrapper = document.getElementById('trip-bangkok');
+  wrapper.querySelectorAll('.day-section, .booking-page').forEach(s => s.classList.remove('active', 'from-left'));
+  wrapper.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.add('active');
+    if (dir === 'left') el.classList.add('from-left');
+  }
+  const ids = ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'];
+  const idx = ids.indexOf(id);
+  const tabs = wrapper.querySelectorAll('.tab');
+  if (idx >= 0 && tabs[idx]) {
+    tabs[idx].classList.add('active');
+    tabs[idx].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+  }
+  window.scrollTo(0, 0);
+  window._currentDayIdx = idx;
+  // 如果地圖開著，更新地圖內容
+  if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
+}
+
+// ── 滑動切換天數（跟手動畫版）──
+(function () {
+  const IDS = ['d1103','d1104','d1105','d1106','d1107','d1108','d1109','d1110','d1111','d1112','d1113','d1114','d1115','d1116','d1117','d1118'];
+
+  function goNext() {
+    const i = window._currentDayIdx ?? 0;
+    if (i < IDS.length - 1) switchDay(IDS[i + 1], 'right');
+  }
+  function goPrev() {
+    const i = window._currentDayIdx ?? 0;
+    if (i > 0) switchDay(IDS[i - 1], 'left');
+  }
+
+  // Touch：跟手移動，放開才決定換頁
+  let _tx = 0, _ty = 0, _locked = false, _dragging = false, _curEl = null;
+
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal,#booking-modal')) return;
+    _tx = e.touches[0].clientX;
+    _ty = e.touches[0].clientY;
+    _locked = false; _dragging = false;
+    _curEl = document.querySelector('.day-section.active');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (_locked) return;
+    if (document.getElementById('map-modal')?.style.display === 'block') return;
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,button,#map-modal,#packing-modal')) return;
+    const dx = e.touches[0].clientX - _tx;
+    const dy = e.touches[0].clientY - _ty;
+    if (!_dragging && Math.abs(dy) > Math.abs(dx)) { _locked = true; return; }
+    if (!_dragging && Math.abs(dx) < 8) return;
+    _dragging = true;
+    if (_curEl) { _curEl.style.transition = 'none'; _curEl.style.transform = `translateX(${dx * 0.4}px)`; }
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!_dragging || _locked) {
+      if (_curEl) { _curEl.style.transform = ''; _curEl.style.transition = ''; }
+      return;
+    }
+    const dx = e.changedTouches[0].clientX - _tx;
+    if (_curEl) {
+      _curEl.style.transition = 'transform 0.2s ease-out';
+      _curEl.style.transform = '';
+      setTimeout(() => { if (_curEl) { _curEl.style.transition = ''; _curEl.style.transform = ''; } }, 220);
+    }
+    _locked = true;
+    if (Math.abs(dx) >= 40) dx < 0 ? goNext() : goPrev();
+  }, { passive: true });
+
+  // Mac trackpad wheel
+  let _wheelLock = false;
+  document.addEventListener('wheel', e => {
+    if (_wheelLock) return;
+    if (e.target.closest('.expense-modal,.modal,.tab-scroll,input,select,textarea,#map-modal')) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.8) return;
+    if (Math.abs(e.deltaX) < 20) return;
+    _wheelLock = true;
+    e.deltaX > 0 ? goNext() : goPrev();
+    setTimeout(() => { _wheelLock = false; }, 350);
+  }, { passive: true });
+
+  // 鍵盤
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight') goNext();
+    if (e.key === 'ArrowLeft') goPrev();
+  });
+
+  window._currentDayIdx = 0;
+})();
+// Toggle from booking checklist
+function toggleBooking(el) {
+  el.classList.toggle('done');
+  const bid = el.dataset.bid;
+  if (bid) syncBadges(bid, el.classList.contains('done'));
+  updateProgress();
+  saveProgress();
+  if (typeof syncFabCount === 'function') syncFabCount();
+}
+
+// Toggle from day card badge
+function toggleFromBadge(bid) {
+  const bookingItem = document.querySelector(`.booking-item[data-bid="${bid}"]`);
+  if (bookingItem) {
+    bookingItem.classList.toggle('done');
+    syncBadges(bid, bookingItem.classList.contains('done'));
+    updateProgress();
+    saveProgress();
+  }
+}
+
+// Sync all badges with given bid
+function syncBadges(bid, isDone) {
+  document.querySelectorAll(`.booking-badge[data-bid="${bid}"]`).forEach(badge => {
+    if (isDone) {
+      badge.className = 'booking-badge booked';
+      badge.innerHTML = '✅ 已預訂';
+    } else {
+      badge.className = 'booking-badge unbooked';
+      badge.innerHTML = '⬜ 未預訂';
+    }
+  });
+}
+
+function updateProgress() {
+  const items = document.querySelectorAll('.booking-item');
+  const done = document.querySelectorAll('.booking-item.done').length;
+  const total = items.length;
+  document.getElementById('progress-text').textContent = done + ' / ' + total;
+  document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
+}
+
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAnJ66TMk48YXC6d7ygp6w8lzvjc6gTl5w",
+  authDomain: "travel-60a88.firebaseapp.com",
+  databaseURL: "https://travel-60a88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "travel-60a88",
+  storageBucket: "travel-60a88.firebasestorage.app",
+  messagingSenderId: "879512284305",
+  appId: "1:879512284305:web:b5611780e8f37fa1096330"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+const bookingRef = ref(db, 'hokkaido2026/booking');
+
+let isSyncing = false; // 防止遠端更新觸發再次寫入
+
+function saveProgress() {
+  const items = document.querySelectorAll('.booking-item');
+  const state = {};
+  items.forEach(i => { if (i.dataset.bid) state[i.dataset.bid] = i.classList.contains('done'); });
+  // 同時存 localStorage 作為離線備份
+  try { localStorage.setItem('booking_v2', JSON.stringify(state)); } catch(e) {}
+  // 寫入 Firebase
+  set(bookingRef, state).catch(e => console.warn('Firebase save error:', e));
+}
+
+function applyState(state) {
+  isSyncing = true;
+  document.querySelectorAll('.booking-item').forEach(item => {
+    if (!item.dataset.bid) return;
+    const done = state[item.dataset.bid] === true;
+    item.classList.toggle('done', done);
+    syncBadges(item.dataset.bid, done);
+  });
+  updateProgress();
+  isSyncing = false;
+}
+
+function loadProgress() {
+  // 先用 localStorage 快速顯示，避免白屏
+  try {
+    const local = JSON.parse(localStorage.getItem('booking_v2') || '{}');
+    applyState(local);
+  } catch(e) {}
+
+  // 再監聽 Firebase 即時同步（任何裝置打勾都會同步）
+  onValue(bookingRef, (snapshot) => {
+    const state = snapshot.val() || {};
+    applyState(state);
+    // 更新 localStorage 備份
+    try { localStorage.setItem('booking_v2', JSON.stringify(state)); } catch(e) {}
+  }, (error) => {
+    console.warn('Firebase load error:', error);
+  });
+}
+
+// Inject booking badges into day cards
+window.injectBadges = function() {
+  document.querySelectorAll('[data-sync]').forEach(card => {
+    const bid = card.dataset.sync;
+    if (card.querySelector('.booking-badge')) return;
+    const bookingItem = document.querySelector(`.booking-item[data-bid="${bid}"]`);
+    if (!bookingItem) return;
+    const isDone = bookingItem.classList.contains('done');
+    const badge = document.createElement('div');
+    badge.className = `booking-badge ${isDone ? 'booked' : 'unbooked'}`;
+    badge.dataset.bid = bid;
+    badge.innerHTML = isDone ? '✅ 已預訂' : '⬜ 未預訂';
+    badge.onclick = () => toggleFromBadge(bid);
+    // 插在 photo-section 前，不然會跑到外面
+    const photoSection = card.querySelector('.photo-section');
+    if (photoSection) card.insertBefore(badge, photoSection);
+    else card.appendChild(badge);
+  });
+}
+
+loadProgress();
+
+// 讓 HTML onclick 能呼叫到這些函式（module scope 需要掛到 window）
+window.switchDay = switchDay;
+window.toggleBooking = toggleBooking;
+window.toggleFromBadge = toggleFromBadge;
+window.closeModal = closeModal;
+window.saveEdit = saveEdit;
+window.removePhotoSlot = removePhotoSlot;
+window.savePhotos = savePhotos;
+window.saveGmailLinks = saveGmailLinks;
 function openBookingModal() {
   const modal = document.getElementById('booking-modal');
   const body = document.getElementById('booking-modal-body');
@@ -4738,7 +4961,7 @@ document.addEventListener('click', e => {
 window.openNewTripModal = window.openNewTripModal;
 
 // 曼谷頁面預設直接進入行程
-setTimeout(() => openTrip('bangkok'), 100);
+setTimeout(() => openTrip('bangkok'), 200);
 </script>
 
 </div><!-- end trip-bangkok wrapper -->
