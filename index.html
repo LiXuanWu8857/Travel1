@@ -5399,11 +5399,22 @@ function renderExpenseBreakdown() {
       // 決定 edit key：data-sync 優先，沒有就用 data-card-id
       const sync = card.dataset.sync;
       const cardId = card.dataset.cardId;
-      const key = sync || cardId;
-      if (!key) return;
+      if (!sync && !cardId) return;
 
-      const v = allData[key] || allData[dayId + '_' + key];
-      if (!v?.amount || parseFloat(v.amount) <= 0) return;
+      // 嘗試所有可能的 key 格式
+      const keysToTry = [
+        sync,
+        cardId,
+        sync ? `${dayId}_${sync}` : null,
+      ].filter(Boolean);
+
+      let v = null, usedKey = null;
+      for (const k of keysToTry) {
+        if (allData[k]?.amount && parseFloat(allData[k].amount) > 0) {
+          v = allData[k]; usedKey = k; break;
+        }
+      }
+      if (!v) return;
 
       const cur = v.currency || 'JPY';
       const amt = parseFloat(v.amount);
