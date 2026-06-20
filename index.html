@@ -5995,7 +5995,7 @@ function renderAllTotal() {
         <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:4px;">
           <span>${day}</span><span>NT$&nbsp;${dayTotal.toLocaleString()}</span>
         </div>
-        ${dayRows.map(r => `<div style="font-size:12px;color:rgba(255,255,255,0.9);padding:2px 0 2px 8px;">${r.title}</div>`).join('')}
+        ${dayRows.map(r => `<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.9);padding:2px 0 2px 8px;"><span>${r.title}</span><span style="font-weight:600;">NT$&nbsp;${r.twd.toLocaleString()}</span></div>`).join('')}
       </div>`;
     }).join('');
   })();
