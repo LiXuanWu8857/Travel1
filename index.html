@@ -1035,6 +1035,7 @@ body {
           <div class="expense-total-label">所有已記錄項目合計</div>
           <div class="expense-total-amount" id="expense-grand-total">—</div>
         </div>
+        <button onclick="clearAllExpenses()" style="margin-top:12px;width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">🗑 清除所有花費資料</button>
       </div>
     </div>
 
@@ -5464,6 +5465,17 @@ function renderExpenseBreakdown() {
 
   document.getElementById('expense-grand-total').textContent = 'NT$ ' + grandTotal.toLocaleString();
 }
+window.clearAllExpenses = function() {
+  if (!confirm('確定要清除所有花費資料？此操作無法復原。')) return;
+  saveUserAllData({});
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/edits'), null);
+  }
+  renderExpenseBreakdown();
+  // 清除所有卡片上顯示的備註/金額
+  document.querySelectorAll('[data-edit-key]').forEach(el => renderNote(el, el.dataset.editKey));
+};
+
 window.renderExpenseBreakdown = renderExpenseBreakdown;
 
 function saveCurPref() {
