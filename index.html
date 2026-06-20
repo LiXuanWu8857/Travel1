@@ -5945,14 +5945,14 @@ function renderAllTotal() {
       if (!v) return;
       const cardEl = card.closest('.card') || card;
       const titleEl = cardEl.querySelector('.card-title');
-      const title = titleEl ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').trim().slice(0,20) : (sync||cardId||'');
-      items.push({ label: `${dayLabel ? dayLabel+' ' : ''}${title}`, twd: toTwd(v.amount, v.currency||'JPY') });
+      const title = titleEl ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').trim().slice(0,25) : (sync||cardId||'');
+      items.push({ day: dayLabel, title, twd: toTwd(v.amount, v.currency||'JPY') });
     });
   });
   // 非日期類固定項目
   Object.entries(allData).forEach(([k,v]) => {
     if (k.match(/^d\d{4}_/) || !v?.amount || parseFloat(v.amount) <= 0) return;
-    items.push({ label: k.replace(/_/g,' '), twd: toTwd(v.amount, v.currency||'JPY') });
+    items.push({ day: '其他', title: k.replace(/_/g,' '), twd: toTwd(v.amount, v.currency||'JPY') });
   });
 
   // 2. 通行費（從暫存變數讀 JPY）
@@ -5972,8 +5972,8 @@ function renderAllTotal() {
 
   const rows = [
     ...items,
-    ...(tollTwd > 0 ? [{ label: '🚗 預估通行費', twd: tollTwd }] : []),
-    ...(fuelTwd > 0 ? [{ label: fuelLabel, twd: fuelTwd }] : []),
+    ...(tollTwd > 0 ? [{ day: '其他', title: '🚗 預估通行費', twd: tollTwd }] : []),
+    ...(fuelTwd > 0 ? [{ day: '其他', title: fuelLabel, twd: fuelTwd }] : []),
   ];
 
   if (!rows.length) {
@@ -5982,12 +5982,23 @@ function renderAllTotal() {
     return;
   }
 
-  rowsEl.innerHTML = rows.map(r =>
-    `<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.85);padding:2px 0;">
-      <span>${r.label}</span>
-      <span style="font-weight:600;">NT$&nbsp;${r.twd.toLocaleString()}</span>
-    </div>`
-  ).join('');
+  rowsEl.innerHTML = (() => {
+    const byDay = {};
+    rows.forEach(r => {
+      const day = r.day || '其他';
+      if (!byDay[day]) byDay[day] = [];
+      byDay[day].push(r);
+    });
+    return Object.entries(byDay).map(([day, dayRows]) => {
+      const dayTotal = dayRows.reduce((s,r) => s + r.twd, 0);
+      return `<div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:4px;">
+          <span>${day}</span><span>NT$&nbsp;${dayTotal.toLocaleString()}</span>
+        </div>
+        ${dayRows.map(r => `<div style="font-size:12px;color:rgba(255,255,255,0.9);padding:2px 0 2px 8px;">${r.title}</div>`).join('')}
+      </div>`;
+    }).join('');
+  })();
 
   const total = rows.reduce((s,r) => s + r.twd, 0);
   grandEl.textContent = 'NT$ ' + total.toLocaleString();
