@@ -5386,17 +5386,30 @@ function renderExpenseBreakdown() {
   const container = document.getElementById('expense-breakdown');
   if (!container) return;
   const allData = getUserAllData();
-  // 只顯示目前仍存在的卡片
-  const existingCards = new Set(
-    Array.from(document.querySelectorAll('[data-card-id],[data-sync]'))
-      .flatMap(el => [el.dataset.cardId, el.dataset.sync].filter(Boolean))
-  );
+
+  // 建立所有目前存在卡片的有效 key 集合
+  const validKeys = new Set();
+  document.querySelectorAll('[data-card-id]').forEach(el => {
+    const id = el.dataset.cardId; // e.g. d0905_card_03
+    if (id) validKeys.add(id);
+  });
+  document.querySelectorAll('[data-sync]').forEach(el => {
+    const sync = el.dataset.sync; // e.g. stay_holidayinn
+    if (sync) validKeys.add(sync);
+    // Also add day-prefixed version e.g. d0905_stay_holidayinn
+    const daySection = el.closest('[id^="d0"]');
+    if (daySection && sync) validKeys.add(daySection.id + '_' + sync);
+  });
+
   const items = Object.entries(allData)
     .filter(([k, v]) => {
       if (!v.amount || parseFloat(v.amount) <= 0) return false;
-      // 如果 key 對應的卡片已不存在，跳過
-      const cardKey = k.replace(/^d\d{4}_/, '');
-      return existingCards.has(k) || existingCards.has(cardKey) || !k.match(/^d\d{4}_/);
+      // 檢查 key 是否對應現存卡片
+      if (validKeys.has(k)) return true;
+      // 嘗試去掉日期前綴後比對 data-sync
+      const withoutDay = k.replace(/^d\d{4}_/, '');
+      if (validKeys.has(withoutDay)) return true;
+      return false;
     })
     .map(([k, v]) => {
       const cur = v.currency || 'JPY';
