@@ -5388,42 +5388,45 @@ function renderExpenseBreakdown() {
   if (!container) return;
   const allData = getUserAllData();
 
-  // 建立所有目前存在卡片的有效 key 集合
-  const validKeys = new Set();
-  document.querySelectorAll('[data-card-id]').forEach(el => {
-    const id = el.dataset.cardId; // e.g. d0905_card_03
-    if (id) validKeys.add(id);
-  });
-  document.querySelectorAll('[data-sync]').forEach(el => {
-    const sync = el.dataset.sync; // e.g. stay_holidayinn
-    if (sync) validKeys.add(sync);
-    // Also add day-prefixed version e.g. d0905_stay_holidayinn
-    const daySection = el.closest('[id^="d0"]');
-    if (daySection && sync) validKeys.add(daySection.id + '_' + sync);
-  });
+  const items = [];
 
-  const items = Object.entries(allData)
-    .filter(([k, v]) => {
-      if (!v.amount || parseFloat(v.amount) <= 0) return false;
-      // 檢查 key 是否對應現存卡片
-      if (validKeys.has(k)) return true;
-      // 嘗試去掉日期前綴後比對 data-sync
-      const withoutDay = k.replace(/^d\d{4}_/, '');
-      if (validKeys.has(withoutDay)) return true;
-      return false;
-    })
-    .map(([k, v]) => {
+  // 掃描所有現有卡片，逐一查對應金額
+  document.querySelectorAll('.day-section[id^="d"]').forEach(dayEl => {
+    const dayId = dayEl.id; // e.g. d0907
+    const dayLabel = dayId.replace(/^d(\d{2})(\d{2})$/, '$1/$2');
+
+    dayEl.querySelectorAll('[data-card-id], [data-sync]').forEach(card => {
+      // 決定 edit key：data-sync 優先，沒有就用 data-card-id
+      const sync = card.dataset.sync;
+      const cardId = card.dataset.cardId;
+      const key = sync || cardId;
+      if (!key) return;
+
+      const v = allData[key] || allData[dayId + '_' + key];
+      if (!v?.amount || parseFloat(v.amount) <= 0) return;
+
       const cur = v.currency || 'JPY';
       const amt = parseFloat(v.amount);
       const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
       const twd = Math.round(amt * rate);
-      // 從 key 推算日期和標題
-      const dayMatch = k.match(/^d(\d{4})_/);
-      const day = dayMatch ? dayMatch[1].replace(/^(\d{2})(\d{2})$/, '$1/$2') : '';
-      const titleSlug = k.replace(/^d\d{4}_/, '').replace(/_/g, ' ').replace(/^[\s_]+/, '');
-      return { day, titleSlug, amt, cur, twd };
-    })
-    .sort((a, b) => a.day.localeCompare(b.day));
+
+      // 取卡片標題
+      const titleEl = card.querySelector('.card-title');
+      const title = titleEl ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/, '').slice(0, 30) : key;
+
+      items.push({ dayLabel, title, amt, cur, twd });
+    });
+  });
+
+  // 加上非日期類的固定花費（🚗 預估通行費等）
+  Object.entries(allData).forEach(([k, v]) => {
+    if (k.match(/^d\d{4}_/) || !v?.amount || parseFloat(v.amount) <= 0) return;
+    const cur = v.currency || 'JPY';
+    const amt = parseFloat(v.amount);
+    const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
+    const twd = Math.round(amt * rate);
+    items.push({ dayLabel: '', title: k.replace(/_/g, ' '), amt, cur, twd });
+  });
 
   if (!items.length) {
     container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">尚未記錄任何花費。請至各方塊點 ✏️ 編輯輸入金額。</div>';
@@ -5436,7 +5439,7 @@ function renderExpenseBreakdown() {
     grandTotal += item.twd;
     return `<div class="expense-row">
       <div class="expense-label">
-        ${item.day ? `<span style="font-size:11px;color:var(--muted);font-weight:600;">${item.day}</span>　` : ''}${item.titleSlug}
+        ${item.dayLabel ? `<span style="font-size:11px;color:var(--muted);font-weight:600;">${item.dayLabel}</span>　` : ''}${item.title}
       </div>
       <div class="expense-amount">
         <span style="font-size:11px;color:var(--muted);margin-right:6px;">${parseInt(item.amt).toLocaleString()} ${item.cur}</span>
