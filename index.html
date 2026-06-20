@@ -5385,8 +5385,18 @@ function renderExpenseBreakdown() {
   const container = document.getElementById('expense-breakdown');
   if (!container) return;
   const allData = getUserAllData();
+  // 只顯示目前仍存在的卡片
+  const existingCards = new Set(
+    Array.from(document.querySelectorAll('[data-card-id],[data-sync]'))
+      .flatMap(el => [el.dataset.cardId, el.dataset.sync].filter(Boolean))
+  );
   const items = Object.entries(allData)
-    .filter(([k, v]) => v.amount && parseFloat(v.amount) > 0)
+    .filter(([k, v]) => {
+      if (!v.amount || parseFloat(v.amount) <= 0) return false;
+      // 如果 key 對應的卡片已不存在，跳過
+      const cardKey = k.replace(/^d\d{4}_/, '');
+      return existingCards.has(k) || existingCards.has(cardKey) || !k.match(/^d\d{4}_/);
+    })
     .map(([k, v]) => {
       const cur = v.currency || 'JPY';
       const amt = parseFloat(v.amount);
