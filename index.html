@@ -5410,9 +5410,12 @@ function renderExpenseBreakdown() {
       const rate = (_rates && _rates[cur]) ? (1 / _rates[cur]) : (cur === 'JPY' ? 0.215 : 1);
       const twd = Math.round(amt * rate);
 
-      // 取卡片標題
-      const titleEl = card.querySelector('.card-title');
-      const title = titleEl ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/, '').slice(0, 30) : key;
+      // 取卡片標題：往上找最近的 .card，再查 .card-title
+      const cardEl = card.closest('.card') || card;
+      const titleEl = cardEl.querySelector('.card-title');
+      const title = titleEl
+        ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/, '').trim().slice(0, 35)
+        : (sync || cardId || key);
 
       items.push({ dayLabel, title, amt, cur, twd });
     });
