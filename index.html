@@ -5472,7 +5472,7 @@ window.clearAllExpenses = function() {
     window._fbSet(window._fbRef(window._fbDb, 'hokkaido2026/edits'), null);
   }
   renderExpenseBreakdown();
-  // 清除所有卡片上顯示的備註/金額
+  renderAllTotal();
   document.querySelectorAll('[data-edit-key]').forEach(el => renderNote(el, el.dataset.editKey));
 };
 
@@ -5927,17 +5927,33 @@ function renderAllTotal() {
     return Math.round(parseFloat(amt) * r);
   };
 
-  // 1. 所有已記錄花費（✏️ 編輯輸入的金額）
+  // 1. 所有已記錄花費（從 DOM 現有卡片掃描）
   const allData = getUserAllData();
-  const items = Object.entries(allData)
-    .filter(([k,v]) => v.amount && parseFloat(v.amount) > 0)
-    .map(([k,v]) => {
-      const cur = v.currency || 'JPY';
-      const dayMatch = k.match(/^d(\d{2})(\d{2})_/);
-      const day = dayMatch ? `${parseInt(dayMatch[1])}/${parseInt(dayMatch[2])}` : '';
-      const titleSlug = k.replace(/^d\d{4}_+/, '').replace(/_+/g,' ').trim().slice(0,20);
-      return { label: `${day ? day+' ' : ''}${titleSlug}`, twd: toTwd(v.amount, cur) };
+  const items = [];
+  document.querySelectorAll('.day-section[id^="d"]').forEach(dayEl => {
+    const dayId = dayEl.id;
+    const dayMatch = dayId.match(/^d(\d{2})(\d{2})$/);
+    const dayLabel = dayMatch ? `${parseInt(dayMatch[1])}/${parseInt(dayMatch[2])}` : '';
+    dayEl.querySelectorAll('[data-card-id], [data-sync]').forEach(card => {
+      const sync = card.dataset.sync;
+      const cardId = card.dataset.cardId;
+      const keysToTry = [sync, cardId, sync ? `${dayId}_${sync}` : null].filter(Boolean);
+      let v = null;
+      for (const k of keysToTry) {
+        if (allData[k]?.amount && parseFloat(allData[k].amount) > 0) { v = allData[k]; break; }
+      }
+      if (!v) return;
+      const cardEl = card.closest('.card') || card;
+      const titleEl = cardEl.querySelector('.card-title');
+      const title = titleEl ? titleEl.textContent.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').trim().slice(0,20) : (sync||cardId||'');
+      items.push({ label: `${dayLabel ? dayLabel+' ' : ''}${title}`, twd: toTwd(v.amount, v.currency||'JPY') });
     });
+  });
+  // 非日期類固定項目
+  Object.entries(allData).forEach(([k,v]) => {
+    if (k.match(/^d\d{4}_/) || !v?.amount || parseFloat(v.amount) <= 0) return;
+    items.push({ label: k.replace(/_/g,' '), twd: toTwd(v.amount, v.currency||'JPY') });
+  });
 
   // 2. 通行費（從暫存變數讀 JPY）
   const tollJpy = window._tollJpy || 0;
