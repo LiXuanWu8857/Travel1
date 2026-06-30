@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202606011333">
+<html lang="zh-TW" data-ver="202606300535">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2495,6 +2495,7 @@ body {
       <div class="item-content"><div class="card" data-card-id="d0901_card_10" data-sync="stay_abashiri" style="border-color:var(--hotel);border-width:1.5px;">
         <div class="card-header"><div class="card-title">🏨 ドーミーイン網走</div><span class="tag tag-hotel">住宿</span></div>
         <div class="card-desc">Booking.com · ⭐ 提供「夜鳴きそば」免費蕎麥麵 21:30～23:00</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=44.021824,144.2638537" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ドーミーイン網走</a>
 
         <a class="web-btn" href="https://dormy-hotels.com/dormyinn/hotels/abashiri/" target="_blank">🌐 官方網站</a>
       </div></div>
@@ -4672,7 +4673,7 @@ window.closeMapModal = closeMapModal;
   let _knownSig = null;
   async function _checkVersion() {
     try {
-      const r = await fetch(location.href + '?_=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+      const r = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
       const sig = r.headers.get('etag') || r.headers.get('last-modified');
       if (!sig) return;
       if (_knownSig && sig !== _knownSig) {
