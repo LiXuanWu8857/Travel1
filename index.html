@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="202606300535">
+<html lang="zh-TW" data-ver="d5c5d92a">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4668,22 +4668,21 @@ function closeMapModal() {
 window.openDayMap = openDayMap;
 window.closeMapModal = closeMapModal;
 
-// ── 版本偵測：有新版本時顯示更新通知 ──
+// ── 版本偵測：比對 data-ver attribute ──
 (function () {
-  let _knownSig = null;
+  const currentVer = document.documentElement.getAttribute('data-ver');
   async function _checkVersion() {
     try {
-      const r = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
-      const sig = r.headers.get('etag') || r.headers.get('last-modified');
-      if (!sig) return;
-      if (_knownSig && sig !== _knownSig) {
+      const r = await fetch(location.pathname + '?_noop', { cache: 'no-store' });
+      const text = await r.text();
+      const m = text.match(/data-ver="d5c5d92a"]+)"/);
+      if (m && m[1] && currentVer && m[1] !== currentVer) {
         const b = document.getElementById('update-banner');
         if (b) b.style.display = 'flex';
       }
-      _knownSig = sig;
     } catch (_) {}
   }
-  _checkVersion();
+  setTimeout(_checkVersion, 5000);
   setInterval(_checkVersion, 90 * 1000);
 })();
 
