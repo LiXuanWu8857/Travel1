@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="d5c5d92a">
+<html lang="zh-TW" data-ver="fa3d014a">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3634,6 +3634,159 @@ function loadProgress() {
 }
 
 // Inject booking badges into day cards
+
+// ══ 自訂卡片系統（手動新增行程）══
+let _customCards = {}; // { dayId: [ {id, time, title, desc, nav, url} ] }
+
+function customCardsFbPath() {
+  return (window._activeTrip || 'hokkaido') === 'bangkok' ? 'bangkok2026/customCards' : 'hokkaido2026/customCards';
+}
+
+function loadCustomCards() {
+  try { _customCards = JSON.parse(localStorage.getItem('wandr_custom_cards') || '{}'); } catch(e) { _customCards = {}; }
+  renderAllCustomCards();
+  // Firebase 監聽
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    ['hokkaido2026/customCards', 'bangkok2026/customCards'].forEach(path => {
+      window._fbOnValue(window._fbRef(window._fbDb, path), snap => {
+        const data = snap.val();
+        if (data) {
+          Object.assign(_customCards, data);
+          localStorage.setItem('wandr_custom_cards', JSON.stringify(_customCards));
+          renderAllCustomCards();
+        }
+      });
+    });
+  }
+}
+
+function saveCustomCards() {
+  localStorage.setItem('wandr_custom_cards', JSON.stringify(_customCards));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, customCardsFbPath()), _customCards);
+  }
+}
+
+window.openAddCardModal = function(dayId) {
+  document.getElementById('ac-day-id').value = dayId;
+  ['ac-time','ac-title','ac-desc','ac-nav','ac-url'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('add-card-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeAddCardModal = function() {
+  document.getElementById('add-card-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.saveCustomCard = function() {
+  const dayId = document.getElementById('ac-day-id').value;
+  const title = document.getElementById('ac-title').value.trim();
+  if (!title) { alert('請輸入標題'); return; }
+  const card = {
+    id: 'cc_' + Date.now(),
+    time: document.getElementById('ac-time').value.trim(),
+    title,
+    desc: document.getElementById('ac-desc').value.trim(),
+    nav: document.getElementById('ac-nav').value.trim(),
+    url: document.getElementById('ac-url').value.trim(),
+  };
+  if (!_customCards[dayId]) _customCards[dayId] = [];
+  _customCards[dayId].push(card);
+  saveCustomCards();
+  renderCustomCardsForDay(dayId);
+  closeAddCardModal();
+};
+
+window.deleteCustomCard = function(dayId, cardId) {
+  if (!confirm('確定刪除這個行程？')) return;
+  _customCards[dayId] = (_customCards[dayId] || []).filter(c => c.id !== cardId);
+  saveCustomCards();
+  renderCustomCardsForDay(dayId);
+};
+
+window.moveCustomCard = function(dayId, cardId, dir) {
+  const arr = _customCards[dayId] || [];
+  const i = arr.findIndex(c => c.id === cardId);
+  if (i < 0) return;
+  const j = dir === 'up' ? i - 1 : i + 1;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  saveCustomCards();
+  renderCustomCardsForDay(dayId);
+};
+
+function navHref(nav) {
+  if (!nav) return '';
+  if (nav.startsWith('http')) return nav;
+  return 'https://maps.google.com/?q=' + encodeURIComponent(nav);
+}
+
+function renderCustomCardsForDay(dayId) {
+  const container = document.getElementById('cc_' + dayId);
+  if (!container) return;
+  const cards = _customCards[dayId] || [];
+  container.innerHTML = cards.map((c, idx) => `
+    <div class="item" data-cc-id="${c.id}">
+      <div class="item-left"><div class="item-time">${c.time || ''}</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="${c.id}">
+        <div class="card-header"><div class="card-title">${c.title}</div><span class="tag tag-spot">自訂</span></div>
+        ${c.desc ? `<div class="card-desc">${c.desc}</div>` : ''}
+        ${c.nav ? `<a class="nav-btn" href="${navHref(c.nav)}" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>導航</a>` : ''}
+        ${c.url ? `<a class="web-btn" href="${c.url}" target="_blank">🌐 網站</a>` : ''}
+        <div class="cc-controls" style="display:none;margin-top:8px;gap:6px;">
+          <button onclick="moveCustomCard('${dayId}','${c.id}','up')" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:4px 12px;cursor:pointer;font-size:13px;">⬆️</button>
+          <button onclick="moveCustomCard('${dayId}','${c.id}','down')" style="border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:4px 12px;cursor:pointer;font-size:13px;">⬇️</button>
+          <button onclick="deleteCustomCard('${dayId}','${c.id}')" style="border:1px solid #fca5a5;background:#FEF2F2;color:#B91C1C;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:13px;">🗑 刪除</button>
+        </div>
+      </div></div>
+    </div>
+  `).join('');
+  // 若目前處於編輯模式，顯示控制列
+  if (window._ccEditMode) {
+    container.querySelectorAll('.cc-controls').forEach(el => el.style.display = 'flex');
+  }
+  if (typeof injectEditButtons === 'function') setTimeout(injectEditButtons, 50);
+}
+
+function renderAllCustomCards() {
+  Object.keys(_customCards).forEach(dayId => renderCustomCardsForDay(dayId));
+}
+
+// 編輯模式切換（顯示上下移動+刪除按鈕）
+window._ccEditMode = false;
+window.toggleCcEditMode = function() {
+  window._ccEditMode = !window._ccEditMode;
+  document.querySelectorAll('.cc-controls').forEach(el => {
+    el.style.display = window._ccEditMode ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.cc-edit-toggle').forEach(btn => {
+    btn.textContent = window._ccEditMode ? '✅ 完成' : '✏️ 編輯';
+  });
+};
+
+// 為每個 day-section 注入「新增行程」按鈕和自訂卡片容器
+function injectAddCardButtons() {
+  document.querySelectorAll('.day-section[id^="d"]').forEach(sec => {
+    const dayId = sec.id;
+    const timeline = sec.querySelector('.timeline');
+    if (!timeline || sec.querySelector('.cc-add-btn')) return;
+    // 自訂卡片容器（在 timeline 尾端）
+    const ccContainer = document.createElement('div');
+    ccContainer.id = 'cc_' + dayId;
+    timeline.appendChild(ccContainer);
+    // 按鈕列
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;padding:4px 0 8px;';
+    btnRow.innerHTML = `
+      <button class="add-place-btn cc-add-btn" style="flex:1;" onclick="openAddCardModal('${dayId}')">➕ 新增行程</button>
+      <button class="add-place-btn cc-edit-toggle" style="flex:0 0 auto;padding:10px 18px;" onclick="toggleCcEditMode()">✏️ 編輯</button>
+    `;
+    timeline.appendChild(btnRow);
+  });
+}
+
+setTimeout(() => { injectAddCardButtons(); loadCustomCards(); }, 800);
+
 window.injectBadges = function() {
   document.querySelectorAll('[data-sync]').forEach(card => {
     const bid = card.dataset.sync;
@@ -4113,6 +4266,27 @@ window._fbDb = db;
     <div class="modal-row">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
       <button class="modal-btn modal-btn-save" onclick="saveEdit()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="add-card-modal" onclick="if(event.target===this)closeAddCardModal()">
+  <div class="modal-box">
+    <div class="modal-title">➕ 新增行程</div>
+    <input type="hidden" id="ac-day-id">
+    <label class="modal-label">時間</label>
+    <input class="modal-input" id="ac-time" type="text" placeholder="例：14:30">
+    <label class="modal-label">標題</label>
+    <input class="modal-input" id="ac-title" type="text" placeholder="例：🍜 午餐 — 拉麵店">
+    <label class="modal-label">內容描述</label>
+    <textarea class="modal-textarea" id="ac-desc" placeholder="例：味噌拉麵名店 · 排隊約20分"></textarea>
+    <label class="modal-label">📍 導航（選填，貼 Google Maps 連結或輸入地點名）</label>
+    <input class="modal-input" id="ac-nav" type="text" placeholder="例：https://maps.app.goo.gl/... 或 札幌拉麵橫丁">
+    <label class="modal-label">🌐 網址（選填）</label>
+    <input class="modal-input" id="ac-url" type="text" placeholder="例：https://...">
+    <div class="modal-row">
+      <button class="modal-btn modal-btn-cancel" onclick="closeAddCardModal()">取消</button>
+      <button class="modal-btn modal-btn-save" onclick="saveCustomCard()">新增</button>
     </div>
   </div>
 </div>
@@ -4675,7 +4849,7 @@ window.closeMapModal = closeMapModal;
     try {
       const r = await fetch(location.pathname + '?_noop', { cache: 'no-store' });
       const text = await r.text();
-      const m = text.match(/data-ver="d5c5d92a"]+)"/);
+      const m = text.match(/data-ver="fa3d014a"]+)"/);
       if (m && m[1] && currentVer && m[1] !== currentVer) {
         const b = document.getElementById('update-banner');
         if (b) b.style.display = 'flex';
