@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="fa3d014a">
+<html lang="zh-TW" data-ver="fcf7d5cb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -883,6 +883,30 @@ body {
 .photo-caption-input { width: 100%; border: none; border-top: 1px solid var(--border); padding: 5px 8px; font-size: 11px; color: var(--muted); background: var(--card); font-family: inherit; box-sizing: border-box; }
 .photo-caption-input:focus { outline: none; color: var(--text); }
 .photo-caption-input::placeholder { color: var(--border); }
+/* ══ PDF 輸出（列印）══ */
+@media print {
+  body.printing-trip * { visibility: hidden; }
+  body.printing-trip .trip-wrapper.active,
+  body.printing-trip .trip-wrapper.active * { visibility: visible; }
+  body.printing-trip .trip-wrapper.active { position: absolute; left: 0; top: 0; width: 100%; padding-top: 0 !important; }
+  body.printing-trip .top-nav,
+  body.printing-trip .back-btn,
+  body.printing-trip .tab-scroll,
+  body.printing-trip .edit-btn,
+  body.printing-trip .photo-add-btn,
+  body.printing-trip .add-place-btn,
+  body.printing-trip .cc-controls,
+  body.printing-trip .cc-edit-toggle,
+  body.printing-trip .booking-fab,
+  body.printing-trip .modal-overlay,
+  body.printing-trip #update-banner { display: none !important; }
+  body.printing-trip .day-section { display: block !important; page-break-after: always; padding: 12px 16px; }
+  body.printing-trip .day-section:last-of-type { page-break-after: auto; }
+  body.printing-trip .day-header { border-radius: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.printing-trip .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+  body.printing-trip .nav-btn, body.printing-trip .web-btn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { size: A4 portrait; margin: 10mm; }
+}
 </style>
 </head>
 <body>
@@ -1390,7 +1414,7 @@ body {
 <div class="top-nav">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
     <div class="nav-title" style="margin:0;padding:0;">✈️ 旅圖 · 北海道 2026</div>
-    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button>
+    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button><button onclick="exportTripPDF()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#B45309;white-space:nowrap;flex-shrink:0;margin-left:6px;" title="輸出PDF">📄 PDF</button>
   </div>
   <div class="tab-scroll">
     <div class="tab active" onclick="switchDay('d0827')">8/27</div>
@@ -3635,6 +3659,15 @@ function loadProgress() {
 
 // Inject booking badges into day cards
 
+// ══ PDF 輸出 ══
+window.exportTripPDF = function() {
+  document.body.classList.add('printing-trip');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing-trip'), 500);
+  }, 100);
+};
+
 // ══ 自訂卡片系統（手動新增行程）══
 let _customCards = {}; // { dayId: [ {id, time, title, desc, nav, url} ] }
 
@@ -4849,7 +4882,7 @@ window.closeMapModal = closeMapModal;
     try {
       const r = await fetch(location.pathname + '?_noop', { cache: 'no-store' });
       const text = await r.text();
-      const m = text.match(/data-ver="fa3d014a"]+)"/);
+      const m = text.match(/data-ver="fcf7d5cb"]+)"/);
       if (m && m[1] && currentVer && m[1] !== currentVer) {
         const b = document.getElementById('update-banner');
         if (b) b.style.display = 'flex';
@@ -6555,7 +6588,7 @@ function renderCustomTrip(trip) {
     <div class="top-nav">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
         <div class="nav-title" style="margin:0;padding:0;">✈️ 旅圖 · ${trip.name}</div>
-        <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button>
+        <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button><button onclick="exportTripPDF()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#B45309;white-space:nowrap;flex-shrink:0;margin-left:6px;" title="輸出PDF">📄 PDF</button>
       </div>
       <div class="tab-scroll">${tabsHtml}</div>
     </div>
@@ -7003,7 +7036,7 @@ window.switchDayBkk = function(id) { switchDay(id); };
 <div class="top-nav">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
     <div class="nav-title" style="margin:0;padding:0;">✈️ 旅圖 · 曼谷 2026</div>
-    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button>
+    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button><button onclick="exportTripPDF()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#B45309;white-space:nowrap;flex-shrink:0;margin-left:6px;" title="輸出PDF">📄 PDF</button>
   </div>
   <div class="tab-scroll">
     <div class="tab active" onclick="switchDayBkk('d1103')">11/3</div>
