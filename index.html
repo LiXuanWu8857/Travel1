@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="fcf7d5cb">
+<html lang="zh-TW" data-ver="608584c2">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -883,7 +883,7 @@ body {
 .photo-caption-input { width: 100%; border: none; border-top: 1px solid var(--border); padding: 5px 8px; font-size: 11px; color: var(--muted); background: var(--card); font-family: inherit; box-sizing: border-box; }
 .photo-caption-input:focus { outline: none; color: var(--text); }
 .photo-caption-input::placeholder { color: var(--border); }
-/* ══ PDF 輸出（列印）══ */
+/* ══ PDF 輸出（列印）— 對齊指南PDF格式 ══ */
 @media print {
   body.printing-trip * { visibility: hidden; }
   body.printing-trip .trip-wrapper.active,
@@ -899,12 +899,51 @@ body {
   body.printing-trip .cc-edit-toggle,
   body.printing-trip .booking-fab,
   body.printing-trip .modal-overlay,
+  body.printing-trip .photo-strip,
   body.printing-trip #update-banner { display: none !important; }
-  body.printing-trip .day-section { display: block !important; page-break-after: always; padding: 12px 16px; }
+
+  /* 每日一頁 */
+  body.printing-trip .day-section { display: block !important; page-break-after: always; padding: 0 4mm; }
   body.printing-trip .day-section:last-of-type { page-break-after: auto; }
-  body.printing-trip .day-header { border-radius: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body.printing-trip .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
-  body.printing-trip .nav-btn, body.printing-trip .web-btn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Day 標題橫幅：藍底白字，如指南PDF */
+  body.printing-trip .day-header {
+    background: #2D5A8E !important;
+    border-radius: 8px;
+    padding: 10px 14px !important;
+    margin-bottom: 10px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  body.printing-trip .day-header * { color: white !important; }
+  body.printing-trip .day-badge { font-size: 11px; }
+  body.printing-trip .day-title { font-size: 16px; font-weight: 700; }
+  body.printing-trip .day-sub { font-size: 10px; opacity: 0.85; }
+
+  /* 行程列：時間表格式，緊湊 */
+  body.printing-trip .timeline { padding: 0; }
+  body.printing-trip .item { margin-bottom: 0; border-bottom: 0.5px solid #E5E5E5; padding: 3px 0; }
+  body.printing-trip .item-left { width: 44px; flex-shrink: 0; }
+  body.printing-trip .item-time { font-size: 9px; font-weight: 700; color: #2D5A8E !important; }
+  body.printing-trip .item-dot, body.printing-trip .item-line { display: none !important; }
+  body.printing-trip .card {
+    break-inside: avoid; box-shadow: none !important; border: none !important;
+    padding: 0 !important; margin: 0 !important; background: transparent !important;
+  }
+  body.printing-trip .card-header { margin-bottom: 1px; }
+  body.printing-trip .card-title { font-size: 10px; font-weight: 700; color: #1a1a1a !important; }
+  body.printing-trip .tag { font-size: 7px; padding: 1px 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.printing-trip .card-desc { font-size: 8px; color: #999 !important; line-height: 1.4; }
+  body.printing-trip .card-drive .card-desc { color: #666 !important; font-size: 8.5px; }
+
+  /* 導航/官網按鈕：縮成小標籤 */
+  body.printing-trip .nav-btn, body.printing-trip .web-btn {
+    font-size: 7px !important; padding: 1px 8px !important; border-radius: 8px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    display: inline-flex; margin: 1px 4px 0 0;
+  }
+  body.printing-trip .nav-icon { width: 8px; height: 8px; }
+
+  body.printing-trip .footer { font-size: 8px; color: #bbb !important; margin-top: 6px; }
   @page { size: A4 portrait; margin: 10mm; }
 }
 </style>
@@ -3662,9 +3701,24 @@ function loadProgress() {
 // ══ PDF 輸出 ══
 window.exportTripPDF = function() {
   document.body.classList.add('printing-trip');
+  // 飯店卡片時間改為 C/I
+  const restored = [];
+  document.querySelectorAll('.item').forEach(item => {
+    const title = item.querySelector('.card-title')?.textContent || '';
+    if (title.includes('🏨') || title.includes('Check-in') || title.includes('C/I')) {
+      const timeEl = item.querySelector('.item-time');
+      if (timeEl && timeEl.textContent !== 'C/I') {
+        restored.push([timeEl, timeEl.textContent]);
+        timeEl.textContent = 'C/I';
+      }
+    }
+  });
   setTimeout(() => {
     window.print();
-    setTimeout(() => document.body.classList.remove('printing-trip'), 500);
+    setTimeout(() => {
+      document.body.classList.remove('printing-trip');
+      restored.forEach(([el, t]) => el.textContent = t);
+    }, 500);
   }, 100);
 };
 
@@ -4882,7 +4936,7 @@ window.closeMapModal = closeMapModal;
     try {
       const r = await fetch(location.pathname + '?_noop', { cache: 'no-store' });
       const text = await r.text();
-      const m = text.match(/data-ver="fcf7d5cb"]+)"/);
+      const m = text.match(/data-ver="608584c2"]+)"/);
       if (m && m[1] && currentVer && m[1] !== currentVer) {
         const b = document.getElementById('update-banner');
         if (b) b.style.display = 'flex';
