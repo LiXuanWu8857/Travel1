@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="1a6bcd3d">
+<html lang="zh-TW" data-ver="d1151eb1">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4936,7 +4936,7 @@ window.closeMapModal = closeMapModal;
     try {
       const r = await fetch(location.pathname + '?_noop', { cache: 'no-store' });
       const text = await r.text();
-      const m = text.match(/data-ver="1a6bcd3d"]+)"/);
+      const m = text.match(/data-ver="([^"]+)"/);
       if (m && m[1] && currentVer && m[1] !== currentVer) {
         const b = document.getElementById('update-banner');
         if (b) b.style.display = 'flex';
@@ -6557,6 +6557,7 @@ window.createNewTrip = function() {
 
 // ── 加首頁卡片 ──
 function addTripCard(trip) {
+  if (trip.hidden || !trip.start || !trip.end) return; // 跳過隱藏/無日期的 dummy trip
   const sec = document.querySelector('.trips-section');
   const addBtn = document.querySelector('.trip-add-card');
   const days = dateRange(trip.start, trip.end).length;
@@ -7001,9 +7002,9 @@ function saveBkkPlaces() {
   localStorage.setItem('wandr_bkk_places', JSON.stringify(window._bkkPlaces));
 }
 // 確保 openAddPlace('bkk', dayId) 能正確呼叫
-// _customTrips 裡加一個 dummy bkk trip 讓 modal 能找到
+// _customTrips 裡加一個 dummy bkk trip 讓 modal 能找到（不顯示在首頁）
 if (!_customTrips.find(t => t.id === 'bkk')) {
-  _customTrips.push({ id: 'bkk', name: '曼谷 2026', dest: '曼谷', places: window._bkkPlaces });
+  _customTrips.push({ id: 'bkk', name: '曼谷 2026', dest: '曼谷', start: '', end: '', hidden: true, places: window._bkkPlaces });
 }
 
 // ── 曼谷花費試算 ──
