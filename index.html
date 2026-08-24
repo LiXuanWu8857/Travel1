@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="d1151eb1">
+<html lang="zh-TW" data-ver="21db23bf">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3517,6 +3517,7 @@ function switchDay(id, dir) {
   window.scrollTo(0, 0);
   window._currentDayIdx = idx;
   if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
+  if (typeof injectFoodLottery === 'function') setTimeout(injectFoodLottery, 100);
 }
 
 // ── 滑動切換天數（跟手動畫版）──
@@ -3721,6 +3722,152 @@ window.exportTripPDF = function() {
     }, 500);
   }, 100);
 };
+
+
+// ══ 美食抽籤系統 ══
+let _foodOptions = {}; // { cardKey: [option1, option2...] }
+
+function foodLotteryFbPath() {
+  return (window._activeTrip || 'hokkaido') === 'bangkok' ? 'bangkok2026/foodOptions' : 'hokkaido2026/foodOptions';
+}
+
+function loadFoodOptions() {
+  try { _foodOptions = JSON.parse(localStorage.getItem('wandr_food_options') || '{}'); } catch(e) { _foodOptions = {}; }
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    ['hokkaido2026/foodOptions', 'bangkok2026/foodOptions'].forEach(path => {
+      window._fbOnValue(window._fbRef(window._fbDb, path), snap => {
+        const d = snap.val();
+        if (d) { Object.assign(_foodOptions, d); localStorage.setItem('wandr_food_options', JSON.stringify(_foodOptions)); }
+      });
+    });
+  }
+}
+function saveFoodOptions() {
+  localStorage.setItem('wandr_food_options', JSON.stringify(_foodOptions));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, foodLotteryFbPath()), _foodOptions);
+  }
+}
+
+// 從卡片描述拆解預設選項（以 · 、／/ 分隔的店名）
+function parseCardOptions(card) {
+  const desc = card.querySelector('.card-desc')?.textContent || '';
+  const title = card.querySelector('.card-title')?.textContent || '';
+  // 從描述中抓「擇一」「或」等，用分隔符拆
+  let raw = desc.replace(/⏰.*$/,'').replace(/[✅❓⚠️].*$/,'');
+  let opts = raw.split(/[·・、／/]|\bor\b|或/).map(s => s.trim())
+    .filter(s => s.length >= 2 && s.length <= 30 && !/^\d/.test(s) && !/^\(/.test(s));
+  return opts.slice(0, 8);
+}
+
+let _currentFoodKey = null;
+window.openFoodLottery = function(cardKey, cardId) {
+  _currentFoodKey = cardKey;
+  const card = document.querySelector(`[data-food-key="${cardKey}"]`)?.closest('.card') || document.querySelector(`[data-card-id="${cardId}"]`);
+  // 合併：卡片預設選項 + 使用者存的
+  const defaults = card ? parseCardOptions(card) : [];
+  const saved = _foodOptions[cardKey] || [];
+  const merged = [...new Set([...defaults, ...saved])];
+  renderFoodLotteryModal(merged, card?.querySelector('.card-title')?.textContent || '這一餐');
+};
+
+function renderFoodLotteryModal(options, title) {
+  let modal = document.getElementById('food-lottery-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'food-lottery-modal';
+    modal.className = 'modal-overlay';
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title">🎲 ${title} 吃什麼？</div>
+      <div id="fl-wheel" style="min-height:60px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent);text-align:center;padding:16px;background:var(--bg);border-radius:12px;margin:12px 0;">${options.length ? '按下抽籤 🎲' : '先新增選項'}</div>
+      <button class="modal-btn modal-btn-save" style="width:100%;margin-bottom:14px;" onclick="spinFoodWheel()" ${options.length < 2 ? 'disabled' : ''}>🎲 抽籤決定</button>
+      <div class="modal-label">候選清單（${options.length}）</div>
+      <div id="fl-options" style="display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;margin-bottom:10px;">
+        ${options.map((o,i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:13px;"><span>${o}</span><button onclick="removeFoodOption('${o.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;">✕</button></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="fl-new" class="modal-input" style="flex:1;" placeholder="輸入想吃的店/料理" onkeydown="if(event.key==='Enter')addFoodOption()">
+        <button class="modal-btn modal-btn-save" style="flex:0 0 auto;padding:11px 18px;" onclick="addFoodOption()">＋</button>
+      </div>
+      <div class="modal-row" style="margin-top:14px;">
+        <button class="modal-btn modal-btn-cancel" style="width:100%;" onclick="document.getElementById('food-lottery-modal').classList.remove('open')">關閉</button>
+      </div>
+    </div>`;
+  modal.classList.add('open');
+  window._flOptions = options;
+}
+
+window.addFoodOption = function() {
+  const inp = document.getElementById('fl-new');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!_foodOptions[_currentFoodKey]) _foodOptions[_currentFoodKey] = [];
+  if (!_foodOptions[_currentFoodKey].includes(val) && !window._flOptions.includes(val)) {
+    _foodOptions[_currentFoodKey].push(val);
+    saveFoodOptions();
+  }
+  const card = document.querySelector(`[data-food-key="${_currentFoodKey}"]`)?.closest('.card');
+  const defaults = card ? parseCardOptions(card) : [];
+  renderFoodLotteryModal([...new Set([...defaults, ...(_foodOptions[_currentFoodKey]||[])])], card?.querySelector('.card-title')?.textContent || '這一餐');
+};
+
+window.removeFoodOption = function(opt) {
+  if (_foodOptions[_currentFoodKey]) {
+    _foodOptions[_currentFoodKey] = _foodOptions[_currentFoodKey].filter(o => o !== opt);
+    saveFoodOptions();
+  }
+  const card = document.querySelector(`[data-food-key="${_currentFoodKey}"]`)?.closest('.card');
+  const defaults = (card ? parseCardOptions(card) : []).filter(o => o !== opt);
+  renderFoodLotteryModal([...new Set([...defaults, ...(_foodOptions[_currentFoodKey]||[])])], card?.querySelector('.card-title')?.textContent || '這一餐');
+};
+
+window.spinFoodWheel = function() {
+  const opts = window._flOptions;
+  if (opts.length < 2) return;
+  const wheel = document.getElementById('fl-wheel');
+  let count = 0;
+  const total = 18 + Math.floor(Math.random() * 8);
+  const interval = setInterval(() => {
+    wheel.textContent = opts[Math.floor(Math.random() * opts.length)];
+    wheel.style.color = 'var(--muted)';
+    count++;
+    if (count >= total) {
+      clearInterval(interval);
+      const win = opts[Math.floor(Math.random() * opts.length)];
+      wheel.textContent = '🎉 ' + win;
+      wheel.style.color = 'var(--accent)';
+      wheel.style.transform = 'scale(1.1)';
+      setTimeout(() => wheel.style.transform = 'scale(1)', 200);
+    }
+  }, 80);
+};
+
+// 注入 🎲 按鈕到所有餐點卡片
+function injectFoodLottery() {
+  const mealTags = ['早餐','午餐','晚餐','早午餐','宵夜','下午茶'];
+  document.querySelectorAll('.card').forEach(card => {
+    const tag = card.querySelector('.tag')?.textContent || '';
+    if (!mealTags.includes(tag)) return;
+    if (card.querySelector('.food-dice-btn')) return;
+    const cardId = card.dataset.cardId || card.querySelector('.card-title')?.textContent?.slice(0,12) || Math.random().toString(36).slice(2,8);
+    const cardKey = cardId;
+    const header = card.querySelector('.card-header');
+    if (!header) return;
+    const btn = document.createElement('button');
+    btn.className = 'food-dice-btn';
+    btn.setAttribute('data-food-key', cardKey);
+    btn.style.cssText = 'background:linear-gradient(135deg,#F59E0B,#EF4444);color:white;border:none;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-left:6px;flex-shrink:0;';
+    btn.textContent = '🎲 抽';
+    btn.onclick = (e) => { e.stopPropagation(); openFoodLottery(cardKey, cardId); };
+    header.appendChild(btn);
+  });
+}
+
+setTimeout(() => { loadFoodOptions(); injectFoodLottery(); }, 1000);
 
 // ══ 自訂卡片系統（手動新增行程）══
 let _customCards = {}; // { dayId: [ {id, time, title, desc, nav, url} ] }
