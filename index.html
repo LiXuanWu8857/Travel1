@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="9725b8b8">
+<html lang="zh-TW" data-ver="432f4cb9">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1446,6 +1446,9 @@ body {
       </button>
       <button class="booking-fab" onclick="event.stopPropagation();openExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
         💴 花費
+      </button>
+      <button class="booking-fab" onclick="event.stopPropagation();openSplitModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#DB6E1E;">
+        💰 分帳
       </button>
     </div>
   </div>
@@ -3737,6 +3740,169 @@ window.exportTripPDF = function() {
   }, 100);
 };
 
+
+
+// ══ 四人分帳系統 ══
+let _splitData = { members: ['我','媽','弟','雪'], expenses: [] };
+
+function splitFbPath() {
+  return (window._activeTrip || 'hokkaido') === 'bangkok' ? 'bangkok2026/split' : 'hokkaido2026/split';
+}
+function loadSplitData() {
+  try {
+    const s = localStorage.getItem('wandr_split_' + (window._activeTrip||'hokkaido'));
+    if (s) _splitData = JSON.parse(s);
+  } catch(e) {}
+  if (window._fbDb && window._fbRef && window._fbOnValue) {
+    window._fbOnValue(window._fbRef(window._fbDb, splitFbPath()), snap => {
+      const d = snap.val();
+      if (d) {
+        _splitData = { members: d.members || ['我','媽','弟','雪'], expenses: d.expenses || [] };
+        localStorage.setItem('wandr_split_' + (window._activeTrip||'hokkaido'), JSON.stringify(_splitData));
+        if (document.getElementById('split-modal')?.classList.contains('open')) renderSplitModal();
+      }
+    });
+  }
+}
+function saveSplitData() {
+  localStorage.setItem('wandr_split_' + (window._activeTrip||'hokkaido'), JSON.stringify(_splitData));
+  if (window._fbDb && window._fbRef && window._fbSet) {
+    window._fbSet(window._fbRef(window._fbDb, splitFbPath()), _splitData);
+  }
+}
+
+window.openSplitModal = function() {
+  loadSplitData();
+  renderSplitModal();
+  document.getElementById('split-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeSplitModal = function() {
+  document.getElementById('split-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// 計算結算結果
+function calcSettlement() {
+  const m = _splitData.members;
+  const bal = {}; m.forEach(p => bal[p] = 0);
+  _splitData.expenses.forEach(e => {
+    const share = e.amount / e.forWhom.length;
+    bal[e.payer] += e.amount;
+    e.forWhom.forEach(p => bal[p] -= share);
+  });
+  // 產生誰付誰
+  const creditors = [], debtors = [];
+  Object.entries(bal).forEach(([p, v]) => {
+    if (v > 0.01) creditors.push({p, v});
+    else if (v < -0.01) debtors.push({p, v: -v});
+  });
+  creditors.sort((a,b)=>b.v-a.v); debtors.sort((a,b)=>b.v-a.v);
+  const settlements = [];
+  let ci=0, di=0;
+  while (ci < creditors.length && di < debtors.length) {
+    const amt = Math.min(creditors[ci].v, debtors[di].v);
+    settlements.push(`${debtors[di].p} → ${creditors[ci].p}：NT$ ${Math.round(amt).toLocaleString()}`);
+    creditors[ci].v -= amt; debtors[di].v -= amt;
+    if (creditors[ci].v < 0.01) ci++;
+    if (debtors[di].v < 0.01) di++;
+  }
+  return { bal, settlements };
+}
+
+function renderSplitModal() {
+  let modal = document.getElementById('split-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'split-modal';
+    modal.className = 'modal-overlay';
+    modal.onclick = (e) => { if (e.target === modal) closeSplitModal(); };
+    document.body.appendChild(modal);
+  }
+  const m = _splitData.members;
+  const { bal, settlements } = calcSettlement();
+  const total = _splitData.expenses.reduce((s,e)=>s+e.amount,0);
+
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:460px;max-height:88vh;overflow-y:auto;">
+      <div class="modal-title">💰 分帳記帳（${m.length}人）</div>
+
+      <!-- 新增花費 -->
+      <div style="background:var(--bg);border-radius:12px;padding:12px;margin:10px 0;">
+        <div class="modal-label" style="margin-top:0;">新增一筆花費</div>
+        <input id="sp-item" class="modal-input" placeholder="項目（例：午餐、加油）">
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <input id="sp-amount" class="modal-input" type="number" placeholder="金額 NT$" style="flex:1;">
+        </div>
+        <div class="modal-label">誰付的？</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sp-payer">
+          ${m.map((p,i)=>`<button type="button" class="sp-payer-btn" data-p="${p}" onclick="selectPayer('${p}')" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;${i===0?'border-color:var(--accent);background:var(--accent);color:white;':''}">${p}</button>`).join('')}
+        </div>
+        <div class="modal-label">幫誰付？（分攤）</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sp-forwhom">
+          ${m.map(p=>`<button type="button" class="sp-for-btn" data-p="${p}" onclick="toggleForWhom('${p}')" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;font-size:13px;">${p}</button>`).join('')}
+        </div>
+        <button class="modal-btn modal-btn-save" style="width:100%;margin-top:10px;" onclick="addSplitExpense()">＋ 記一筆</button>
+      </div>
+
+      <!-- 結算結果 -->
+      <div style="background:#EFF6FF;border-radius:12px;padding:12px;margin:10px 0;">
+        <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:8px;">💡 結算：誰該付誰</div>
+        ${settlements.length ? settlements.map(s=>`<div style="font-size:14px;padding:4px 0;color:#1a1a1a;">${s}</div>`).join('') : '<div style="font-size:13px;color:var(--muted);">目前無人需結算</div>'}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid #DBEAFE;font-size:12px;color:var(--muted);">總花費 NT$ ${Math.round(total).toLocaleString()}</div>
+      </div>
+
+      <!-- 花費明細 -->
+      <div class="modal-label">花費明細（${_splitData.expenses.length}）</div>
+      <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;">
+        ${_splitData.expenses.slice().reverse().map((e,ri)=>{
+          const idx = _splitData.expenses.length-1-ri;
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
+            <div><div style="font-weight:600;">${e.item||'(無名)'}</div><div style="font-size:11px;color:var(--muted);">${e.payer} 付 · 分給 ${e.forWhom.join('/')}</div></div>
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:700;">NT$ ${Math.round(e.amount).toLocaleString()}</span><button onclick="delSplitExpense(${idx})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;">✕</button></div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="modal-row" style="margin-top:14px;">
+        <button class="modal-btn modal-btn-cancel" style="width:100%;" onclick="closeSplitModal()">關閉</button>
+      </div>
+    </div>`;
+  window._spPayer = m[0];
+  window._spForWhom = [...m];
+}
+
+window.selectPayer = function(p) {
+  window._spPayer = p;
+  document.querySelectorAll('.sp-payer-btn').forEach(b => {
+    const on = b.dataset.p === p;
+    b.style.cssText = `padding:6px 14px;border-radius:20px;border:1.5px solid ${on?'var(--accent)':'var(--border)'};background:${on?'var(--accent)':'var(--card)'};color:${on?'white':'inherit'};cursor:pointer;font-size:13px;`;
+  });
+};
+window.toggleForWhom = function(p) {
+  const i = window._spForWhom.indexOf(p);
+  if (i>=0) window._spForWhom.splice(i,1); else window._spForWhom.push(p);
+  document.querySelectorAll('.sp-for-btn').forEach(b => {
+    const on = window._spForWhom.includes(b.dataset.p);
+    b.style.cssText = `padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent);background:${on?'var(--accent)':'var(--card)'};color:${on?'white':'var(--accent)'};cursor:pointer;font-size:13px;`;
+  });
+};
+window.addSplitExpense = function() {
+  const item = document.getElementById('sp-item').value.trim();
+  const amount = parseFloat(document.getElementById('sp-amount').value);
+  if (!amount || amount<=0) { alert('請輸入金額'); return; }
+  if (!window._spForWhom.length) { alert('請選擇分攤對象'); return; }
+  _splitData.expenses.push({ item, amount, payer: window._spPayer, forWhom: [...window._spForWhom], ts: Date.now() });
+  saveSplitData();
+  renderSplitModal();
+};
+window.delSplitExpense = function(idx) {
+  _splitData.expenses.splice(idx,1);
+  saveSplitData();
+  renderSplitModal();
+};
+
+setTimeout(loadSplitData, 1200);
 
 // ══ 美食抽籤系統 ══
 let _foodOptions = {}; // { cardKey: [option1, option2...] }
@@ -7245,6 +7411,9 @@ window.switchDayBkk = function(id) { switchDay(id); };
     </button>
     <button class="booking-fab" onclick="event.stopPropagation();openBkkExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
       💴 花費
+    </button>
+    <button class="booking-fab" onclick="event.stopPropagation();openSplitModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#DB6E1E;">
+      💰 分帳
     </button>
   </div>
 </div>
