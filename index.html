@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="432f4cb9">
+<html lang="zh-TW" data-ver="9ffdb8eb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3787,11 +3787,16 @@ function calcSettlement() {
   const m = _splitData.members;
   const bal = {}; m.forEach(p => bal[p] = 0);
   _splitData.expenses.forEach(e => {
-    const share = e.amount / e.forWhom.length;
     bal[e.payer] += e.amount;
-    e.forWhom.forEach(p => bal[p] -= share);
+    if (e.shares) {
+      // 自訂每人金額
+      Object.entries(e.shares).forEach(([p, amt]) => { bal[p] -= amt; });
+    } else {
+      // 平均分攤
+      const share = e.amount / e.forWhom.length;
+      e.forWhom.forEach(p => bal[p] -= share);
+    }
   });
-  // 產生誰付誰
   const creditors = [], debtors = [];
   Object.entries(bal).forEach(([p, v]) => {
     if (v > 0.01) creditors.push({p, v});
@@ -3831,16 +3836,27 @@ function renderSplitModal() {
       <div style="background:var(--bg);border-radius:12px;padding:12px;margin:10px 0;">
         <div class="modal-label" style="margin-top:0;">新增一筆花費</div>
         <input id="sp-item" class="modal-input" placeholder="項目（例：午餐、加油）">
-        <div style="display:flex;gap:8px;margin-top:6px;">
-          <input id="sp-amount" class="modal-input" type="number" placeholder="金額 NT$" style="flex:1;">
-        </div>
         <div class="modal-label">誰付的？</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sp-payer">
           ${m.map((p,i)=>`<button type="button" class="sp-payer-btn" data-p="${p}" onclick="selectPayer('${p}')" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;${i===0?'border-color:var(--accent);background:var(--accent);color:white;':''}">${p}</button>`).join('')}
         </div>
-        <div class="modal-label">幫誰付？（分攤）</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sp-forwhom">
-          ${m.map(p=>`<button type="button" class="sp-for-btn" data-p="${p}" onclick="toggleForWhom('${p}')" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;font-size:13px;">${p}</button>`).join('')}
+        <div class="modal-label">分攤方式</div>
+        <div style="display:flex;gap:6px;margin-bottom:4px;">
+          <button type="button" id="sp-mode-avg" onclick="setSplitMode('avg')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;font-size:13px;">平均分</button>
+          <button type="button" id="sp-mode-custom" onclick="setSplitMode('custom')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;">各自金額</button>
+        </div>
+        <!-- 平均分：總金額+分攤對象 -->
+        <div id="sp-avg-box">
+          <input id="sp-amount" class="modal-input" type="number" placeholder="總金額 NT$" style="margin-top:6px;">
+          <div class="modal-label">幫誰付？（分攤）</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sp-forwhom">
+            ${m.map(p=>`<button type="button" class="sp-for-btn" data-p="${p}" onclick="toggleForWhom('${p}')" style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;font-size:13px;">${p}</button>`).join('')}
+          </div>
+        </div>
+        <!-- 各自金額：每人一個輸入框 -->
+        <div id="sp-custom-box" style="display:none;">
+          <div class="modal-label">每人各吃多少？</div>
+          ${m.map(p=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:40px;font-size:13px;">${p}</span><input class="modal-input sp-person-amt" data-p="${p}" type="number" placeholder="NT$ 0" style="flex:1;margin:0;"></div>`).join('')}
         </div>
         <button class="modal-btn modal-btn-save" style="width:100%;margin-top:10px;" onclick="addSplitExpense()">＋ 記一筆</button>
       </div>
@@ -3858,7 +3874,7 @@ function renderSplitModal() {
         ${_splitData.expenses.slice().reverse().map((e,ri)=>{
           const idx = _splitData.expenses.length-1-ri;
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:13px;">
-            <div><div style="font-weight:600;">${e.item||'(無名)'}</div><div style="font-size:11px;color:var(--muted);">${e.payer} 付 · 分給 ${e.forWhom.join('/')}</div></div>
+            <div><div style="font-weight:600;">${e.item||'(無名)'}</div><div style="font-size:11px;color:var(--muted);">${e.payer} 付 · ${e.shares ? Object.entries(e.shares).map(([p,a])=>`${p}${Math.round(a)}`).join('/') : '分給 '+e.forWhom.join('/')}</div></div>
             <div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:700;">NT$ ${Math.round(e.amount).toLocaleString()}</span><button onclick="delSplitExpense(${idx})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;">✕</button></div>
           </div>`;
         }).join('')}
@@ -3870,6 +3886,7 @@ function renderSplitModal() {
     </div>`;
   window._spPayer = m[0];
   window._spForWhom = [...m];
+  window._spMode = 'avg';
 }
 
 window.selectPayer = function(p) {
@@ -3887,12 +3904,35 @@ window.toggleForWhom = function(p) {
     b.style.cssText = `padding:6px 14px;border-radius:20px;border:1.5px solid var(--accent);background:${on?'var(--accent)':'var(--card)'};color:${on?'white':'var(--accent)'};cursor:pointer;font-size:13px;`;
   });
 };
+window._spMode = 'avg';
+window.setSplitMode = function(mode) {
+  window._spMode = mode;
+  document.getElementById('sp-avg-box').style.display = mode==='avg'?'block':'none';
+  document.getElementById('sp-custom-box').style.display = mode==='custom'?'block':'none';
+  const avg = document.getElementById('sp-mode-avg'), cus = document.getElementById('sp-mode-custom');
+  avg.style.cssText = `flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--accent);background:${mode==='avg'?'var(--accent)':'var(--card)'};color:${mode==='avg'?'white':'inherit'};cursor:pointer;font-size:13px;`;
+  cus.style.cssText = `flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--accent);background:${mode==='custom'?'var(--accent)':'var(--card)'};color:${mode==='custom'?'white':'inherit'};cursor:pointer;font-size:13px;`;
+};
+
 window.addSplitExpense = function() {
   const item = document.getElementById('sp-item').value.trim();
-  const amount = parseFloat(document.getElementById('sp-amount').value);
-  if (!amount || amount<=0) { alert('請輸入金額'); return; }
-  if (!window._spForWhom.length) { alert('請選擇分攤對象'); return; }
-  _splitData.expenses.push({ item, amount, payer: window._spPayer, forWhom: [...window._spForWhom], ts: Date.now() });
+  if (window._spMode === 'custom') {
+    // 各自金額
+    const shares = {};
+    let total = 0;
+    document.querySelectorAll('.sp-person-amt').forEach(inp => {
+      const v = parseFloat(inp.value);
+      if (v && v > 0) { shares[inp.dataset.p] = v; total += v; }
+    });
+    if (total <= 0) { alert('請至少輸入一個人的金額'); return; }
+    _splitData.expenses.push({ item, amount: total, payer: window._spPayer, shares, ts: Date.now() });
+  } else {
+    // 平均分
+    const amount = parseFloat(document.getElementById('sp-amount').value);
+    if (!amount || amount<=0) { alert('請輸入金額'); return; }
+    if (!window._spForWhom.length) { alert('請選擇分攤對象'); return; }
+    _splitData.expenses.push({ item, amount, payer: window._spPayer, forWhom: [...window._spForWhom], ts: Date.now() });
+  }
   saveSplitData();
   renderSplitModal();
 };
