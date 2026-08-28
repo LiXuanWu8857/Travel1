@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="8829c4d2">
+<html lang="zh-TW" data-ver="cc59a745">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1437,20 +1437,11 @@ body {
 
   <div class="back-btn" onclick="closeTrip()" style="justify-content:space-between;">
     <span>‹ 旅圖首頁</span>
-    <div style="display:flex;gap:8px;">
-      <button class="booking-fab" id="booking-fab" onclick="event.stopPropagation();openBookingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;">
-        📋 預訂 <span class="fab-count" id="fab-count">0</span>
-      </button>
-      <button class="booking-fab" onclick="event.stopPropagation();openPackingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#7c3aed;">
-        🎒 攜帶清單
-      </button>
-      <button class="booking-fab" onclick="event.stopPropagation();openExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
-        💴 花費
-      </button>
-      <button class="booking-fab" onclick="event.stopPropagation();openSplitModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#DB6E1E;">
-        💰 分帳
-      </button>
-    </div>
+    <button onclick="event.stopPropagation();toggleTripMenu(event)" style="background:none;border:none;cursor:pointer;padding:6px 10px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;" title="選單">
+      <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+      <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+      <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+    </button>
   </div>
 
 <div class="top-nav">
@@ -4123,6 +4114,33 @@ function injectSplitButtons() {
 }
 
 setTimeout(injectSplitButtons, 1100);
+
+// ══ 漢堡選單 ══
+window.toggleTripMenu = function(ev) {
+  let menu = document.getElementById('trip-menu-dropdown');
+  if (menu && menu.style.display === 'block') { menu.style.display = 'none'; return; }
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'trip-menu-dropdown';
+    menu.style.cssText = 'position:fixed;top:56px;right:12px;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.25);padding:8px;z-index:9999;display:none;min-width:170px;';
+    document.body.appendChild(menu);
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target) && !e.target.closest('[onclick*="toggleTripMenu"]')) menu.style.display = 'none';
+    });
+  }
+  const isBkk = (window._activeTrip === 'bangkok');
+  const expenseFn = isBkk ? 'openBkkExpenseModal' : 'openExpenseModal';
+  const items = [
+    { icon: '📋', label: '預訂清單', fn: 'openBookingModal', show: !isBkk },
+    { icon: '🎒', label: '攜帶清單', fn: 'openPackingModal', show: true },
+    { icon: '💴', label: '花費估算', fn: expenseFn, show: true },
+    { icon: '💰', label: '分帳記帳', fn: 'openSplitModal', show: true },
+  ];
+  menu.innerHTML = items.filter(i=>i.show).map(i =>
+    `<button onclick="document.getElementById('trip-menu-dropdown').style.display='none';${i.fn}()" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:none;background:none;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text);border-radius:8px;text-align:left;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">${i.icon} ${i.label}</button>`
+  ).join('');
+  menu.style.display = 'block';
+};
 
 // ══ 自訂卡片系統（手動新增行程）══
 let _customCards = {}; // { dayId: [ {id, time, title, desc, nav, url} ] }
@@ -7480,17 +7498,11 @@ window.switchDayBkk = function(id) { switchDay(id); };
 
 <div class="back-btn" onclick="closeTrip()" style="justify-content:space-between;">
   <span>‹ 旅圖首頁</span>
-  <div style="display:flex;gap:8px;">
-    <button class="booking-fab" onclick="event.stopPropagation();openPackingModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#7c3aed;">
-      🎒 攜帶清單
-    </button>
-    <button class="booking-fab" onclick="event.stopPropagation();openBkkExpenseModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:var(--success);">
-      💴 花費
-    </button>
-    <button class="booking-fab" onclick="event.stopPropagation();openSplitModal()" style="position:static;box-shadow:none;padding:5px 12px;font-size:11px;background:#DB6E1E;">
-      💰 分帳
-    </button>
-  </div>
+  <button onclick="event.stopPropagation();toggleTripMenu(event)" style="background:none;border:none;cursor:pointer;padding:6px 10px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;" title="選單">
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+  </button>
 </div>
 
 <div class="top-nav">
