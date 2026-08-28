@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="9ffdb8eb">
+<html lang="zh-TW" data-ver="8829c4d2">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3535,6 +3535,7 @@ function switchDay(id, dir) {
   window._currentDayIdx = idx;
   if (document.getElementById('map-modal')?.style.display === 'block') openDayMap();
   if (typeof injectFoodLottery === 'function') setTimeout(injectFoodLottery, 100);
+  if (typeof injectSplitButtons === 'function') setTimeout(injectSplitButtons, 120);
 }
 
 // ── 滑動切換天數（跟手動畫版）──
@@ -4088,6 +4089,40 @@ function injectFoodLottery() {
 }
 
 setTimeout(() => { loadFoodOptions(); injectFoodLottery(); }, 1000);
+
+// ══ 每張卡片的「記帳」按鈕 ══
+window.openSplitWithItem = function(itemName) {
+  loadSplitData();
+  renderSplitModal();
+  document.getElementById('split-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // 預填項目名稱
+  setTimeout(() => {
+    const inp = document.getElementById('sp-item');
+    if (inp) inp.value = itemName;
+  }, 50);
+};
+
+function injectSplitButtons() {
+  document.querySelectorAll('.card').forEach(card => {
+    if (card.querySelector('.split-card-btn')) return;
+    if (card.classList.contains('card-drive')) return; // 跳過純開車卡
+    const header = card.querySelector('.card-header');
+    if (!header) return;
+    const title = card.querySelector('.card-title')?.textContent?.trim() || '';
+    // 去掉 emoji 前綴
+    const cleanTitle = title.replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/, '').trim();
+    const btn = document.createElement('button');
+    btn.className = 'split-card-btn';
+    btn.style.cssText = 'background:#DB6E1E;color:white;border:none;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;margin-left:6px;flex-shrink:0;';
+    btn.textContent = '💰';
+    btn.title = '記帳';
+    btn.onclick = (e) => { e.stopPropagation(); openSplitWithItem(cleanTitle); };
+    header.appendChild(btn);
+  });
+}
+
+setTimeout(injectSplitButtons, 1100);
 
 // ══ 自訂卡片系統（手動新增行程）══
 let _customCards = {}; // { dayId: [ {id, time, title, desc, nav, url} ] }
