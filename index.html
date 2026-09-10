@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="932fd75f">
+<html lang="zh-TW" data-ver="d96f59cc">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1102,7 +1102,8 @@ body {
           <div class="expense-total-label">所有已記錄項目合計</div>
           <div class="expense-total-amount" id="expense-grand-total">—</div>
         </div>
-        <button onclick="clearAllExpenses()" style="margin-top:12px;width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">🗑 清除所有花費資料</button>
+        <button onclick="exportExpenseReport()" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:10px;background:var(--accent);color:white;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">📤 輸出花費報告（含每人分攤）</button>
+        <button onclick="clearAllExpenses()" style="margin-top:8px;width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">🗑 清除所有花費資料</button>
       </div>
     </div>
 
@@ -6126,6 +6127,82 @@ function renderExpenseBreakdown() {
 
   document.getElementById('expense-grand-total').textContent = 'NT$ ' + grandTotal.toLocaleString();
 }
+window.exportExpenseReport = function() {
+  const allData = getUserAllData();
+  const tripName = (window._activeTrip === 'bangkok') ? '曼谷 2026' : '北海道 2026';
+  const lines = [];
+  lines.push(`💰 ${tripName} 花費報告`);
+  lines.push(`產生時間：${new Date().toLocaleString('zh-TW')}`);
+  lines.push('─'.repeat(28));
+
+  // 掃描現有卡片金額，依日期分組
+  const byDay = {};
+  let grandTotal = 0;
+  document.querySelectorAll('.day-section[id^="d"]').forEach(dayEl => {
+    const dayId = dayEl.id;
+    const mt = dayId.match(/^d(\d{2})(\d{2})$/);
+    const dayLabel = mt ? `${parseInt(mt[1])}/${parseInt(mt[2])}` : dayId;
+    dayEl.querySelectorAll('[data-card-id],[data-sync]').forEach(card => {
+      const sync = card.dataset.sync, cardId = card.dataset.cardId;
+      const keys = [sync, cardId, sync?`${dayId}_${sync}`:null].filter(Boolean);
+      let v=null; for (const k of keys) { if (allData[k]?.amount>0) { v=allData[k]; break; } }
+      if (!v) return;
+      const cur = v.currency || 'JPY';
+      const rate = (_rates?.[cur]) ? (1/_rates[cur]) : (cur==='JPY'?0.215:1);
+      const twd = Math.round(parseFloat(v.amount)*rate);
+      const cardEl = card.closest('.card')||card;
+      const title = (cardEl.querySelector('.card-title')?.textContent||'').replace(/^[^\w\u4e00-\u9fff\u3040-\u30ff]+/,'').trim().slice(0,20);
+      if (!byDay[dayLabel]) byDay[dayLabel]=[];
+      byDay[dayLabel].push({title, twd, orig:`${parseInt(v.amount).toLocaleString()} ${cur}`});
+      grandTotal += twd;
+    });
+  });
+
+  Object.entries(byDay).forEach(([day, arr]) => {
+    const dayTotal = arr.reduce((s,r)=>s+r.twd,0);
+    lines.push('');
+    lines.push(`📅 ${day}　小計 NT$ ${dayTotal.toLocaleString()}`);
+    arr.forEach(r => lines.push(`  · ${r.title}　${r.orig}　≈ NT$ ${r.twd.toLocaleString()}`));
+  });
+
+  // 通行費油費（若計入）
+  const includeExtra = localStorage.getItem('wandr_include_extra') !== 'false';
+  const jpyRate = (_rates?.JPY)?(1/_rates.JPY):0.215;
+  if (includeExtra) {
+    const tollJpy = window._tollJpy||0, fuelJpy = window._fuelEstJpy||0;
+    if (tollJpy>0) { const t=Math.round(tollJpy*jpyRate); grandTotal+=t; lines.push(''); lines.push(`🚗 預估通行費　≈ NT$ ${t.toLocaleString()}`); }
+    if (fuelJpy>0) { const t=Math.round(fuelJpy*jpyRate); grandTotal+=t; lines.push(`⛽ 預估油費　≈ NT$ ${t.toLocaleString()}`); }
+  }
+
+  lines.push('');
+  lines.push('─'.repeat(28));
+  lines.push(`💵 總花費：NT$ ${grandTotal.toLocaleString()}`);
+
+  // 每人分攤
+  const members = (typeof _splitData !== 'undefined' && _splitData.members) ? _splitData.members : ['我','媽','弟','雪'];
+  const perPerson = Math.round(grandTotal / members.length);
+  lines.push(`👥 ${members.length} 人平均：每人 NT$ ${perPerson.toLocaleString()}`);
+  lines.push('');
+  lines.push('※ 此為總花費平均，實際代墊請見「分帳」功能');
+
+  const report = lines.join('\n');
+
+  // 優先用系統分享，否則下載成 txt
+  if (navigator.share) {
+    navigator.share({ title: `${tripName} 花費報告`, text: report }).catch(()=>fallbackDownload(report, tripName));
+  } else {
+    fallbackDownload(report, tripName);
+  }
+};
+function fallbackDownload(text, name) {
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${name}_花費報告.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 window.clearAllExpenses = function() {
   if (!confirm('確定要清除所有花費資料？此操作無法復原。')) return;
   saveUserAllData({});
