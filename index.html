@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="57809627">
+<html lang="zh-TW" data-ver="932fd75f">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1084,6 +1084,10 @@ body {
         </div>
       </div>
       <div id="all-total-rows" style="padding:0 20px 14px;border-top:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;gap:5px;padding-top:10px;"></div>
+      <label style="display:flex;align-items:center;gap:8px;padding:0 20px 14px;font-size:12px;color:rgba(255,255,255,0.85);cursor:pointer;">
+        <input type="checkbox" id="include-extra-cb" onchange="toggleIncludeExtra(this.checked)" style="width:16px;height:16px;cursor:pointer;">
+        將預估通行費・油費計入總計
+      </label>
     </div>
 
     <!-- 花費明細 -->
@@ -6578,6 +6582,10 @@ function renderAllTotal() {
   const grandEl = document.getElementById('all-grand-total');
   if (!rowsEl || !grandEl) return;
 
+  // 同步勾選框狀態
+  const cb = document.getElementById('include-extra-cb');
+  if (cb) cb.checked = localStorage.getItem('wandr_include_extra') !== 'false';
+
   const jpyRate = (_rates?.JPY) ? (1/_rates.JPY) : 0.215;
   const toTwd = (amt, cur) => {
     const r = (_rates?.[cur]) ? (1/_rates[cur]) : (cur==='JPY' ? 0.215 : 1);
@@ -6627,10 +6635,11 @@ function renderAllTotal() {
   }
   const fuelTwd = Math.round(fuelJpy * jpyRate);
 
+  const includeExtra = localStorage.getItem('wandr_include_extra') !== 'false'; // 預設 true
   const rows = [
     ...items,
-    ...(tollTwd > 0 ? [{ day: '其他', title: '🚗 預估通行費', twd: tollTwd }] : []),
-    ...(fuelTwd > 0 ? [{ day: '其他', title: fuelLabel, twd: fuelTwd }] : []),
+    ...(tollTwd > 0 && includeExtra ? [{ day: '其他', title: '🚗 預估通行費', twd: tollTwd }] : []),
+    ...(fuelTwd > 0 && includeExtra ? [{ day: '其他', title: fuelLabel, twd: fuelTwd }] : []),
   ];
 
   if (!rows.length) {
@@ -6661,6 +6670,11 @@ function renderAllTotal() {
   grandEl.textContent = 'NT$ ' + total.toLocaleString();
 }
 window.renderAllTotal = renderAllTotal;
+
+window.toggleIncludeExtra = function(checked) {
+  localStorage.setItem('wandr_include_extra', checked ? 'true' : 'false');
+  renderAllTotal();
+};
 
 function tollToJpyTwd(jpy) {
   const rate = (_rates && _rates['JPY']) ? (1 / _rates['JPY']) : 0.215;
