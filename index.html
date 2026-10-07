@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="47b9b5a6">
+<html lang="zh-TW" data-ver="bc5d8560">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4119,6 +4119,7 @@ function injectSplitButtons() {
 }
 
 setTimeout(injectSplitButtons, 1100);
+setTimeout(() => { if (typeof injectEditButtons === 'function') injectEditButtons(); }, 900);
 
 // ══ 漢堡選單 ══
 window.toggleTripMenu = function(ev) {
