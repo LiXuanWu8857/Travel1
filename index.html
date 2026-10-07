@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="bc5d8560">
+<html lang="zh-TW" data-ver="271cc5d5">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4823,10 +4823,22 @@ function injectEditButtons() {
     btn.className = 'edit-btn';
     btn.dataset.key = key;
     btn.innerHTML = '✏️ 編輯';
-    btn.onclick = (e) => { e.stopPropagation(); openModal(key, card); };
     card.appendChild(btn);
 
     renderNote(card, key);
+  });
+}
+
+// 事件委派：不論按鈕何時生成都能點（取代逐一 onclick）
+if (!window._editBtnDelegated) {
+  window._editBtnDelegated = true;
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.edit-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const card = btn.closest('.card');
+    const key = btn.dataset.key || card?.dataset.editKey;
+    if (key && card) openModal(key, card);
   });
 }
 
