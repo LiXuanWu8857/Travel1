@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="bb4dfd8a">
+<html lang="zh-TW" data-ver="47b9b5a6">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6086,7 +6086,8 @@ function renderExpenseBreakdown() {
   const items = [];
 
   // 掃描所有現有卡片，逐一查對應金額
-  document.querySelectorAll('.day-section[id^="d"], .day-section[id^="o"]').forEach(dayEl => {
+  const _activeWrap = document.getElementById('trip-' + (window._activeTrip || 'hokkaido'));
+  (_activeWrap ? _activeWrap.querySelectorAll(':scope > .day-section') : []).forEach(dayEl => {
     const dayId = dayEl.id; // e.g. d0907
     const dayLabel = dayId.replace(/^d(\d{2})(\d{2})$/, '$1/$2');
 
@@ -6165,7 +6166,8 @@ window.exportExpenseReport = function() {
 
   const byDay = {};
   let grandTotal = 0;
-  document.querySelectorAll('.day-section[id^="d"], .day-section[id^="o"]').forEach(dayEl => {
+  const _activeWrap = document.getElementById('trip-' + (window._activeTrip || 'hokkaido'));
+  (_activeWrap ? _activeWrap.querySelectorAll(':scope > .day-section') : []).forEach(dayEl => {
     const dayId = dayEl.id;
     const mt = dayId.match(/^d(\d{2})(\d{2})$/);
     const dayLabel = mt ? `${parseInt(mt[1])}/${parseInt(mt[2])}` : dayId;
@@ -6735,7 +6737,8 @@ function renderAllTotal() {
   // 1. 所有已記錄花費（從 DOM 現有卡片掃描）
   const allData = getUserAllData();
   const items = [];
-  document.querySelectorAll('.day-section[id^="d"], .day-section[id^="o"]').forEach(dayEl => {
+  const _activeWrap = document.getElementById('trip-' + (window._activeTrip || 'hokkaido'));
+  (_activeWrap ? _activeWrap.querySelectorAll(':scope > .day-section') : []).forEach(dayEl => {
     const dayId = dayEl.id;
     const dayMatch = dayId.match(/^d(\d{2})(\d{2})$/);
     const dayLabel = dayMatch ? `${parseInt(dayMatch[1])}/${parseInt(dayMatch[2])}` : '';
