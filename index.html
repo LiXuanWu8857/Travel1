@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="53d59ca3">
+<html lang="zh-TW" data-ver="f68f2b01">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4808,6 +4808,7 @@ window._fbDb = db;
 // Inject edit buttons into all cards in day sections
 function injectEditButtons() {
   document.querySelectorAll('.day-section .item-content .card:not(.card-drive)').forEach((card) => {
+   try {
     if (card.querySelector('.edit-btn')) return;
     const daySection = card.closest('.day-section');
     const dayId = daySection ? daySection.id : 'unknown';
@@ -4826,6 +4827,7 @@ function injectEditButtons() {
     card.appendChild(btn);
 
     renderNote(card, key);
+   } catch (err) { console.warn('[injectEditButtons] skip card', err); }
   });
 }
 
@@ -5988,6 +5990,8 @@ function openTrip(id) {
   if (fab) { fab.classList.add('visible'); syncFabCount(); }
   const firstDay = window._TRIP_CONFIG?.[id]?.firstDay || 'd0827';
   switchDay(firstDay);
+  // 保險：確保所有行程的編輯按鈕都注入（避免切換行程時漏掉）
+  if (typeof injectEditButtons === 'function') { setTimeout(injectEditButtons, 200); setTimeout(injectEditButtons, 600); }
 }
 
 function closeTrip() {
