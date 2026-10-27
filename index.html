@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="94dd4815">
+<html lang="zh-TW" data-ver="aea6442f">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1055,6 +1055,31 @@ body {
         <div class="trip-card-tags">
           <span class="trip-card-tag">✈️ NU308</span>
           <span class="trip-card-tag">🚗 自駕</span>
+          <span class="trip-card-tag">🇯🇵 日本</span>
+        </div>
+        <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
+      </div>
+    </div>
+
+    <div class="trip-card" id="card-osaka">
+      <div class="trip-card-cover" id="cover-osaka" onclick="openTrip('osaka')" style="background:linear-gradient(135deg,#7C3AED,#A855F7);">
+        <img class="trip-card-cover-img" id="cover-img-osaka" src="" style="display:none;">
+        <div class="trip-card-cover-dots"></div>
+        <div class="trip-card-cover-overlay"></div>
+        <div class="trip-card-cover-badge">3 天</div>
+        <label class="trip-card-cover-edit" onclick="event.stopPropagation()">
+          📷 封面
+          <input type="file" accept="image/*" style="display:none" onchange="setCoverImage('osaka', this)">
+        </label>
+        <div class="trip-card-cover-info">
+          <div class="trip-card-cover-name">大阪 2026</div>
+          <div class="trip-card-cover-dates">10 / 27 – 10 / 29</div>
+        </div>
+      </div>
+      <div class="trip-card-info">
+        <div class="trip-card-tags">
+          <span class="trip-card-tag">✈️ AK176</span>
+          <span class="trip-card-tag">🎢 USJ</span>
           <span class="trip-card-tag">🇯🇵 日本</span>
         </div>
         <div class="trip-card-status"><div class="trip-status-dot"></div>規劃中</div>
@@ -3503,6 +3528,10 @@ window._TRIP_CONFIG = {
   okinawa: {
     ids: ['o1011','o1012','o1013','o1014'],
     firstDay: 'o1011',
+  },
+  osaka: {
+    ids: ['k1027','k1028','k1029'],
+    firstDay: 'k1027',
   },
 };
 window._activeTrip = 'hokkaido';
@@ -6059,7 +6088,7 @@ function setCoverImage(tripId, input) {
 }
 
 function loadCoverImages() {
-  ['hokkaido', 'bangkok', 'okinawa'].forEach(id => {
+  ['hokkaido', 'bangkok', 'okinawa', 'osaka'].forEach(id => {
     const saved = localStorage.getItem('cover_' + id);
     if (saved) {
       const img = document.getElementById('cover-img-' + id);
@@ -8803,6 +8832,173 @@ window.switchDayBkk = function(id) { switchDay(id); };
 </div>
 
 </div><!-- end trip-okinawa wrapper -->
+
+<div id="trip-osaka" class="trip-wrapper">
+
+<div class="back-btn" onclick="closeTrip()" style="justify-content:space-between;">
+  <span>‹ 旅圖首頁</span>
+  <button onclick="event.stopPropagation();toggleTripMenu(event)" style="background:none;border:none;cursor:pointer;padding:6px 10px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;" title="選單">
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+    <span style="display:block;width:22px;height:2.5px;background:var(--accent);border-radius:2px;"></span>
+  </button>
+</div>
+
+<div class="top-nav">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 16px 12px;">
+    <div class="nav-title" style="margin:0;padding:0;">✈️ 旅圖 · 大阪 2026</div>
+    <button onclick="openDayMap()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#1a73e8;white-space:nowrap;flex-shrink:0;" title="地圖">Google Maps</button><button onclick="exportTripPDF()" style="background:white;border:none;cursor:pointer;padding:5px 10px;display:flex;align-items:center;justify-content:center;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-size:12px;font-weight:700;color:#B45309;white-space:nowrap;flex-shrink:0;margin-left:6px;" title="輸出PDF">📄 PDF</button>
+  </div>
+  <div class="tab-scroll">
+    <div class="tab active" onclick="switchDay('k1027')">10/27</div>
+    <div class="tab" onclick="switchDay('k1028')">10/28</div>
+    <div class="tab" onclick="switchDay('k1029')">10/29</div>
+  </div>
+</div>
+
+<div id="k1027" class="day-section active">
+  <div class="day-header" style="background:linear-gradient(135deg,#7C3AED,#A855F7);">
+    <div class="day-badge">Day 1</div>
+    <div class="day-title">10/27 二・抵達關西 ✈️</div>
+    <div class="day-sub">AK176 · 15:40 TPE → 19:30 KIX · 關空快速到西九條</div>
+  </div>
+  <div style="margin:0 16px 14px;padding:10px 14px;background:#F5F3FF;border-radius:10px;font-size:12px;color:#5B21B6;line-height:1.9;">
+    <strong>☁️ 天氣</strong> 多雲偶雨 25℃／19℃ · 帶折傘<br>
+    <strong>✅ 出發前</strong> 線上報到、填 Visit Japan Web 截圖 QR · 截圖 Airbnb 門鎖密碼/入住說明/Wifi · 手提含隨身包 ≤ 7kg
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">13:30</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1027_card_01">
+        <div class="card-header"><div class="card-title">🛫 桃園 T1 報到 — AK176</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">⚠️ 13:30 前（台灣時間）到桃園 T1 · 亞航 AK176 · 15:40 起飛 · 手提含隨身包 ≤ 7kg · 已線上報到</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=桃園國際機場第一航廈" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>桃園 T1</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">19:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1027_card_02">
+        <div class="card-header"><div class="card-title">🛬 抵達關西機場 T1 → 入境</div><span class="tag tag-spot">入境</span></div>
+        <div class="card-desc">KIX 第一航廈 · 出示 Visit Japan Web QR 通關 · 20:15 走天橋到 JR 關西機場站（3/4 月台）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Kansai+International+Airport+Terminal+1" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>關西機場 T1</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:18</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1027_card_03">
+        <div class="card-header"><div class="card-title">🚆 關空快速 → 西九條</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">20:18 / 20:32 關空快速（顯示 For Hineno 沒錯，不用換車）· 約 21:25 西九條下車 · 下車後步行 7 分鐘到住處</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Nishikujo+Station+Osaka" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>西九條站</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:40</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1027_card_04" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🏠 自助入住 — Airbnb（西九條）</div><span class="tag tag-hotel">住宿</span></div>
+        <div class="card-desc">西九條附近 · 自助入住（門鎖密碼看截圖）· 步行約 7 分鐘 · Wifi/入住說明見截圖</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">21:40</div><div class="item-dot dot-food"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1027_card_05">
+        <div class="card-header"><div class="card-title">🍜 晚餐 — 西九條附近</div><span class="tag tag-food">晚餐</span></div>
+        <div class="card-desc">西九條附近便利商店／拉麵解決 · 時間晚，簡單吃</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">10/27 · Day 1 · 大阪 2026</div>
+</div>
+
+<div id="k1028" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#A855F7,#EC4899);">
+    <div class="day-badge">Day 2</div>
+    <div class="day-title">10/28 三・環球影城 USJ 🎢</div>
+    <div class="day-sub">西九條→環球城一站 · 玩到 20:00–21:00 避開人潮</div>
+  </div>
+  <div style="margin:0 16px 14px;padding:10px 14px;background:#F5F3FF;border-radius:10px;font-size:12px;color:#5B21B6;line-height:1.9;">
+    <strong>☀️ 天氣</strong> 晴 19℃／15℃ · 有北風，最冷的一天 · ⚠️ 帶防風外套
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:00</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1028_card_01">
+        <div class="card-header"><div class="card-title">🚆 西九條 → 環球城</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">8:00 前出門 · 西九條搭 JRゆめ咲線一站到環球城（約 5 分鐘）</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Universal+City+Station+Osaka" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>環球城站</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">08:30</div><div class="item-dot dot-spot"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1028_card_02">
+        <div class="card-header"><div class="card-title">🎢 日本環球影城 USJ</div><span class="tag tag-spot">樂園</span></div>
+        <div class="card-desc">Universal Studios Japan · 超任世界、哈利波特、小小兵 · 建議先用 App 抽整理券/買快速通關 · 玩到 20:00–21:00</div>
+        <div style="margin-top:8px;padding:10px 12px;background:#F5F3FF;border-radius:8px;font-size:12px;color:#5B21B6;line-height:1.9;">
+          <strong>🎢 USJ 小提醒</strong><br>
+          · 開園前先排隊，一開門先衝人氣設施<br>
+          · 超任世界、哈利波特需抽「整理券」（App 操作）<br>
+          · 最冷的一天，穿防風外套、排隊久要保暖<br>
+          · 晚一點（20:00 後）出園避開車站人潮
+        </div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Universal+Studios+Japan" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>USJ</a>
+        <a class="web-btn" href="https://www.usj.co.jp/web/zh/tw" target="_blank">🌐 官方網站</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">20:30</div><div class="item-dot dot-ferry"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1028_card_03">
+        <div class="card-header"><div class="card-title">🚆 回程 — 環球城 → 西九條</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">晚一點出園 · 環球城 → 西九條 → 走回住處</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">10/28 · Day 2 · 大阪 2026</div>
+</div>
+
+<div id="k1029" class="day-section">
+  <div class="day-header" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">
+    <div class="day-badge">Day 3</div>
+    <div class="day-title">10/29 四・回程 🧳</div>
+    <div class="day-sub">退房 → 關空快速 → GK055 14:55 → 桃園</div>
+  </div>
+  <div style="margin:0 16px 14px;padding:10px 14px;background:#F5F3FF;border-radius:10px;font-size:12px;color:#5B21B6;line-height:1.9;">
+    <strong>🌤️ 天氣</strong> 晴後多雲 20℃／10℃ · 早上偏涼 · ⚠️ 手提 ≤ 7kg（捷星很嚴），外套直接穿身上
+  </div>
+  <div class="timeline">
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:00</div><div class="item-dot dot-hotel"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1029_card_01" style="border-color:var(--hotel);border-width:1.5px;">
+        <div class="card-header"><div class="card-title">🧳 退房 — Airbnb</div><span class="tag tag-hotel">退房</span></div>
+        <div class="card-desc">10:00 退房 · 整理行李，確認手提 ≤ 7kg</div>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">10:15</div><div class="item-dot dot-ferry"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1029_card_02">
+        <div class="card-header"><div class="card-title">🚆 西九條 → 關西機場</div><span class="tag tag-ferry">交通</span></div>
+        <div class="card-desc">約 10:15 西九條搭關空快速（直接去機場）· 最晚 11:30 出發 · ⚠️ 坐往「関西空港」的車廂（通常 1–4 號車）· 約 11:20 抵 KIX T1</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Nishikujo+Station+Osaka" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>西九條站</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">11:20</div><div class="item-dot dot-food"></div><div class="item-line"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1029_card_03">
+        <div class="card-header"><div class="card-title">🍴 午餐 — KIX 機場</div><span class="tag tag-food">午餐</span></div>
+        <div class="card-desc">抵達 KIX T1，機場吃午餐 · 確認手提 ≤ 7kg（捷星很嚴），外套直接穿身上</div>
+        <a class="nav-btn" href="https://maps.google.com/?q=Kansai+International+Airport+Terminal+1" target="_blank"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>關西機場 T1</a>
+      </div></div>
+    </div>
+    <div class="item">
+      <div class="item-left"><div class="item-time">14:55</div><div class="item-dot dot-ferry"></div></div>
+      <div class="item-content"><div class="card" data-card-id="k1029_card_04">
+        <div class="card-header"><div class="card-title">🛫 捷星 GK055 → 桃園</div><span class="tag tag-ferry">航班</span></div>
+        <div class="card-desc">捷星 GK055 · 14:55 起飛 → 17:15（台灣時間）抵達桃園</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer">10/29 · Day 3 · 大阪 2026</div>
+</div>
+
+</div><!-- end trip-osaka wrapper -->
 
 </body>
 </html>
