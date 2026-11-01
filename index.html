@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-ver="3f6f7609">
+<html lang="zh-TW" data-ver="d9606498">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -4929,14 +4929,15 @@ function loadEditsFromFirebase() {
   const editsRef = window._fbRef(window._fbDb, 'hokkaido2026/edits');
   window._fbOnValue(editsRef, (snap) => {
     const data = snap.val();
-    if (!data) {
-      // Firebase 是空的，清掉 localStorage
-      try { localStorage.removeItem('user_edits'); } catch(e) {}
-      return;
-    }
-    try { localStorage.setItem('user_edits', JSON.stringify(data)); } catch(e) {}
+    // ⚠️ 絕不因為 Firebase 空快照就清掉本機資料（避免剛輸入的資料被誤刪）
+    if (!data) return;
+    // 合併：以 Firebase 為主，但保留本機有、雲端暫時沒有的 key
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem('user_edits') || '{}'); } catch(e) {}
+    const merged = Object.assign({}, local, data);
+    try { localStorage.setItem('user_edits', JSON.stringify(merged)); } catch(e) {}
     // Re-render all notes
-    Object.keys(data).forEach(key => {
+    Object.keys(merged).forEach(key => {
       const card = document.querySelector(`[data-edit-key="${key}"]`);
       if (card) renderNote(card, key);
     });
